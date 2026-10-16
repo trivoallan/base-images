@@ -20,7 +20,7 @@ concurrency:
 env:
   REGIS_IMAGE: ghcr.io/trivoallan/regis:0.40.0-full@sha256:1d5a6b4f59f1400179e2a5b3f92f2afcbe48963bcb29f3393e35e22172ae99a1
   KNOCK_IMAGE: ghcr.io/trivoallan/knock:0.15.0@sha256:49fc4b8638c39c318aeeebac996146753446346ff6b4574bc46b25db07da7f9a
-  USKE_IMAGE: ghcr.io/trivoallan/uske:0.2.1@sha256:e391e39e35b891be049dc4a89ac2063c46e19cf456c7fdb75d5b87432171b90b
+  USKE_IMAGE: ghcr.io/trivoallan/uske:0.3.0@sha256:a4a26d71bb474de273c76d2a29d133dbbb429460535243b1a9d1472c535bd852
 
 jobs:
   screening:
