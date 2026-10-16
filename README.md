@@ -39,6 +39,17 @@ suppression, le force-push et l'historique non linéaire.
 Pour rouvrir une source mise en quarantaine, ajoute au journal une ligne `uske/reopened` (voir le
 README d'`uske`) et ouvre une PR.
 
+## Page
+
+[`https://trivoallan.github.io/base-images/`](https://trivoallan.github.io/base-images/) montre le
+journal de toutes les politiques, la décision la plus récente en premier : d'abord les refus et les
+`inconclusive`, et tout le reste d'un clic. Chaque ligne mène au rapport `regis` de sa décision, rendu
+en HTML, qui dit quelle règle l'a tranchée.
+
+Il n'y a pas de build. [`pages`](.github/workflows/pages.yml) publie le dépôt tel quel après chaque
+criblage `apply` réussi sur `main`, et à la demande. Il n'y ajoute que `results/index.json`, la liste
+des journaux, qu'[`index.html`](index.html) lit. Pages s'active une fois avec `make pages`.
+
 ## Renovate
 
 [`renovate`](.github/workflows/renovate.yml) suit les digests de `regis`, `knock` et `uske` épinglés

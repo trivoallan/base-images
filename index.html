@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Rien hors du site publié : le journal et les rapports sont servis à côté de cette page. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
+<title>Journal de la porte</title>
+<style>
+  :root { color-scheme: light dark; --muted: GrayText; --line: color-mix(in srgb, CanvasText 15%, transparent); }
+  body { margin: 0 auto; max-width: 72rem; padding: 1rem; font: 15px/1.45 system-ui, sans-serif; background: Canvas; color: CanvasText; }
+  h1 { font-size: 1.3rem; margin: 0 0 .25rem; }
+  p { margin: .25rem 0 1rem; color: var(--muted); }
+  .filter { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+  .filter button { font: inherit; padding: .35rem .75rem; border: 1px solid var(--line); border-radius: 1rem; background: none; color: inherit; cursor: pointer; }
+  .filter button[aria-pressed="true"] { background: CanvasText; color: Canvas; }
+  .wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; vertical-align: top; padding: .4rem .5rem; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; white-space: nowrap; }
+  td.ref { overflow-wrap: anywhere; min-width: 12rem; }
+  code { font-size: .85em; }
+  .state { white-space: nowrap; font-weight: 600; }
+  .state-quarantine { color: #c62828; } .state-inconclusive { color: #b26a00; }
+  .state-direct-placement, .state-transformation-required { color: #2e7d32; }
+  .arb { display: block; margin-top: .25rem; color: var(--muted); }
+  .none { color: var(--muted); }
+  /* Sur téléphone, une carte par décision : le lien du rapport reste à l'écran sans défiler. */
+  @media (max-width: 40rem) {
+    thead { display: none; }
+    table, tbody, tr, td { display: block; }
+    tr { padding: .5rem 0; border-bottom: 1px solid var(--line); }
+    td { border: 0; padding: .1rem 0; min-width: 0; }
+    td[data-label]::before { content: attr(data-label) " : "; color: var(--muted); }
+  }
+  @media (prefers-color-scheme: dark) {
+    .state-quarantine { color: #ef9a9a; } .state-inconclusive { color: #ffcc80; }
+    .state-direct-placement, .state-transformation-required { color: #a5d6a7; }
+  }
+</style>
+</head>
+<body>
+<h1>Journal de la porte</h1>
+<p>Chaque décision du criblage <code>uske</code> de ce dépôt, la plus récente en premier. Le rapport <code>regis</code> d'une décision dit quelle règle l'a tranchée.</p>
+<div class="filter" role="group" aria-label="Décisions affichées">
+  <button type="button" data-all="false" aria-pressed="true">Refus et inconclusive</button>
+  <button type="button" data-all="true" aria-pressed="false">Tout</button>
+</div>
+<div class="wrap">
+<table>
+  <thead><tr><th>Date</th><th>Image</th><th>État</th><th>Raison</th><th>Ruleset</th><th>Rapport</th></tr></thead>
+  <tbody id="rows"><tr><td colspan="6" class="none">Chargement…</td></tr></tbody>
+</table>
+</div>
+<script>
+// Les états qu'uske sait produire. Tout autre état (abandoned, placed-by-exception, un état futur)
+// est écrit à la main ou nouveau : il reste visible par défaut, jamais filtré en silence.
+const KNOWN = new Set(["direct-placement", "transformation-required", "quarantine", "inconclusive"]);
+const HIDDEN_BY_DEFAULT = new Set(["direct-placement", "transformation-required"]);
+const rows = document.getElementById("rows");
+const buttons = document.querySelectorAll(".filter button");
+let lines = [];
+let all = false;
+
+// Tout ce qui vient du journal passe par textContent : jamais interprété comme du HTML.
+function el(tag, text, cls) {
+  const e = document.createElement(tag);
+  if (text != null) e.textContent = text;
+  if (cls) e.className = cls;
+  return e;
+}
+
+function message(text) {
+  const td = el("td", text, "none");
+  td.colSpan = 6;
+  const tr = el("tr");
+  tr.append(td);
+  return tr;
+}
+
+async function exists(url) {
+  try { return (await fetch(url, { method: "HEAD" })).ok; } catch { return false; }
+}
+
+// Le rapport se déduit de la politique et du digest, pas du champ `report`, qui suit trois
+// conventions (.md, chemin du volume uske, absent). Le HTML d'abord, puis le Markdown.
+async function fillReport(cell, line) {
+  if (line.digest) {
+    const base = `results/reports/${encodeURIComponent(line.policy)}/${encodeURIComponent(line.digest)}`;
+    for (const ext of [".html", ".md"]) {
+      if (await exists(base + ext)) {
+        const a = el("a", ext === ".html" ? "rapport" : "rapport (md)");
+        a.href = base + ext;
+        a.target = "_blank";
+        a.rel = "noopener";
+        cell.replaceChildren(a);
+        return;
+      }
+    }
+  }
+  cell.replaceChildren(el("span", "pas de report", "none"));
+}
+
+const LABELS = ["Date", "Image", "État", "Raison", "Ruleset", "Rapport"];
+
+function render() {
+  const shown = lines.filter(l => all || !HIDDEN_BY_DEFAULT.has(l.state));
+  const kept = lines.length - lines.filter(l => HIDDEN_BY_DEFAULT.has(l.state)).length;
+  buttons[0].textContent = `Refus et inconclusive (${kept})`;
+  buttons[1].textContent = `Tout (${lines.length})`;
+  rows.replaceChildren();
+  if (!shown.length) rows.append(message("Aucune décision."));
+  for (const l of shown) {
+    const tr = el("tr");
+    tr.append(el("td", (l.ts || "").replace("T", " ").replace(/:\d\dZ$/, "")));
+    tr.append(el("td", l.ref || l.raw || "", "ref"));
+    const state = l.state || "?";
+    tr.append(el("td", state, "state" + (KNOWN.has(state) ? " state-" + state : "")));
+    const why = el("td", l.reason || "");
+    if (l.arbitration) {
+      const a = l.arbitration;
+      why.append(el("span", `Arbitrage ${a.by || "?"}, ${a.date || "?"} : ${a.reason || ""}`, "arb"));
+    }
+    tr.append(why);
+    const rs = el("td");
+    if (l.ruleset) rs.append(el("code", l.ruleset.replace(/^sha256:/, "").slice(0, 12), null));
+    rs.title = l.ruleset || "";
+    tr.append(rs);
+    const rep = el("td", "…", "none");
+    tr.append(rep);
+    [...tr.children].forEach((td, i) => td.dataset.label = LABELS[i]);
+    rows.append(tr);
+    fillReport(rep, l);
+  }
+}
+
+buttons.forEach(b => b.addEventListener("click", () => {
+  all = b.dataset.all === "true";
+  buttons.forEach(o => o.setAttribute("aria-pressed", String(o === b)));
+  render();
+}));
+
+async function load() {
+  const policies = await (await fetch("results/index.json")).json();
+  for (const policy of policies) {
+    const text = await (await fetch(`results/${encodeURIComponent(policy)}.jsonl`)).text();
+    for (const raw of text.split("\n")) {
+      if (!raw.trim()) continue;
+      // Une ligne illisible est montrée telle quelle, sous un état inconnu : aucune ligne perdue.
+      try { lines.push({ policy, ...JSON.parse(raw) }); }
+      catch { lines.push({ policy, raw, state: "illisible" }); }
+    }
+  }
+  lines.sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
+  render();
+}
+
+load().catch(e => rows.replaceChildren(message("Journal illisible : " + e.message)));
+</script>
+</body>
+</html>
