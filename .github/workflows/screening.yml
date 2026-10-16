@@ -1,0 +1,83 @@
+name: screening
+
+# Un criblage par semaine, et à la demande. Sur une PR, le même criblage en mode `judge` : plan et
+# verdicts, sans journal ni placement. C'est ce qui valide une montée de version d'un des trois
+# outils avant qu'elle serve (bootstrap par versions publiées : jamais le code d'une branche).
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: screening
+  cancel-in-progress: false
+
+env:
+  REGIS_IMAGE: ghcr.io/trivoallan/regis:0.40.0-full@sha256:1d5a6b4f59f1400179e2a5b3f92f2afcbe48963bcb29f3393e35e22172ae99a1
+  KNOCK_IMAGE: ghcr.io/trivoallan/knock:0.14.0@sha256:e860f28712bffa7fea745bb2952faa185b18989db0060577c9befe20d1a32df1
+  USKE_IMAGE: ghcr.io/trivoallan/uske:0.1.0@sha256:2eca55f2d25620b7eb5ff0f8481eaba0fc53843dcaea9824ad8230d7743023f9
+
+jobs:
+  screening:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # le journal, commité sur main
+      packages: write   # base/ et base-transit/
+      id-token: write   # la signature keyless de knock
+    env:
+      SCREEN_MODE: ${{ github.event_name == 'pull_request' && 'judge' || 'apply' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start buildkitd
+        # Pas un conteneur de service : il faut lui passer --addr (voir knock-examples).
+        if: env.SCREEN_MODE == 'apply'
+        run: |
+          docker run -d --name buildkitd --privileged -p 1234:1234 \
+            moby/buildkit:v0.18.2 --addr tcp://0.0.0.0:1234
+          for _ in $(seq 30); do
+            timeout 1 bash -c '</dev/tcp/127.0.0.1/1234' 2>/dev/null && exit 0
+            sleep 2
+          done
+          docker logs buildkitd >&2
+          exit 1
+
+      - name: Cache the grype database
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/grype
+          key: grype-${{ github.run_id }}
+          restore-keys: grype-
+
+      - name: Screen
+        env:
+          OWNER: ${{ github.repository_owner }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GRYPE_CACHE: ${{ runner.temp }}/grype
+          REGISTRY_HOST: ghcr.io
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          BUILDKIT_HOST: tcp://127.0.0.1:1234
+          KNOCK_TRANSFORM_PACKAGE_MIRRORS: '{"alpine": {"apk": "https://dl-cdn.alpinelinux.org"}}'
+          KNOCK_SBOM_FORMATS: '["spdx-json","cyclonedx-json"]'
+          KNOCK_ATTEST_SIGNER: keyless
+        run: |
+          # Destination et transit sur le même hôte : une identité knock, une session (uske README).
+          export KNOCK_REGISTRIES="$(jq -nc --arg o "$OWNER" --arg u "$GITHUB_ACTOR" --arg p "$TOKEN" '{
+            ghcr:    {host: "ghcr.io/\($o)",              username: $u, password: $p},
+            transit: {host: "ghcr.io/\($o)/base-transit", username: $u, password: $p}}')"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          ./screen.sh
