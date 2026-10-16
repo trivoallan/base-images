@@ -49,6 +49,8 @@ commit_journal() {
   git -C "$REPO" add results
   git -C "$REPO" diff --cached --quiet && return 0
   git -C "$REPO" commit -q -m "$1"
+  # main a pu avancer pendant le criblage (une PR fusionnée) : seul ce script écrit results/.
+  git -C "$REPO" pull -q --rebase
   git -C "$REPO" push -q
 }
 
