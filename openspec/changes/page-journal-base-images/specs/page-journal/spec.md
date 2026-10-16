@@ -7,7 +7,7 @@ Rendre lisibles, depuis une URL publique et sans le mainteneur, les décisions d
 ## ADDED Requirements
 
 ### Requirement: Publication après chaque criblage
-Le dépôt MUST être publié sur GitHub Pages après chaque run `screening` réussi sur `main` qui n'a pas été déclenché par une pull request, et à la demande. La publication SHALL inclure le journal, les reports et une liste des journaux publiés, sans autre transformation du contenu du dépôt.
+Le dépôt MUST être publié sur GitHub Pages après chaque run `screening` réussi sur `main` qui n'a pas été déclenché par une pull request, et à la demande. La publication SHALL inclure le journal, les reports, une liste des journaux publiés et la correspondance entre chaque `ruleset` et sa source, sans autre transformation du contenu du dépôt.
 
 #### Scenario: Criblage réussi sur main
 - **WHEN** un run `screening` déclenché par le planning ou à la demande se termine avec succès sur `main`
@@ -42,6 +42,28 @@ Par défaut, la page MUST n'afficher que les lignes `quarantine` et `inconclusiv
 #### Scenario: État inconnu
 - **WHEN** le journal contient une ligne dont l'état est inconnu de la page
 - **THEN** cette ligne est visible par défaut, avec son état tel qu'il est écrit
+
+### Requirement: Recherche par image
+La page MUST offrir un champ de recherche qui ne garde que les lignes dont l'image (`ref`) contient le texte saisi, sans tenir compte de la casse. La recherche SHALL se combiner avec le filtre par état, et les décomptes du filtre SHALL refléter la recherche.
+
+#### Scenario: Recherche d'une image
+- **WHEN** un lecteur saisit `redis` dans le champ de recherche
+- **THEN** seules les lignes dont l'image contient `redis` restent visibles, dans le filtre par état choisi
+
+#### Scenario: Recherche vidée
+- **WHEN** le champ de recherche est vidé
+- **THEN** toutes les lignes du filtre par état choisi réapparaissent
+
+### Requirement: Lien vers les sources du ruleset
+Le `ruleset` d'une ligne MUST mener au fichier playbook dont le contenu a produit ce `ruleset`, au commit où ce contenu existe dans le dépôt. Un `ruleset` qu'aucune version d'un playbook du dépôt ne produit MUST s'afficher sans lien.
+
+#### Scenario: Ruleset connu
+- **WHEN** un lecteur suit le lien du `ruleset` d'une décision
+- **THEN** le playbook s'ouvre sur GitHub, dans la version dont le sha256 est ce `ruleset`
+
+#### Scenario: Ruleset inconnu
+- **WHEN** le `ruleset` d'une ligne ne correspond à aucune version d'un playbook du dépôt
+- **THEN** il s'affiche abrégé, sans lien
 
 ### Requirement: Lien vers le report
 Chaque ligne MUST mener au report de sa décision : le `report.html` publié de sa politique et de son `digest` s'il existe, sinon son report Markdown, sinon la mention « pas de report ». Une ligne MUST NOT mener à un lien mort.
