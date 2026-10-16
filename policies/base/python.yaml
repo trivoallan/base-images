@@ -1,6 +1,6 @@
 # Politique OFFICIELLE « Python 3 sur Alpine » : l'image de base de regis, knock et uske.
 #
-# Une politique porte une majeure (D-01) : Python 3, une import par mineure servie.
+# Une politique porte une majeure (D-01) : Python 3, une seule import pour les mineures servies.
 # Les trois outils tirent aujourd'hui 3.14 (regis) et 3.13 (knock, uske) ; les deux sont
 # admises tant que l'alignement n'est pas décidé (question ouverte du design).
 # Alpine est fixée à 3.24 : une seule variante par version de Python, sinon chaque
@@ -28,29 +28,16 @@ spec:
     registry: docker.io
     repository: library/python
   imports:
-    - name: v3.14
+    # Une seule import pour les deux mineures : deux imports vers le même dépôt prennent
+    # chacune les tags de l'autre pour des restes, et les planifient en suppression.
+    - name: alpine
       owners:
         - group:default/oci-maintainers
       tags:
-        includeRegex: "^3\\.14\\.\\d+-alpine3\\.24$"
+        includeRegex: "^3\\.1[34]\\.\\d+-alpine3\\.24$"
         semverOnly: false              # « -alpine3.24 » se lit comme une pré-version
         aliases:
-          - "3.14-alpine"
-      transform:
-        - rewritePackageSources: { mirror: alpine }
-        - upgradePackages: { epoch: "2026-10-16" }
-      destinations:
-        - registry: ghcr
-          project: base
-          repository: python
-    - name: v3.13
-      owners:
-        - group:default/oci-maintainers
-      tags:
-        includeRegex: "^3\\.13\\.\\d+-alpine3\\.24$"
-        semverOnly: false
-        aliases:
-          - "3.13-alpine"
+          - "{major}.{minor}-alpine"   # 3.13-alpine, 3.14-alpine : la plus haute de chaque mineure
       transform:
         - rewritePackageSources: { mirror: alpine }
         - upgradePackages: { epoch: "2026-10-16" }
