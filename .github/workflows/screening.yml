@@ -19,7 +19,7 @@ concurrency:
 
 env:
   REGIS_IMAGE: ghcr.io/trivoallan/regis:0.40.0-full@sha256:1d5a6b4f59f1400179e2a5b3f92f2afcbe48963bcb29f3393e35e22172ae99a1
-  KNOCK_IMAGE: ghcr.io/trivoallan/knock:0.14.0@sha256:e860f28712bffa7fea745bb2952faa185b18989db0060577c9befe20d1a32df1
+  KNOCK_IMAGE: ghcr.io/trivoallan/knock:0.15.0@sha256:49fc4b8638c39c318aeeebac996146753446346ff6b4574bc46b25db07da7f9a
   USKE_IMAGE: ghcr.io/trivoallan/uske:0.1.0@sha256:2eca55f2d25620b7eb5ff0f8481eaba0fc53843dcaea9824ad8230d7743023f9
 
 jobs:
@@ -40,6 +40,14 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        # Le rebuild produit amd64 et arm64 dans un seul index (knock 0.15.0) : buildkitd
+        # émule arm64 sur ce runner amd64 grâce aux handlers binfmt de l'hôte.
+        if: env.SCREEN_MODE == 'apply'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
 
       - name: Start buildkitd
         # Pas un conteneur de service : il faut lui passer --addr (voir knock-examples).

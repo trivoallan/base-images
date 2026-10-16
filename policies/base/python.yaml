@@ -41,6 +41,9 @@ spec:
         semverOnly: false              # « -alpine3.24 » se lit comme une pré-version
         aliases:
           - "{major}.{minor}-alpine"   # 3.14-alpine : la plus haute
+      # Les images de regis, knock et uske sont publiées en amd64 et arm64 : leur base aussi.
+      # Un tag source auquel il manque une de ces plateformes est refusé au plan (knock 0.15.0).
+      platforms: [linux/amd64, linux/arm64]
       transform:
         - rewritePackageSources: { mirror: alpine }
         - upgradePackages: { epoch: "2026-10-16" }
