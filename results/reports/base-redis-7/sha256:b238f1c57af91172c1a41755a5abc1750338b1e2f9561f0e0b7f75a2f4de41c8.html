@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ghcr.io/trivoallan/base-transit/base/redis:sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8 — regis report</title>
+  <style>
+    :root {
+      --bg:#fff; --fg:#18181b; --muted:#71717a; --line:#e4e4e7; --panel:#fafafa;
+      --crit:#991b1b; --crit-bg:#fef2f2; --high:#c2410c; --high-bg:#fff7ed;
+      --med:#a16207; --low:#166534; --low-bg:#f0fdf4; --accent:#18181b;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:system-ui,-apple-system,sans-serif; font-size:14px; line-height:1.5; color:var(--fg); background:var(--bg); }
+    .mono { font-family:ui-monospace,"SF Mono",Menlo,monospace; }
+    a { color:inherit; }
+    .layout { display:grid; grid-template-columns:200px 1fr; max-width:1200px; margin:0 auto; min-height:100vh; }
+    .sidebar { position:sticky; top:0; align-self:start; max-height:100vh; overflow:auto; background:var(--panel); border-right:1px solid var(--line); padding:1.25rem 1rem; }
+    .brand { font-weight:800; letter-spacing:.05em; margin-bottom:1rem; }
+    .toc a { display:flex; justify-content:space-between; gap:.5rem; text-decoration:none; color:var(--muted); padding:.2rem 0; font-size:13px; }
+    .toc a:hover { color:var(--fg); }
+    .st-fail { color:var(--crit); font-weight:700; }
+    .st-pass { color:var(--low); }
+    main { padding:1.5rem 2rem; min-width:0; }
+    header.rep { border-bottom:1px solid var(--line); padding-bottom:1rem; margin-bottom:1.25rem; }
+    header.rep h1 { font-size:1.3rem; word-break:break-all; }
+    header.rep .meta { display:grid; grid-template-columns:max-content 1fr; gap:.1rem .75rem; font-size:13px; margin-top:.5rem; }
+    header.rep .meta dt { font-weight:600; color:var(--muted); }
+    header.rep .meta dd { color:var(--fg); word-break:break-all; }
+    .verdict { margin:1rem 0 1.25rem; }
+    .hero { display:flex; align-items:center; gap:1rem; }
+    .ring { width:64px; height:64px; border-radius:50%; border:5px solid var(--accent); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.3rem; flex:0 0 auto; }
+    .verdict-headline { font-size:1.2rem; margin:0; }
+    .counts { color:var(--muted); font-size:13px; margin-top:.15rem; }
+    .verdict-badges { margin-top:.5rem; }
+    .pill, .badge { display:inline-block; padding:.12rem .5rem; border-radius:999px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+    .badge { border-radius:3px; }
+    .badge-critical { background:var(--crit-bg); color:var(--crit); }
+    .badge-high { background:var(--high-bg); color:var(--high); }
+    .badge-medium { background:#fefce8; color:var(--med); }
+    .badge-low { background:var(--low-bg); color:var(--low); }
+    .badge-pass, .badge-passed { background:var(--low-bg); color:var(--low); }
+    .badge-fail, .badge-failed { background:var(--crit-bg); color:var(--crit); }
+    .badge-warn, .badge-warning, .badge-incomplete { background:var(--high-bg); color:var(--high); }
+    .badge-none { background:var(--panel); color:var(--muted); }
+    .triage { border:1px solid var(--line); border-left:3px solid var(--high); border-radius:6px; background:var(--panel); padding:.75rem 1rem; margin:1rem 0; }
+    .triage.clear { border-left-color:var(--low); }
+    .triage h2 { font-size:.95rem; margin-bottom:.4rem; }
+    .triage table { width:100%; border-collapse:collapse; font-size:13px; margin:0; }
+    .triage td { padding:.25rem .4rem; border:none; border-top:1px solid var(--line); vertical-align:top; background:transparent; }
+    .triage th { padding:.25rem .4rem; border:none; border-bottom:1px solid var(--line); text-align:left; font-size:11px; text-transform:uppercase; color:var(--muted); background:transparent; }
+    .sev { display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; margin:1rem 0; }
+    .sev .cell { border:1px solid var(--line); border-radius:6px; text-align:center; padding:.5rem; }
+    .sev .n { display:block; font-size:1.4rem; font-weight:800; line-height:1; }
+    .sev .l { font-size:11px; text-transform:uppercase; color:var(--muted); }
+    .sev .critical .n { color:var(--crit); } .sev .high .n { color:var(--high); }
+    .sev .medium .n { color:var(--med); } .sev .low .n { color:var(--low); }
+    h2.section-title { font-size:1rem; margin:1.5rem 0 .5rem; }
+    details.an { border:1px solid var(--line); border-radius:6px; margin:.75rem 0; }
+    details.an > summary { cursor:pointer; padding:.5rem .75rem; font-weight:700; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+    details.an > summary::-webkit-details-marker { display:none; }
+    details.an > summary::before { content:"▸"; margin-right:.5rem; color:var(--muted); }
+    details.an[open] > summary::before { content:"▾"; }
+    details.an .an-body { padding:.25rem .75rem .75rem; }
+    details.an:target { border-color:var(--accent); }
+    table { border-collapse:collapse; width:100%; margin:.5rem 0; font-size:13px; }
+    th { background:var(--panel); text-align:left; padding:.4rem .75rem; border:1px solid var(--line); font-weight:600; color:#52525b; }
+    td { padding:.35rem .75rem; border:1px solid var(--line); vertical-align:top; }
+    ul { padding-left:1.2rem; } li { margin:.1rem 0; }
+    dl.scalars { display:grid; grid-template-columns:max-content 1fr; gap:.15rem .75rem; font-size:13px; }
+    dl.scalars dt { font-weight:600; color:var(--muted); }
+    em { color:var(--muted); font-style:normal; }
+    footer { margin-top:2rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+    @media (max-width:720px) {
+      .layout { grid-template-columns:1fr; }
+      .sidebar { position:sticky; top:0; max-height:none; height:auto; border-right:none; border-bottom:1px solid var(--line); padding:.6rem .75rem; z-index:5; }
+      .brand { display:inline-block; margin:0 .5rem 0 0; }
+      .toc { display:flex; gap:.4rem; overflow-x:auto; white-space:nowrap; }
+      .toc a { flex:0 0 auto; border:1px solid var(--line); border-radius:999px; padding:.2rem .6rem; }
+      .sev { grid-template-columns:repeat(2,1fr); }
+      main { padding:1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">regis</div>
+    <nav class="toc">
+      <a href="#verdict"><span>Verdict</span></a>
+      <a href="#triage"><span>Triage</span></a>
+      
+      <a href="#endoflife"><span>endoflife</span><span class="st-pass">✓</span></a>
+      
+      <a href="#hadolint"><span>hadolint</span><span class="st-pass">✓</span></a>
+      
+      <a href="#dockle"><span>dockle</span><span class="st-fail">✗</span></a>
+      
+      <a href="#popularity"><span>popularity</span><span class="st-pass">✓</span></a>
+      
+      <a href="#freshness"><span>freshness</span><span class="st-pass">✓</span></a>
+      
+      <a href="#provenance"><span>provenance</span><span class="st-pass">✓</span></a>
+      
+      <a href="#scorecarddev"><span>scorecarddev</span><span class="st-pass">✓</span></a>
+      
+      <a href="#oci"><span>oci</span><span class="st-pass">✓</span></a>
+      
+      <a href="#size"><span>size</span><span class="st-pass">✓</span></a>
+      
+      <a href="#versioning"><span>versioning</span><span class="st-pass">✓</span></a>
+      
+      <a href="#cve"><span>cve</span><span class="st-pass">✓</span></a>
+      
+      <a href="#sbom"><span>sbom</span><span class="st-pass">✓</span></a>
+      
+      <a href="#secrets"><span>secrets</span><span class="st-pass">✓</span></a>
+      
+      <a href="#metadata"><span>metadata</span><span class="st-pass">✓</span></a>
+      
+    </nav>
+  </aside>
+
+  <main>
+    <header class="rep" id="top">
+      <h1>ghcr.io/trivoallan/base-transit/base/redis:sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</h1>
+      <dl class="meta">
+        <dt>Registry</dt><dd>ghcr.io</dd>
+        <dt>Repository</dt><dd>trivoallan/base-transit/base/redis</dd>
+        <dt>Tag</dt><dd class="mono">sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</dd>
+        
+        <dt>Digest</dt><dd class="mono">sha256-b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</dd>
+        
+        
+        <dt>Analysis date</dt><dd>2026-10-16T17:45:57.980269+00:00</dd>
+        
+      </dl>
+    </header>
+
+    
+    <section id="verdict" class="verdict">
+      <div class="hero">
+        <div class="ring" aria-label="Score 89 out of 100">89</div>
+        <div>
+          <h2 class="verdict-headline">🏷️ Placement direct · 89/100</h2>
+          <p class="counts">8/9 rules · 1 failed · worst: 🟧 warning</p>
+        </div>
+      </div>
+      
+    </section>
+    
+
+    
+    
+    <section id="triage" class="triage ">
+      <h2>⚠ Attention required</h2>
+      
+      <table>
+        <thead><tr><th></th><th>Rule</th><th>Severity</th><th>Detail</th></tr></thead>
+        <tbody>
+          
+          <tr><td>✗</td><td class="mono">bonnes-pratiques</td><td>warning</td><td>Dockle found 1 FATAL issues (max allowed: 0).</td></tr>
+          
+          
+        </tbody>
+      </table>
+      
+    </section>
+    
+
+    
+    <section class="sev">
+      
+      <div class="cell critical"><span class="n">0</span><span class="l">critical</span></div>
+      
+      <div class="cell high"><span class="n">0</span><span class="l">high</span></div>
+      
+      <div class="cell medium"><span class="n">3</span><span class="l">medium</span></div>
+      
+      <div class="cell low"><span class="n">2</span><span class="l">low</span></div>
+      
+    </section>
+    
+
+    
+    <section id="playbooks">
+      <h2 class="section-title">Playbook results</h2>
+      <table>
+        <thead>
+          <tr><th>Playbook</th><th>Verdict</th><th>Score</th><th>Failing rules</th></tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            <td>—</td>
+            <td>
+              
+              <span class="badge badge-">—</span>
+            </td>
+            <td>89%</td>
+            <td>1</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </section>
+    
+
+    
+    
+    <details class="an" id="endoflife">
+      <summary>
+        <span>endoflife</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>endoflife</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>product</th><td>redis</td></tr>
+        
+        <tr><th>product_found</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>tag</th><td>sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</td></tr>
+        
+        <tr><th>matched_cycle</th><td><em>—</em></td></tr>
+        
+        <tr><th>is_eol</th><td><em>—</em></td></tr>
+        
+        <tr><th>active_cycles_count</th><td>4</td></tr>
+        
+        <tr><th>eol_cycles_count</th><td>8</td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="hadolint">
+      <summary>
+        <span>hadolint</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>hadolint</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>tag</th><td>sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</td></tr>
+        
+        <tr><th>passed</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>issues_count</th><td>16</td></tr>
+        
+        <tr><th>issues_by_level</th><td><table>
+      <tbody>
+        
+        <tr><th>error</th><td>0</td></tr>
+        
+        <tr><th>warning</th><td>4</td></tr>
+        
+        <tr><th>info</th><td>12</td></tr>
+        
+        <tr><th>style</th><td>0</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>issues</th><td><table>
+    <thead><tr><th>code</th><th>level</th><th>message</th><th>line</th></tr></thead>
+    <tbody>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>3</td></tr>
+      
+      <tr><td>DL3018</td><td>warning</td><td>Pin versions in apk add. Instead of `apk add &lt;package&gt;` use `apk add &lt;package&gt;=&lt;version&gt;`</td><td>5</td></tr>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>7</td></tr>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>8</td></tr>
+      
+      <tr><td>SC2086</td><td>info</td><td>Double quote to prevent globbing and word splitting.</td><td>9</td></tr>
+      
+      <tr><td>DL4006</td><td>warning</td><td>Set the SHELL option -o pipefail before RUN with a pipe in it. If you are using /bin/sh in an alpine image or if your shell is symlinked to busybox then consider explicitly setting your SHELL to /bin/ash, or disable this check</td><td>9</td></tr>
+      
+      <tr><td>DL3018</td><td>warning</td><td>Pin versions in apk add. Instead of `apk add &lt;package&gt;` use `apk add &lt;package&gt;=&lt;version&gt;`</td><td>9</td></tr>
+      
+      <tr><td>DL3047</td><td>info</td><td>Avoid use of wget without progress bar. Use `wget --progress=dot:giga &lt;url&gt;`. Or consider using `-q` or `-nv` (shorthands for `--quiet` or `--no-verbose`).</td><td>9</td></tr>
+      
+      <tr><td>DL3019</td><td>info</td><td>Use the `--no-cache` switch to avoid the need to use `--update` and remove `/var/cache/apk/*` when done installing packages</td><td>9</td></tr>
+      
+      <tr><td>DL4006</td><td>warning</td><td>Set the SHELL option -o pipefail before RUN with a pipe in it. If you are using /bin/sh in an alpine image or if your shell is symlinked to busybox then consider explicitly setting your SHELL to /bin/ash, or disable this check</td><td>10</td></tr>
+      
+      <tr><td>SC2102</td><td>info</td><td>Ranges can only match single chars (mentioned due to duplicates).</td><td>11</td></tr>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>12</td></tr>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>13</td></tr>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>14</td></tr>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>15</td></tr>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>16</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>dockerfile</th><td>FROM scratch
+RUN ADD alpine-minirootfs-3.21.8-x86_64.tar.gz / # buildkit
+RUN CMD [&#34;/bin/sh&#34;]
+RUN RUN /bin/sh -c set -eux; 	addgroup -S -g 1000 redis; 	adduser -S -G redis -u 999 redis # buildkit
+RUN RUN /bin/sh -c set -eux; 	apk add --no-cache 		tzdata 		setpriv 	; # buildkit
+RUN ENV REDIS_VERSION=7.2.16
+RUN ARG REDIS_DOWNLOAD_URL=https://github.com/redis/redis/archive/refs/tags/7.2.16.tar.gz
+RUN ARG REDIS_DOWNLOAD_SHA=65fa69e66187cb5a4cf625bd587c743507e518749c5a0eec29c4f086495c8a7e
+RUN RUN |2 REDIS_DOWNLOAD_URL=https://github.com/redis/redis/archive/refs/tags/7.2.16.tar.gz REDIS_DOWNLOAD_SHA=65fa69e66187cb5a4cf625bd587c743507e518749c5a0eec29c4f086495c8a7e /bin/sh -c set -eux; 		apk add --no-cache --virtual .build-deps 		coreutils 		dpkg-dev dpkg 		gcc 		linux-headers 		make 		musl-dev 		openssl-dev 		wget 	; 	wget -O redis.tar.gz &#34;$REDIS_DOWNLOAD_URL&#34;; 	echo &#34;$REDIS_DOWNLOAD_SHA *redis.tar.gz&#34; | sha256sum -c -; 	mkdir -p /usr/src/redis; 	tar -xzf redis.tar.gz -C /usr/src/redis --strip-components=1; 	rm redis.tar.gz; 		grep -E &#39;^ *createBoolConfig[(]&#34;protected-mode&#34;,.*, *1 *,.*[)],$&#39; /usr/src/redis/src/config.c; 	sed -ri &#39;s!^( *createBoolConfig[(]&#34;protected-mode&#34;,.*, *)1( *,.*[)],)$!\10\2!&#39; /usr/src/redis/src/config.c; 	grep -E &#39;^ *createBoolConfig[(]&#34;protected-mode&#34;,.*, *0 *,.*[)],$&#39; /usr/src/redis/src/config.c; 		gnuArch=&#34;$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)&#34;; 	extraJemallocConfigureFlags=&#34;--build=$gnuArch&#34;; 	dpkgArch=&#34;$(dpkg --print-architecture)&#34;; 	case &#34;${dpkgArch##*-}&#34; in 		amd64 | i386 | x32) extraJemallocConfigureFlags=&#34;$extraJemallocConfigureFlags --with-lg-page=12&#34; ;; 		*) extraJemallocConfigureFlags=&#34;$extraJemallocConfigureFlags --with-lg-page=16&#34; ;; 	esac; 	extraJemallocConfigureFlags=&#34;$extraJemallocConfigureFlags --with-lg-hugepage=21&#34;; 	grep -F &#39;cd jemalloc &amp;&amp; ./configure &#39; /usr/src/redis/deps/Makefile; 	sed -ri &#39;s!cd jemalloc &amp;&amp; ./configure !&amp;&#39;&#34;$extraJemallocConfigureFlags&#34;&#39; !&#39; /usr/src/redis/deps/Makefile; 	grep -F &#34;cd jemalloc &amp;&amp; ./configure $extraJemallocConfigureFlags &#34; /usr/src/redis/deps/Makefile; 		export BUILD_TLS=yes; 	make -C /usr/src/redis -j &#34;$(nproc)&#34; all; 	make -C /usr/src/redis install; 		rm -r /usr/src/redis; 		runDeps=&#34;$( 		scanelf --needed --nobanner --format &#39;%n#p&#39; --recursive /usr/local 			| tr &#39;,&#39; &#39;\n&#39; 			| sort -u 			| awk &#39;system(&#34;[ -e /usr/local/lib/&#34; $1 &#34; ]&#34;) == 0 { next } { print &#34;so:&#34; $1 }&#39; 	)&#34;; 	apk add --no-network --virtual .redis-rundeps $runDeps; 	apk del --no-network .build-deps; 		redis-cli --version; 	redis-server --version; # buildkit
+RUN RUN |2 REDIS_DOWNLOAD_URL=https://github.com/redis/redis/archive/refs/tags/7.2.16.tar.gz REDIS_DOWNLOAD_SHA=65fa69e66187cb5a4cf625bd587c743507e518749c5a0eec29c4f086495c8a7e /bin/sh -c mkdir /data &amp;&amp; chown redis:redis /data # buildkit
+RUN VOLUME [/data]
+RUN WORKDIR /data
+RUN COPY docker-entrypoint.sh /usr/local/bin/ # buildkit
+RUN ENTRYPOINT [&#34;docker-entrypoint.sh&#34;]
+RUN EXPOSE map[6379/tcp:{}]
+RUN CMD [&#34;redis-server&#34;]
+RUN RUN /bin/sh -c set -eux; if [ -f /etc/apk/repositories ]; then sed -ri &#39;s#https?://[^/]+#https://dl-cdn.alpinelinux.org#g&#39; /etc/apk/repositories; fi # buildkit
+RUN RUN /bin/sh -c set -eux; : &#34;knock-upgrade-epoch=2026-10-16&#34;; if command -v apt-get &gt;/dev/null 2&gt;&amp;1; then export DEBIAN_FRONTEND=noninteractive; if [ -f /etc/apt/apt.conf.d/docker-clean ]; then mv /etc/apt/apt.conf.d/docker-clean /tmp/knock-docker-clean; fi; echo &#39;Binary::apt::APT::Keep-Downloaded-Packages &#34;true&#34;;&#39; &gt; /etc/apt/apt.conf.d/knock-keep-cache; rm -rf /var/lib/apt/lists/*; apt-get -o APT::Update::Error-Mode=any update; ls /var/lib/apt/lists/*Release &gt;/dev/null 2&gt;&amp;1 || { echo &#34;upgradePackages: no package index fetched&#34; &gt;&amp;2; exit 1; }; apt-get -o APT::Get::Always-Include-Phased-Updates=true -y upgrade; rm -f /etc/apt/apt.conf.d/knock-keep-cache; if [ -f /tmp/knock-docker-clean ]; then mv /tmp/knock-docker-clean /etc/apt/apt.conf.d/docker-clean; fi; rm -rf /var/lib/apt/lists/*; elif command -v apk &gt;/dev/null 2&gt;&amp;1; then apk upgrade --no-cache; else echo &#34;upgradePackages: no apt-get or apk in image&#34; &gt;&amp;2; exit 1; fi # buildkit</td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="dockle" open>
+      <summary>
+        <span>dockle</span>
+        <span class="st-fail">✗</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>dockle</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>tag</th><td>sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</td></tr>
+        
+        <tr><th>passed</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>issues_count</th><td>4</td></tr>
+        
+        <tr><th>issues_by_level</th><td><table>
+      <tbody>
+        
+        <tr><th>FATAL</th><td>1</td></tr>
+        
+        <tr><th>WARN</th><td>1</td></tr>
+        
+        <tr><th>INFO</th><td>2</td></tr>
+        
+        <tr><th>SKIP</th><td>0</td></tr>
+        
+        <tr><th>PASS</th><td>0</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>issues</th><td><table>
+    <thead><tr><th>code</th><th>level</th><th>title</th><th>alerts</th></tr></thead>
+    <tbody>
+      
+      <tr><td>DKL-DI-0004</td><td>FATAL</td><td>Use &#34;apk add&#34; with --no-cache</td><td>[&#39;Use --no-cache option if use \&#39;apk add\&#39;: RUN |2 REDIS_DOWNLOAD_URL=https://github.com/redis/redis/archive/refs/tags/7.2.16.tar.gz REDIS_DOWNLOAD_SHA=65fa69e66187cb5a4cf625bd587c743507e518749c5a0eec29c4f086495c8a7e /bin/sh -c set -eux; \t\tapk add --no-cache --virtual .build-deps \t\tcoreutils \t\tdpkg-dev dpkg \t\tgcc \t\tlinux-headers \t\tmake \t\tmusl-dev \t\topenssl-dev \t\twget \t; \twget -O redis.tar.gz &#34;$REDIS_DOWNLOAD_URL&#34;; \techo &#34;$REDIS_DOWNLOAD_SHA *redis.tar.gz&#34; | sha256sum -c -; \tmkdir -p /usr/src/redis; \ttar -xzf redis.tar.gz -C /usr/src/redis --strip-components=1; \trm redis.tar.gz; \t\tgrep -E \&#39;^ *createBoolConfig[(]&#34;protected-mode&#34;,.*, *1 *,.*[)],$\&#39; /usr/src/redis/src/config.c; \tsed -ri \&#39;s!^( *createBoolConfig[(]&#34;protected-mode&#34;,.*, *)1( *,.*[)],)$!\\10\\2!\&#39; /usr/src/redis/src/config.c; \tgrep -E \&#39;^ *createBoolConfig[(]&#34;protected-mode&#34;,.*, *0 *,.*[)],$\&#39; /usr/src/redis/src/config.c; \t\tgnuArch=&#34;$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)&#34;; \textraJemallocConfigureFlags=&#34;--build=$gnuArch&#34;; \tdpkgArch=&#34;$(dpkg --print-architecture)&#34;; \tcase &#34;${dpkgArch##*-}&#34; in \t\tamd64 | i386 | x32) extraJemallocConfigureFlags=&#34;$extraJemallocConfigureFlags --with-lg-page=12&#34; ;; \t\t*) extraJemallocConfigureFlags=&#34;$extraJemallocConfigureFlags --with-lg-page=16&#34; ;; \tesac; \textraJemallocConfigureFlags=&#34;$extraJemallocConfigureFlags --with-lg-hugepage=21&#34;; \tgrep -F \&#39;cd jemalloc &amp;&amp; ./configure \&#39; /usr/src/redis/deps/Makefile; \tsed -ri \&#39;s!cd jemalloc &amp;&amp; ./configure !&amp;\&#39;&#34;$extraJemallocConfigureFlags&#34;\&#39; !\&#39; /usr/src/redis/deps/Makefile; \tgrep -F &#34;cd jemalloc &amp;&amp; ./configure $extraJemallocConfigureFlags &#34; /usr/src/redis/deps/Makefile; \t\texport BUILD_TLS=yes; \tmake -C /usr/src/redis -j &#34;$(nproc)&#34; all; \tmake -C /usr/src/redis install; \t\trm -r /usr/src/redis; \t\trunDeps=&#34;$( \t\tscanelf --needed --nobanner --format \&#39;%n#p\&#39; --recursive /usr/local \t\t\t| tr \&#39;,\&#39; \&#39;\\n\&#39; \t\t\t| sort -u \t\t\t| awk \&#39;system(&#34;[ -e /usr/local/lib/&#34; $1 &#34; ]&#34;) == 0 { next } { print &#34;so:&#34; $1 }\&#39; \t)&#34;; \tapk add --no-network --virtual .redis-rundeps $runDeps; \tapk del --no-network .build-deps; \t\tredis-cli --version; \tredis-server --version; # buildkit&#39;]</td></tr>
+      
+      <tr><td>CIS-DI-0001</td><td>WARN</td><td>Create a user for the container</td><td>[&#39;Last user should not be root&#39;]</td></tr>
+      
+      <tr><td>CIS-DI-0005</td><td>INFO</td><td>Enable Content trust for Docker</td><td>[&#39;export DOCKER_CONTENT_TRUST=1 before docker pull/build&#39;]</td></tr>
+      
+      <tr><td>CIS-DI-0006</td><td>INFO</td><td>Add HEALTHCHECK instruction to the container image</td><td>[&#39;not found HEALTHCHECK statement&#39;]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="popularity">
+      <summary>
+        <span>popularity</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>popularity</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>available</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>pull_count</th><td><em>—</em></td></tr>
+        
+        <tr><th>star_count</th><td><em>—</em></td></tr>
+        
+        <tr><th>description</th><td><em>—</em></td></tr>
+        
+        <tr><th>date_registered</th><td><em>—</em></td></tr>
+        
+        <tr><th>is_official</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="freshness">
+      <summary>
+        <span>freshness</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>freshness</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>tag</th><td>sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</td></tr>
+        
+        <tr><th>tag_created</th><td>2026-10-16T17:43:33.782377866Z</td></tr>
+        
+        <tr><th>latest_created</th><td><em>—</em></td></tr>
+        
+        <tr><th>age_days</th><td>0</td></tr>
+        
+        <tr><th>behind_latest_days</th><td><em>—</em></td></tr>
+        
+        <tr><th>reproducible_build</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>is_latest</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="provenance">
+      <summary>
+        <span>provenance</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>provenance</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>tag</th><td>sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</td></tr>
+        
+        <tr><th>has_provenance</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>has_cosign_signature</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>source_tracked</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>indicators_count</th><td>0</td></tr>
+        
+        <tr><th>indicators</th><td><em>none</em></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="scorecarddev">
+      <summary>
+        <span>scorecarddev</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>scorecarddev</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>source_repo</th><td><em>—</em></td></tr>
+        
+        <tr><th>scorecard_available</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>score</th><td><em>—</em></td></tr>
+        
+        <tr><th>checks</th><td><em>none</em></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="oci">
+      <summary>
+        <span>oci</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>oci</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>tag</th><td>sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</td></tr>
+        
+        <tr><th>platforms</th><td><table>
+    <thead><tr><th>architecture</th><th>os</th><th>created</th><th>labels</th><th>user</th><th>env</th><th>exposed_ports</th><th>layers_count</th><th>size</th><th>digest</th></tr></thead>
+    <tbody>
+      
+      <tr><td>amd64</td><td>linux</td><td>2026-10-16T17:43:33.782377866Z</td><td>{}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;, &#39;REDIS_VERSION=7.2.16&#39;]</td><td>[&#39;6379/tcp&#39;]</td><td>9</td><td>18379718</td><td>sha256:aea9601ab29c8a9be9aca9a25deb2b52e4474dd263a759f55ffb130076300fd3</td></tr>
+      
+      <tr><td>arm64</td><td>linux</td><td>2026-10-16T17:43:35.550161607Z</td><td>{}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;, &#39;REDIS_VERSION=7.2.16&#39;]</td><td>[&#39;6379/tcp&#39;]</td><td>9</td><td>19218083</td><td>sha256:9c444a09b5739c1b536cc5023e4e0dac2c83ca785854f169589f1db33c547764</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>platforms_supported</th><td><ul><li>linux/amd64</li><li>linux/arm64</li></ul></td></tr>
+        
+        <tr><th>tags</th><td><ul><li>7.2.10-alpine3.21</li><li>7.2.11-alpine3.21</li><li>7.2.12-alpine3.21</li><li>7.2.13-alpine3.21</li><li>7.2.14-alpine3.21</li><li>7.2.15-alpine3.21</li><li>7.2.16-alpine3.21</li><li>7.2.7-alpine3.21</li><li>7.2.8-alpine3.21</li><li>7.2.9-alpine3.21</li><li>sha256-0a39f3d045d8451755896bc2d3fb126185d32f39cb720b467703c6da285a9709</li><li>sha256-184383afdd133648f991aaf816e0e0f83c97da51d3fbd05197dde582272810de</li><li>sha256-1ce15d4fbfbc5e9f1a00f250a2d90cca968efad9cea6a02a4a86438c5ab45477</li><li>sha256-21fb8c60514e950ee6168cf850520ef8284ed4c2c7534da1c7e499d4e3442840</li><li>sha256-55ac3124a3c511377e43398ad4c74fda0cae12f33981111ccf53e7dc192a98e7</li><li>sha256-6980d11b1a0035989f05071005739f3fca4f2bc957497bc7e5cbf4369e542cd4</li><li>sha256-73b29ac0a20574c6516dafed460c9ca0ecf5dacc8ce010101613c5bc7bef9871</li><li>sha256-b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</li><li>sha256-e46fbca6d8bf12e777654ad7b9dbc2e75fbc18dd038f8277f85ecd4a4fced654</li><li>sha256-ff066c9279db427e5e5db0dfc83c19f17f90025000b422a578e593101ed5f36f</li></ul></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="size">
+      <summary>
+        <span>size</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>size</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>tag</th><td>sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</td></tr>
+        
+        <tr><th>multi_arch</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>total_compressed_bytes</th><td>18379718</td></tr>
+        
+        <tr><th>total_compressed_human</th><td>17.5 MB</td></tr>
+        
+        <tr><th>layer_count</th><td>9</td></tr>
+        
+        <tr><th>config_size_bytes</th><td>0</td></tr>
+        
+        <tr><th>layers</th><td><em>none</em></td></tr>
+        
+        <tr><th>platforms</th><td><table>
+    <thead><tr><th>platform</th><th>compressed_bytes</th><th>compressed_human</th><th>layer_count</th></tr></thead>
+    <tbody>
+      
+      <tr><td>linux/amd64</td><td>18379718</td><td>17.5 MB</td><td>9</td></tr>
+      
+      <tr><td>linux/arm64</td><td>19218083</td><td>18.3 MB</td><td>9</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="versioning">
+      <summary>
+        <span>versioning</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>versioning</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>total_tags</th><td>20</td></tr>
+        
+        <tr><th>dominant_pattern</th><td>named</td></tr>
+        
+        <tr><th>semver_compliant_percentage</th><td>50.0</td></tr>
+        
+        <tr><th>patterns</th><td><table>
+    <thead><tr><th>pattern</th><th>count</th><th>percentage</th><th>examples</th></tr></thead>
+    <tbody>
+      
+      <tr><td>named</td><td>10</td><td>50.0</td><td>[&#39;sha256-0a39f3d045d8451755896bc2d3fb126185d32f39cb720b467703c6da285a9709&#39;, &#39;sha256-184383afdd133648f991aaf816e0e0f83c97da51d3fbd05197dde582272810de&#39;, &#39;sha256-1ce15d4fbfbc5e9f1a00f250a2d90cca968efad9cea6a02a4a86438c5ab45477&#39;, &#39;sha256-21fb8c60514e950ee6168cf850520ef8284ed4c2c7534da1c7e499d4e3442840&#39;, &#39;sha256-55ac3124a3c511377e43398ad4c74fda0cae12f33981111ccf53e7dc192a98e7&#39;, &#39;sha256-6980d11b1a0035989f05071005739f3fca4f2bc957497bc7e5cbf4369e542cd4&#39;, &#39;sha256-73b29ac0a20574c6516dafed460c9ca0ecf5dacc8ce010101613c5bc7bef9871&#39;, &#39;sha256-b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8&#39;, &#39;sha256-e46fbca6d8bf12e777654ad7b9dbc2e75fbc18dd038f8277f85ecd4a4fced654&#39;, &#39;sha256-ff066c9279db427e5e5db0dfc83c19f17f90025000b422a578e593101ed5f36f&#39;]</td></tr>
+      
+      <tr><td>semver-variant</td><td>10</td><td>50.0</td><td>[&#39;7.2.10-alpine3.21&#39;, &#39;7.2.11-alpine3.21&#39;, &#39;7.2.12-alpine3.21&#39;, &#39;7.2.13-alpine3.21&#39;, &#39;7.2.14-alpine3.21&#39;, &#39;7.2.15-alpine3.21&#39;, &#39;7.2.16-alpine3.21&#39;, &#39;7.2.7-alpine3.21&#39;, &#39;7.2.8-alpine3.21&#39;, &#39;7.2.9-alpine3.21&#39;]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>variants</th><td><table>
+    <thead><tr><th>name</th><th>count</th><th>percentage</th><th>examples</th></tr></thead>
+    <tbody>
+      
+      <tr><td>alpine3.21</td><td>10</td><td>50.0</td><td>[&#39;7.2.10-alpine3.21&#39;, &#39;7.2.11-alpine3.21&#39;, &#39;7.2.12-alpine3.21&#39;, &#39;7.2.13-alpine3.21&#39;, &#39;7.2.14-alpine3.21&#39;, &#39;7.2.15-alpine3.21&#39;, &#39;7.2.16-alpine3.21&#39;, &#39;7.2.7-alpine3.21&#39;, &#39;7.2.8-alpine3.21&#39;, &#39;7.2.9-alpine3.21&#39;]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>aliases</th><td><ul><li>7.2.10-alpine3.21</li><li>7.2.11-alpine3.21</li><li>7.2.12-alpine3.21</li><li>7.2.13-alpine3.21</li><li>7.2.14-alpine3.21</li><li>7.2.15-alpine3.21</li><li>7.2.16-alpine3.21</li><li>7.2.7-alpine3.21</li><li>7.2.8-alpine3.21</li><li>7.2.9-alpine3.21</li><li>sha256-0a39f3d045d8451755896bc2d3fb126185d32f39cb720b467703c6da285a9709</li><li>sha256-184383afdd133648f991aaf816e0e0f83c97da51d3fbd05197dde582272810de</li><li>sha256-1ce15d4fbfbc5e9f1a00f250a2d90cca968efad9cea6a02a4a86438c5ab45477</li><li>sha256-21fb8c60514e950ee6168cf850520ef8284ed4c2c7534da1c7e499d4e3442840</li><li>sha256-55ac3124a3c511377e43398ad4c74fda0cae12f33981111ccf53e7dc192a98e7</li><li>sha256-6980d11b1a0035989f05071005739f3fca4f2bc957497bc7e5cbf4369e542cd4</li><li>sha256-73b29ac0a20574c6516dafed460c9ca0ecf5dacc8ce010101613c5bc7bef9871</li><li>sha256-b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</li><li>sha256-e46fbca6d8bf12e777654ad7b9dbc2e75fbc18dd038f8277f85ecd4a4fced654</li><li>sha256-ff066c9279db427e5e5db0dfc83c19f17f90025000b422a578e593101ed5f36f</li></ul></td></tr>
+        
+        <tr><th>release_lines</th><td><ul><li>7.2.10-alpine3.21</li></ul></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="cve">
+      <summary>
+        <span>cve</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>cve</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>tag</th><td>sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</td></tr>
+        
+        <tr><th>scanner_version</th><td>0.112.0</td></tr>
+        
+        <tr><th>vulnerability_count</th><td>5</td></tr>
+        
+        <tr><th>critical_count</th><td>0</td></tr>
+        
+        <tr><th>high_count</th><td>0</td></tr>
+        
+        <tr><th>medium_count</th><td>3</td></tr>
+        
+        <tr><th>low_count</th><td>2</td></tr>
+        
+        <tr><th>negligible_count</th><td>0</td></tr>
+        
+        <tr><th>unknown_count</th><td>0</td></tr>
+        
+        <tr><th>fixed_count</th><td>0</td></tr>
+        
+        <tr><th>targets</th><td><table>
+    <thead><tr><th>Target</th><th>Vulnerabilities</th></tr></thead>
+    <tbody>
+      
+      <tr><td>apk</td><td>[{&#39;VulnerabilityID&#39;: &#39;CVE-2025-60876&#39;, &#39;PkgName&#39;: &#39;busybox&#39;, &#39;InstalledVersion&#39;: &#39;1.37.0-r14&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2025-60876&#39;, &#39;Description&#39;: &#39;BusyBox wget thru 1.3.7 accepted raw CR (0x0D)/LF (0x0A) and other C0 control bytes in the HTTP request-target (path/query), allowing the request line to be split and attacker-controlled headers to be injected. To preserve the HTTP/1.1 request-line shape METHOD SP request-target SP HTTP/1.1, a raw space (0x20) in the request-target must also be rejected (clients should use %20).&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2025-60876&#39;, &#39;PkgName&#39;: &#39;busybox-binsh&#39;, &#39;InstalledVersion&#39;: &#39;1.37.0-r14&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2025-60876&#39;, &#39;Description&#39;: &#39;BusyBox wget thru 1.3.7 accepted raw CR (0x0D)/LF (0x0A) and other C0 control bytes in the HTTP request-target (path/query), allowing the request line to be split and attacker-controlled headers to be injected. To preserve the HTTP/1.1 request-line shape METHOD SP request-target SP HTTP/1.1, a raw space (0x20) in the request-target must also be rejected (clients should use %20).&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2025-60876&#39;, &#39;PkgName&#39;: &#39;ssl_client&#39;, &#39;InstalledVersion&#39;: &#39;1.37.0-r14&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2025-60876&#39;, &#39;Description&#39;: &#39;BusyBox wget thru 1.3.7 accepted raw CR (0x0D)/LF (0x0A) and other C0 control bytes in the HTTP request-target (path/query), allowing the request line to be split and attacker-controlled headers to be injected. To preserve the HTTP/1.1 request-line shape METHOD SP request-target SP HTTP/1.1, a raw space (0x20) in the request-target must also be rejected (clients should use %20).&#39;}]</td></tr>
+      
+      <tr><td>binary</td><td>[{&#39;VulnerabilityID&#39;: &#39;CVE-2025-46686&#39;, &#39;PkgName&#39;: &#39;redis&#39;, &#39;InstalledVersion&#39;: &#39;7.2.16&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;LOW&#39;, &#39;Title&#39;: &#39;CVE-2025-46686&#39;, &#39;Description&#39;: &#39;Redis through 8.0.3 allows memory consumption via a multi-bulk command composed of many bulks, sent by an authenticated user. This occurs because the server allocates memory for the command arguments of every bulk, even when the command is skipped because of insufficient permissions. NOTE: this is disputed by the Supplier because abuse of the commands network protocol is not a violation of the Redis Security Model.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2025-49112&#39;, &#39;PkgName&#39;: &#39;redis&#39;, &#39;InstalledVersion&#39;: &#39;7.2.16&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;LOW&#39;, &#39;Title&#39;: &#39;CVE-2025-49112&#39;, &#39;Description&#39;: &#39;setDeferredReply in networking.c in Valkey through 8.1.1 has an integer underflow for prev-&gt;size - prev-&gt;used.&#39;}]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>source</th><td><table>
+      <tbody>
+        
+        <tr><th>fetched_at</th><td>2026-10-16T17:45:54.329432+00:00</td></tr>
+        
+        <tr><th>built_at</th><td>2026-10-16T06:29:51Z</td></tr>
+        
+        <tr><th>version</th><td>v6.1.10</td></tr>
+        
+        <tr><th>checksum</th><td>sha256:9985d2b30dc728eea2941d23e7d7a2e04daebd65c50a959c6136a858927516b9</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="sbom">
+      <summary>
+        <span>sbom</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>sbom</td></tr>
+        
+        <tr><th>scanner_version</th><td>1.44.0</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>tag</th><td>sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</td></tr>
+        
+        <tr><th>has_sbom</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>sbom_format</th><td>CycloneDX</td></tr>
+        
+        <tr><th>sbom_version</th><td>1.6</td></tr>
+        
+        <tr><th>total_components</th><td>456</td></tr>
+        
+        <tr><th>component_types</th><td><table>
+      <tbody>
+        
+        <tr><th>library</th><td>19</td></tr>
+        
+        <tr><th>application</th><td>1</td></tr>
+        
+        <tr><th>operating-system</th><td>1</td></tr>
+        
+        <tr><th>file</th><td>435</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>total_dependencies</th><td>14</td></tr>
+        
+        <tr><th>licenses</th><td><ul><li>Apache-2.0</li><li>GPL-2.0-only</li><li>GPL-2.0-or-later</li><li>MIT</li><li>Public-Domain</li><li>Zlib</li></ul></td></tr>
+        
+        <tr><th>copyleft_licenses</th><td><ul><li>GPL-2.0-only</li><li>GPL-2.0-or-later</li></ul></td></tr>
+        
+        <tr><th>components</th><td><table>
+    <thead><tr><th>name</th><th>version</th><th>type</th><th>purl</th><th>licenses</th></tr></thead>
+    <tbody>
+      
+      <tr><td>.redis-rundeps</td><td>20260917.213315</td><td>library</td><td>pkg:apk/alpine/.redis-rundeps@20260917.213315?arch=noarch&amp;distro=alpine-3.21.8</td><td>[]</td></tr>
+      
+      <tr><td>alpine-baselayout</td><td>3.6.8-r1</td><td>library</td><td>pkg:apk/alpine/alpine-baselayout@3.6.8-r1?arch=x86_64&amp;distro=alpine-3.21.8</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>alpine-baselayout-data</td><td>3.6.8-r1</td><td>library</td><td>pkg:apk/alpine/alpine-baselayout-data@3.6.8-r1?arch=x86_64&amp;distro=alpine-3.21.8&amp;upstream=alpine-baselayout</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>alpine-keys</td><td>2.5-r0</td><td>library</td><td>pkg:apk/alpine/alpine-keys@2.5-r0?arch=x86_64&amp;distro=alpine-3.21.8</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>alpine-release</td><td>3.21.8-r0</td><td>library</td><td>pkg:apk/alpine/alpine-release@3.21.8-r0?arch=x86_64&amp;distro=alpine-3.21.8&amp;upstream=alpine-base</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>apk-tools</td><td>2.14.6-r3</td><td>library</td><td>pkg:apk/alpine/apk-tools@2.14.6-r3?arch=x86_64&amp;distro=alpine-3.21.8</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>busybox</td><td>1.37.0-r14</td><td>library</td><td>pkg:apk/alpine/busybox@1.37.0-r14?arch=x86_64&amp;distro=alpine-3.21.8</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>busybox-binsh</td><td>1.37.0-r14</td><td>library</td><td>pkg:apk/alpine/busybox-binsh@1.37.0-r14?arch=x86_64&amp;distro=alpine-3.21.8&amp;upstream=busybox</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>ca-certificates-bundle</td><td>20260909-r0</td><td>library</td><td>pkg:apk/alpine/ca-certificates-bundle@20260909-r0?arch=x86_64&amp;distro=alpine-3.21.8&amp;upstream=ca-certificates</td><td>[]</td></tr>
+      
+      <tr><td>libcap-ng</td><td>0.8.5-r0</td><td>library</td><td>pkg:apk/alpine/libcap-ng@0.8.5-r0?arch=x86_64&amp;distro=alpine-3.21.8</td><td>[]</td></tr>
+      
+      <tr><td>libcrypto3</td><td>3.3.7-r2</td><td>library</td><td>pkg:apk/alpine/libcrypto3@3.3.7-r2?arch=x86_64&amp;distro=alpine-3.21.8&amp;upstream=openssl</td><td>[&#39;Apache-2.0&#39;]</td></tr>
+      
+      <tr><td>libssl3</td><td>3.3.7-r2</td><td>library</td><td>pkg:apk/alpine/libssl3@3.3.7-r2?arch=x86_64&amp;distro=alpine-3.21.8&amp;upstream=openssl</td><td>[&#39;Apache-2.0&#39;]</td></tr>
+      
+      <tr><td>musl</td><td>1.2.5-r11</td><td>library</td><td>pkg:apk/alpine/musl@1.2.5-r11?arch=x86_64&amp;distro=alpine-3.21.8</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>musl-utils</td><td>1.2.5-r11</td><td>library</td><td>pkg:apk/alpine/musl-utils@1.2.5-r11?arch=x86_64&amp;distro=alpine-3.21.8&amp;upstream=musl</td><td>[]</td></tr>
+      
+      <tr><td>redis</td><td>7.2.16</td><td>application</td><td>pkg:generic/redis@7.2.16</td><td>[]</td></tr>
+      
+      <tr><td>scanelf</td><td>1.3.8-r1</td><td>library</td><td>pkg:apk/alpine/scanelf@1.3.8-r1?arch=x86_64&amp;distro=alpine-3.21.8&amp;upstream=pax-utils</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>setpriv</td><td>2.40.4-r1</td><td>library</td><td>pkg:apk/alpine/setpriv@2.40.4-r1?arch=x86_64&amp;distro=alpine-3.21.8&amp;upstream=util-linux</td><td>[&#39;GPL-2.0-or-later&#39;]</td></tr>
+      
+      <tr><td>ssl_client</td><td>1.37.0-r14</td><td>library</td><td>pkg:apk/alpine/ssl_client@1.37.0-r14?arch=x86_64&amp;distro=alpine-3.21.8&amp;upstream=busybox</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>tzdata</td><td>2026e-r0</td><td>library</td><td>pkg:apk/alpine/tzdata@2026e-r0?arch=x86_64&amp;distro=alpine-3.21.8</td><td>[&#39;Public-Domain&#39;]</td></tr>
+      
+      <tr><td>zlib</td><td>1.3.2-r1</td><td>library</td><td>pkg:apk/alpine/zlib@1.3.2-r1?arch=x86_64&amp;distro=alpine-3.21.8</td><td>[&#39;Zlib&#39;]</td></tr>
+      
+      <tr><td>alpine</td><td>3.21.8</td><td>operating-system</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/bin/busybox</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/alpine-release</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/apk/keys/alpine-devel@lists.alpinelinux.org-4a6a0840.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/apk/keys/alpine-devel@lists.alpinelinux.org-5243ef4b.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/apk/keys/alpine-devel@lists.alpinelinux.org-5261cecb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/apk/keys/alpine-devel@lists.alpinelinux.org-6165ee59.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/apk/keys/alpine-devel@lists.alpinelinux.org-61666e3f.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/busybox-paths.d/busybox</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/crontabs/root</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/fstab</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/hostname</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/hosts</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/inittab</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/issue</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/logrotate.d/acpid</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modprobe.d/aliases.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modprobe.d/blacklist.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modprobe.d/i386.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modprobe.d/kms.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modules</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/motd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/network/if-up.d/dad</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/nsswitch.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile.d/20locale.sh</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile.d/README</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile.d/color_prompt.sh.disabled</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/protocols</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/secfixes.d/alpine</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/securetty</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/services</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/shells</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/certs/ca-certificates.crt</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/sysctl.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/udhcpc/udhcpc.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/lib/ld-musl-x86_64.so.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/sbin/apk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/sbin/ldconfig</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/getconf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/getent</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/iconv</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/ldd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/scanelf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/ssl_client</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libapk.so.2.14.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/os-release</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/sysctl.d/00-alpine.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-4a6a0840.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-5243ef4b.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-524d27bb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-5261cecb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-58199dcc.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-58cbb476.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-58e4f17d.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-5e69ca50.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-60ac2099.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-6165ee59.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-61666e3f.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616a9724.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616abc23.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616ac3bc.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616adfeb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616ae350.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616db30d.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-66ba20fe.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/udhcpc/default.script</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/group</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/passwd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/shadow</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/setpriv</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libcap-ng.so.0.0.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libdrop_ambient.so.0.0.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/local/bin/redis-server</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/ct_log_list.cnf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/ct_log_list.cnf.dist</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/openssl.cnf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/openssl.cnf.dist</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/lib/apk/db/installed</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/afalg.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/capi.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/loader_attic.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/padlock.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libcrypto.so.3</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libssl.so.3</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libz.so.1.3.2</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/ossl-modules/legacy.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Abidjan</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Addis_Ababa</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Algiers</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Bangui</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Bissau</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Blantyre</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Cairo</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Casablanca</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Ceuta</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/El_Aaiun</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Johannesburg</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Juba</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Khartoum</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Monrovia</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Ndjamena</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Sao_Tome</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Tripoli</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Tunis</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Africa/Windhoek</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Adak</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Anchorage</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Anguilla</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Araguaina</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/Buenos_Aires</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/Catamarca</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/Cordoba</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/Jujuy</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/La_Rioja</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/Mendoza</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/Rio_Gallegos</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/Salta</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/San_Juan</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/San_Luis</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/Tucuman</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Argentina/Ushuaia</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Asuncion</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Atikokan</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Bahia</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Bahia_Banderas</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Barbados</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Belem</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Belize</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Boa_Vista</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Bogota</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Boise</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Cambridge_Bay</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Campo_Grande</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Cancun</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Caracas</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Cayenne</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Chicago</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Chihuahua</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Ciudad_Juarez</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Costa_Rica</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Coyhaique</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Creston</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Cuiaba</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Danmarkshavn</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Dawson</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Dawson_Creek</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Denver</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Detroit</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Edmonton</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Eirunepe</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/El_Salvador</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Ensenada</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Fort_Nelson</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Fort_Wayne</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Fortaleza</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Glace_Bay</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Godthab</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Goose_Bay</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Grand_Turk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Guatemala</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Guayaquil</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Guyana</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Halifax</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Havana</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Hermosillo</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Indiana/Knox</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Indiana/Marengo</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Indiana/Petersburg</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Indiana/Tell_City</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Indiana/Vevay</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Indiana/Vincennes</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Indiana/Winamac</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Inuvik</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Iqaluit</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Jamaica</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Juneau</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Kentucky/Louisville</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Kentucky/Monticello</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/La_Paz</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Lima</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Los_Angeles</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Maceio</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Managua</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Manaus</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Martinique</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Matamoros</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Mazatlan</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Menominee</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Merida</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Metlakatla</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Mexico_City</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Miquelon</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Moncton</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Monterrey</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Montevideo</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Montreal</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/New_York</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Nome</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Noronha</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/North_Dakota/Beulah</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/North_Dakota/Center</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/North_Dakota/New_Salem</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Ojinaga</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Paramaribo</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Port-au-Prince</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Porto_Acre</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Porto_Velho</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Punta_Arenas</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Rainy_River</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Rankin_Inlet</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Recife</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Regina</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Resolute</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Santarem</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Santiago</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Santo_Domingo</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Sao_Paulo</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Scoresbysund</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Sitka</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/St_Johns</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Swift_Current</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Tegucigalpa</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Thule</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Vancouver</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Whitehorse</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/America/Yakutat</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Antarctica/Casey</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Antarctica/Davis</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Antarctica/DumontDUrville</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Antarctica/Macquarie</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Antarctica/Mawson</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Antarctica/McMurdo</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Antarctica/Palmer</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Antarctica/Rothera</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Antarctica/Syowa</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Antarctica/Troll</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Antarctica/Vostok</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Arctic/Longyearbyen</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Almaty</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Amman</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Anadyr</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Aqtau</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Aqtobe</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Ashgabat</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Atyrau</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Baghdad</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Bahrain</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Baku</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Bangkok</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Barnaul</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Beirut</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Bishkek</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Brunei</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Calcutta</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Chita</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Choibalsan</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Chongqing</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Colombo</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Dacca</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Damascus</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Dili</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Dubai</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Dushanbe</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Famagusta</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Gaza</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Hebron</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Ho_Chi_Minh</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Hong_Kong</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Hovd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Irkutsk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Istanbul</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Jakarta</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Jayapura</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Jerusalem</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Kabul</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Kamchatka</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Karachi</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Kashgar</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Kathmandu</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Khandyga</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Krasnoyarsk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Kuala_Lumpur</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Macao</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Magadan</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Makassar</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Manila</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Nicosia</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Novokuznetsk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Novosibirsk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Omsk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Oral</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Pontianak</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Pyongyang</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Qostanay</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Qyzylorda</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Rangoon</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Sakhalin</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Samarkand</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Seoul</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Srednekolymsk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Taipei</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Tashkent</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Tbilisi</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Tehran</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Thimbu</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Tokyo</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Tomsk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Ust-Nera</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Vladivostok</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Yakutsk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Yekaterinburg</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Asia/Yerevan</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Atlantic/Azores</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Atlantic/Bermuda</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Atlantic/Canary</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Atlantic/Cape_Verde</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Atlantic/Faeroe</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Atlantic/Madeira</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Atlantic/South_Georgia</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Atlantic/Stanley</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Australia/ACT</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Australia/Adelaide</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Australia/Brisbane</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Australia/Broken_Hill</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Australia/Currie</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Australia/Darwin</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Australia/Eucla</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Australia/LHI</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Australia/Lindeman</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Australia/Melbourne</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Australia/Perth</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/CET</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/CST6CDT</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Chile/EasterIsland</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/EET</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/EST5EDT</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Eire</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+10</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+11</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+12</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+2</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+3</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+4</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+5</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+6</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+7</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+8</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT+9</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-10</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-11</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-12</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-13</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-14</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-2</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-3</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-4</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-5</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-6</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-7</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-8</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/GMT-9</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Etc/UCT</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Andorra</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Astrakhan</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Belfast</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Belgrade</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Bratislava</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Bucharest</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Budapest</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Busingen</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Chisinau</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Gibraltar</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Helsinki</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Kaliningrad</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Kiev</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Kirov</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Lisbon</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Madrid</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Malta</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Minsk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Monaco</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Moscow</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Riga</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Rome</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Samara</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Saratov</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Simferopol</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Sofia</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Tallinn</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Tirane</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Ulyanovsk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Vienna</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Vilnius</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Volgograd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Europe/Warsaw</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Factory</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/HST</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Indian/Chagos</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Indian/Kerguelen</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Indian/Mauritius</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Kwajalein</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/MST7MDT</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/NZ-CHAT</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/PST8PDT</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Apia</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Bougainville</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Efate</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Enderbury</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Fakaofo</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Fiji</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Funafuti</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Galapagos</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Gambier</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Guadalcanal</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Guam</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Kiritimati</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Kosrae</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Marquesas</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Midway</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Nauru</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Niue</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Norfolk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Noumea</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Palau</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Pitcairn</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Rarotonga</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Tahiti</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/Pacific/Tongatapu</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/iso3166.tab</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/leap-seconds.list</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/zone.tab</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/zoneinfo/zone1970.tab</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="secrets">
+      <summary>
+        <span>secrets</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>secrets</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/base/redis</td></tr>
+        
+        <tr><th>tag</th><td>sha256:b238f1c57af91172c1a41755a5abc1750338b1e2f9561f0e0b7f75a2f4de41c8</td></tr>
+        
+        <tr><th>scanner_version</th><td>trufflehog 3.95.3</td></tr>
+        
+        <tr><th>secrets_count</th><td>0</td></tr>
+        
+        <tr><th>verified_count</th><td>0</td></tr>
+        
+        <tr><th>findings</th><td><em>none</em></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="metadata">
+      <summary>
+        <span>metadata</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>metadata</td></tr>
+        
+        <tr><th>metadata</th><td><table>
+      <tbody>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>metadata_validation</th><td><table>
+      <tbody>
+        
+        <tr><th>ci.platform</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>ci.job.id</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>ci.job.url</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>schema_sources</th><td><em>none</em></td></tr>
+        
+        <tr><th>enforcement</th><td>enforcing</td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+
+    <footer>Generated by regis 0.40.0 on 2026-10-16 17:45 UTC</footer>
+  </main>
+</div>
+</body>
+</html>
