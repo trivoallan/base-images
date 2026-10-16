@@ -17,6 +17,9 @@ RESULTS="$REPO/results"
 W="$(mktemp -d)"
 GRYPE_CACHE="${GRYPE_CACHE:-$W/grype}"
 TRANSIT="${TRANSIT:-transit}"
+# Le criblage qui juge, nommé sur chaque ligne du journal (SDR-0018 d'uske) : l'URL du run GitHub
+# Actions ; vide en local, et la ligne n'en porte pas.
+RUN="${GITHUB_RUN_ID:+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID}"
 mkdir -p "$RESULTS" "$GRYPE_CACHE"
 # Les trois images ne tournent pas sous l'utilisateur du runner.
 chmod -R a+rwX "$W" "$RESULTS" "$GRYPE_CACHE"
@@ -65,7 +68,7 @@ evaluate() {
   mkdir -p "$W/$lines/$name" "$W/reports/$key" && chmod a+rwX "$W/$lines/$name" "$W/reports/$key"
 
   if [ "$playbook" = null ]; then  # régime inconnu : jamais envoyé à regis (D-21)
-    uske classify --ref "$ref" --digest "$digest" >"$W/$lines/$name/$key.json"
+    uske classify --ref "$ref" --digest "$digest" --run "$RUN" >"$W/$lines/$name/$key.json"
     return
   fi
   echo "::group::regis $target"
@@ -83,7 +86,7 @@ evaluate() {
   uske classify --playbook "$playbook" --ref "$ref" --digest "$digest" \
     --report "/work/reports/$key/report.json" \
     --report-link "results/reports/$name/$digest.md" \
-    --regis-exit "$rc" --source-ref "$source_ref" --source-digest "$source_digest" \
+    --regis-exit "$rc" --source-ref "$source_ref" --source-digest "$source_digest" --run "$RUN" \
     | tee "$W/$lines/$name/$key.json"
 }
 
