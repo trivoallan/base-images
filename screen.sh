@@ -80,10 +80,6 @@ evaluate() {
       cp "$W/reports/$key/report.$ext" "$RESULTS/reports/$name/$digest.$ext"
     fi
   done
-  # Le Markdown brut de regis, gardé pour compose_reports : il se recompose à chaque porte.
-  if [ -f "$W/reports/$key/report.md" ]; then
-    mkdir -p "$W/regis/$name" && cp "$W/reports/$key/report.md" "$W/regis/$name/$digest.md"
-  fi
   uske classify --playbook "$playbook" --ref "$ref" --digest "$digest" \
     --report "/work/reports/$key/report.json" \
     --report-link "results/reports/$name/$digest.md" \
@@ -91,22 +87,27 @@ evaluate() {
     | tee "$W/$lines/$name/$key.json"
 }
 
-# compose_reports POLICY LINES : le rapport que cite le journal, pour chaque digest décidé à cette
-# porte, devient ses décisions (`uske decisions`, frise et tableau) puis le détail de regis. Il part
-# toujours du Markdown brut de regis : une seconde porte qui reclôt une source ne l'empile pas.
+# compose_reports POLICY : chaque rapport Markdown de la policy devient les décisions de toute sa
+# famille (`uske decisions` : la source, ses reconstructions, les deux portes) puis le détail de
+# regis. Tous sont recomposés à chaque porte : une reconstruction change aussi le rapport de sa
+# source et de ses sœurs. La partie regis se retrouve après le marqueur ; un rapport qui vient
+# d'être copié n'en a pas encore et se prend en entier.
+REGIS_MARK='<!-- regis -->'
 compose_reports() {
-  local name=$1 lines=$2 digest
-  [ -d "$W/$lines/$name" ] || return 0
-  cat "$W/$lines/$name"/*.json 2>/dev/null | jq -r 'if type == "array" then .[] else . end | .digest' \
-    | sort -u | while read -r digest; do
-      [ -f "$W/regis/$name/$digest.md" ] || continue
-      {
-        uske decisions "$digest" --results /results --policy-name "$name" --format md
-        printf '\n---\n\n'
-        cat "$W/regis/$name/$digest.md"
-      } >"$RESULTS/reports/$name/$digest.md.new"
-      mv "$RESULTS/reports/$name/$digest.md.new" "$RESULTS/reports/$name/$digest.md"
-    done
+  local name=$1 f digest end
+  for f in "$RESULTS/reports/$name"/*.md; do
+    [ -f "$f" ] || continue
+    digest=$(basename "$f" .md)
+    {
+      uske decisions "$digest" --results /results --policy-name "$name" --format md
+      printf '\n---\n\n%s\n' "$REGIS_MARK"
+      # Sans marqueur : un rapport regis tout juste copié (il commence par « # »), ou un rapport
+      # composé avant le marqueur, dont regis suit le premier « --- ».
+      if grep -qxF "$REGIS_MARK" "$f"; then end="$REGIS_MARK"; else end='---'; fi
+      awk -v end="$end" 'FNR == 1 { raw = ($0 !~ /^## /) } raw { print; next } $0 == end { raw = 1 }' "$f"
+    } >"$f.new"
+    mv "$f.new" "$f"
+  done
 }
 
 failed=0
@@ -125,7 +126,7 @@ while read -r policy; do
   [ "$MODE" = apply ] || continue
 
   uske record --policy "$path" --results /results --lines "/work/lines/$name"
-  compose_reports "$name" lines
+  compose_reports "$name"
   commit_journal "journal($name): décisions du criblage, première porte"
 
   approved=$(uske approve --policy "$path" --results /results --plan "/work/plans/$name.json" \
@@ -140,7 +141,7 @@ while read -r policy; do
   uske pending --policy "$path" --staged "/work/staged/$name.json" --results /results >"$W/staged.json"
   while read -r item; do evaluate "$name" "$playbook" staged-lines "$item"; done < <(jq -c '.[]' "$W/staged.json")
   uske record --policy "$path" --results /results --lines "/work/staged-lines/$name"
-  compose_reports "$name" staged-lines
+  compose_reports "$name"
   commit_journal "journal($name): décisions du criblage, seconde porte"
 
   promoted=$(uske approve --policy "$path" --results /results --staged "/work/staged/$name.json" \
