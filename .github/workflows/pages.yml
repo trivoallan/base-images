@@ -1,0 +1,51 @@
+name: pages
+
+# Publie le dépôt tel quel sur Pages : le journal, les rapports et index.html qui les lit. Pas
+# `on: push` : le journal est commité par screening avec GITHUB_TOKEN, et un tel push ne déclenche
+# aucun workflow. On suit donc la fin de screening, seulement un criblage apply réussi sur main.
+
+on:
+  workflow_run:
+    workflows: [screening]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  pages:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'pull_request')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: List the journals
+        # Une page statique ne sait pas lister un dossier : index.html lit cette liste.
+        run: |
+          ls results/*.jsonl | xargs -n1 basename | sed 's/\.jsonl$//' \
+            | jq -R . | jq -sc . > results/index.json
+          cat results/index.json
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
