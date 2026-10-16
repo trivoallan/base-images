@@ -43,7 +43,8 @@ spec:
       platforms: [linux/amd64, linux/arm64]
       transform:
         - rewritePackageSources: { mirror: alpine }
-        - upgradePackages: { epoch: "2026-10-16" }
+      remediate:
+        - upgradePackages: {}  # sur ordre d'uske seulement ; l'epoch vient avec l'ordre
       destinations:
         - registry: ghcr
           project: base

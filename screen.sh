@@ -8,7 +8,7 @@
 #
 # Entrées : REGIS_IMAGE, KNOCK_IMAGE, USKE_IMAGE ; KNOCK_* pour knock ; REGISTRY_HOST,
 # REGISTRY_USER, REGISTRY_PASSWORD pour que regis lise le transit ; TRANSIT, le nom de
-# KNOCK_REGISTRIES où les rebuilds attendent leur jugement ; GRYPE_CACHE, un dossier hôte.
+# KNOCK_REGISTRIES où les images réparées attendent leur jugement ; GRYPE_CACHE, un dossier hôte.
 set -euo pipefail
 
 MODE="${SCREEN_MODE:-judge}"
@@ -20,6 +20,9 @@ TRANSIT="${TRANSIT:-transit}"
 # Le criblage qui juge, nommé sur chaque ligne du journal (SDR-0018 d'uske) : l'URL du run GitHub
 # Actions ; vide en local, et la ligne n'en porte pas.
 RUN="${GITHUB_RUN_ID:+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID}"
+# L'epoch des ordres de réparation : le début du criblage, en UTC. Écrit dans le RUN de la
+# réparation, il empêche un criblage de réutiliser la couche d'une mise à jour antérieure.
+EPOCH="$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$RESULTS" "$GRYPE_CACHE"
 # Les trois images ne tournent pas sous l'utilisateur du runner.
 chmod -R a+rwX "$W" "$RESULTS" "$GRYPE_CACHE"
@@ -29,8 +32,8 @@ mounts=(-v "$REPO:/repo:ro" -v "$W:/work" -v "$RESULTS:/results")
 uske() { docker run --rm "${mounts[@]}" "$USKE_IMAGE" "$@"; }
 
 knock() {
-  # --plan-out et --staged-out ne créent pas leur dossier parent.
-  mkdir -p "$W/plans" "$W/staged" && chmod a+rwX "$W/plans" "$W/staged"
+  # --plan-out, --staged-out et --applied-out ne créent pas leur dossier parent.
+  mkdir -p "$W/plans" "$W/staged" "$W/applied" && chmod a+rwX "$W/plans" "$W/staged" "$W/applied"
   docker run --rm --network host "${mounts[@]}" \
     -v "$HOME/.docker:/tmp/.docker:ro" \
     -e KNOCK_REGISTRIES -e BUILDKIT_HOST -e KNOCK_TRANSFORM_PACKAGE_MIRRORS \
@@ -58,13 +61,15 @@ commit_journal() {
   git -C "$REPO" push -q
 }
 
-# evaluate POLICY PLAYBOOK LINES ITEM_JSON : un digest, jugé par regis, classé par uske.
+# evaluate POLICY PLAYBOOK LINES ITEM_JSON [TRACK] : un digest, jugé par regis, classé par uske.
+# TRACK, le régime, marque un refus réparable à la première porte.
 evaluate() {
-  local name=$1 playbook=$2 lines=$3 item=$4
-  local ref digest target key source_ref source_digest rc=0
+  local name=$1 playbook=$2 lines=$3 item=$4 track=${5:-}
+  local ref digest target key source_ref source_digest epoch rc=0
   ref=$(jq -r .ref <<<"$item"); digest=$(jq -r .digest <<<"$item")
   target=$(jq -r .target <<<"$item"); key=$(jq -r .key <<<"$item")
   source_ref=$(jq -r '.sourceRef // ""' <<<"$item"); source_digest=$(jq -r '.source // ""' <<<"$item")
+  epoch=$(jq -r '.epoch // ""' <<<"$item")  # une image tenue : l'ordre sous lequel elle a été réparée
   mkdir -p "$W/$lines/$name" "$W/reports/$key" && chmod a+rwX "$W/$lines/$name" "$W/reports/$key"
 
   if [ "$playbook" = null ]; then  # régime inconnu : jamais envoyé à regis (D-21)
@@ -86,7 +91,8 @@ evaluate() {
   uske classify --playbook "$playbook" --ref "$ref" --digest "$digest" \
     --report "/work/reports/$key/report.json" \
     --report-link "results/reports/$name/$digest.md" \
-    --regis-exit "$rc" --source-ref "$source_ref" --source-digest "$source_digest" --run "$RUN" \
+    --regis-exit "$rc" --source-ref "$source_ref" --source-digest "$source_digest" \
+    --track "$track" --epoch "$epoch" --run "$RUN" \
     | tee "$W/$lines/$name/$key.json"
 }
 
@@ -121,24 +127,40 @@ while read -r policy; do
   uske prepare --policy "$path" --out "/work/policies/$name/policy.yaml"
   knock reconcile "/work/policies/$name" --plan-out "/work/plans/$name.json"
   uske pending --policy "$path" --plan "/work/plans/$name.json" --results /results >"$W/pending.json"
-  playbook=$(uske resolve --policy "$path" --playbooks /repo/playbooks | jq -r .playbook)
+  resolved=$(uske resolve --policy "$path" --playbooks /repo/playbooks)
+  playbook=$(jq -r .playbook <<<"$resolved"); track=$(jq -r '.track // ""' <<<"$resolved")
   echo "::endgroup::"
   echo "$name : $(jq length "$W/pending.json") digest(s) en attente de décision"
 
-  while read -r item; do evaluate "$name" "$playbook" lines "$item"; done < <(jq -c '.[]' "$W/pending.json")
+  while read -r item; do evaluate "$name" "$playbook" lines "$item" "$track"; done < <(jq -c '.[]' "$W/pending.json")
   [ "$MODE" = apply ] || continue
 
   uske record --policy "$path" --results /results --lines "/work/lines/$name"
   compose_reports "$name"
   commit_journal "journal($name): décisions du criblage, première porte"
 
-  approved=$(uske approve --policy "$path" --results /results --plan "/work/plans/$name.json" \
-    --out "/work/plans/$name.approved.json" --transit "$TRANSIT" | jq .approved)
+  # Une source à réparer revient avec un ordre ; sans transit, elle est consignée inconclusive.
+  mkdir -p "$W/approve-lines" && chmod a+rwX "$W/approve-lines"
+  decision=$(uske approve --policy "$path" --results /results --plan "/work/plans/$name.json" \
+    --out "/work/plans/$name.approved.json" --transit "$TRANSIT" --epoch "$EPOCH" \
+    --lines-out "/work/approve-lines/$name.json" --run "$RUN")
+  uske record --policy "$path" --results /results --lines "/work/approve-lines/$name.json"
+  approved=$(jq .approved <<<"$decision"); ordered=$(jq .ordered <<<"$decision")
   [ "$approved" -gt 0 ] || continue
 
-  # Les copies sont placées, les rebuilds tenus en transit. Un build raté ne retient pas les autres.
+  # Copies et transformations seules placées ; les images réparées tenues en transit, qui n'est
+  # passé à knock que si le plan porte un ordre. Un build raté ne retient pas les autres.
+  stage=()
+  [ "$ordered" -gt 0 ] && stage=(--stage-to "$TRANSIT" --staged-out "/work/staged/$name.json")
   knock reconcile "/work/policies/$name" --apply-plan "/work/plans/$name.approved.json" \
-    --stage-to "$TRANSIT" --staged-out "/work/staged/$name.json" || failed=1
+    ${stage[@]+"${stage[@]}"} --applied-out "/work/applied/$name.json" || failed=1
+  # Le lien source → digest placé, et les ordres que knock n'a pas pu honorer.
+  uske record --policy "$path" --results /results --applied "/work/applied/$name.json" --run "$RUN"
+  if [ "$ordered" -eq 0 ]; then
+    compose_reports "$name"
+    commit_journal "journal($name): placements du criblage"
+    continue
+  fi
 
   # Seconde porte : juger ce que knock a construit, par son propre digest.
   uske pending --policy "$path" --staged "/work/staged/$name.json" --results /results >"$W/staged.json"
