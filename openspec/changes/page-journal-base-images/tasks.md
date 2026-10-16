@@ -3,8 +3,8 @@
 ## 1. Publication sur Pages
 
 - [x] 1.1 Ajouter `.github/workflows/pages.yml` : `workflow_run` sur `screening` (`main`, conclusion `success`, événement autre que `pull_request`) et `workflow_dispatch`. Il génère `results/index.json`, la liste des noms de politiques tirée de `results/*.jsonl`, puis appelle `upload-pages-artifact` et `deploy-pages`, avec les permissions `pages: write` et `id-token: write`. Vérification : `actionlint` passe sur le fichier.
-- [ ] 1.2 Activer Pages (source GitHub Actions) par une cible `make pages` idempotente (pas dans `.github/apply-settings.sh`, qui est un fichier du socle identique dans regis, knock et uske), et renseigner `homepage` dans `.github/settings.json`. Vérification : relancer `make pages` deux fois de suite n'échoue pas, et `gh api repos/trivoallan/base-images/pages` renvoie `build_type: workflow`.
-- [ ] 1.3 Lancer `pages.yml` à la main. Vérification : `https://trivoallan.github.io/base-images/results/index.json` liste les 3 politiques.
+- [x] 1.2 Activer Pages (source GitHub Actions) par une cible `make pages` idempotente (pas dans `.github/apply-settings.sh`, qui est un fichier du socle identique dans regis, knock et uske), et renseigner `homepage` dans `.github/settings.json`. Vérification : relancer `make pages` deux fois de suite n'échoue pas, et `gh api repos/trivoallan/base-images/pages` renvoie `build_type: workflow`.
+- [x] 1.3 Lancer `pages.yml` à la main. Vérification : `https://trivoallan.github.io/base-images/results/index.json` liste les 3 politiques.
 
 ## 2. Page du journal
 
@@ -14,6 +14,12 @@
 - [x] 2.4 Vérifier le traitement en texte et la largeur. Vérification : un motif d'arbitrage `<script>alert(1)</script>` injecté dans une copie locale du journal s'affiche littéralement, et à 375 px la page ne défile pas horizontalement.
 - [x] 2.5 Ajouter une section « Page » au README (URL, ce que la page montre, publication sans build, déclenchement). Vérification : la section existe et l'URL du README est celle de `homepage`.
 
-## 3. Vérification publiée
+## 3. Recherche et sources du ruleset
 
-- [ ] 3.1 Après publication, sur `https://trivoallan.github.io/base-images/` : ouvrir la page sans session GitHub, cliquer sur chacun des 12 refus (12/12 `report.html` rendus, aucune 404), et vérifier que le criblage suivant sur `main` republie la page sans action humaine. Vérification : la note est ajoutée sur la PR avant le 2026-10-22.
+- [x] 3.1 Dans `pages.yml`, récupérer tout l'historique et générer `results/rulesets.json` : pour chaque version de chaque `playbooks/**/playbook.yaml`, son sha256 vers l'URL GitHub du fichier à ce commit. Vérification : en local, le script donne `sha256:589dd893…` vers `playbooks/version/playbook.yaml`.
+- [x] 3.2 Ajouter le champ de recherche sur l'image, combiné au filtre par état, avec des décomptes qui en tiennent compte. Vérification : en local, `redis` ne garde que des lignes Redis, et vider le champ rend toutes les lignes.
+- [x] 3.3 Rendre le `ruleset` cliquable quand `rulesets.json` le connaît, sans lien sinon. Vérification : en local, les 57 lignes dont le `ruleset` est un hash ont un lien vers `playbooks/version/playbook.yaml` (la ligne `uske/reopened` porte `none`), et un `ruleset` inventé reste sans lien.
+
+## 4. Vérification publiée
+
+- [ ] 4.1 Après publication, sur `https://trivoallan.github.io/base-images/` : ouvrir la page sans session GitHub, cliquer sur chacun des 12 refus (12/12 `report.html` rendus, aucune 404), et vérifier que le criblage suivant sur `main` republie la page sans action humaine. Vérification : la note est ajoutée sur la PR avant le 2026-10-22.

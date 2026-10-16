@@ -14,6 +14,7 @@
   .filter { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
   .filter button { font: inherit; padding: .35rem .75rem; border: 1px solid var(--line); border-radius: 1rem; background: none; color: inherit; cursor: pointer; }
   .filter button[aria-pressed="true"] { background: CanvasText; color: Canvas; }
+  .filter input { font: inherit; flex: 1 1 14rem; min-width: 0; padding: .35rem .75rem; border: 1px solid var(--line); border-radius: 1rem; background: none; color: inherit; }
   .wrap { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; }
   th, td { text-align: left; vertical-align: top; padding: .4rem .5rem; border-bottom: 1px solid var(--line); }
@@ -45,6 +46,7 @@
 <div class="filter" role="group" aria-label="Décisions affichées">
   <button type="button" data-all="false" aria-pressed="true">Refus et inconclusive</button>
   <button type="button" data-all="true" aria-pressed="false">Tout</button>
+  <input type="search" id="q" placeholder="Filtrer par image" aria-label="Filtrer par image" autocomplete="off">
 </div>
 <div class="wrap">
 <table>
@@ -59,7 +61,9 @@ const KNOWN = new Set(["direct-placement", "transformation-required", "quarantin
 const HIDDEN_BY_DEFAULT = new Set(["direct-placement", "transformation-required"]);
 const rows = document.getElementById("rows");
 const buttons = document.querySelectorAll(".filter button");
+const search = document.getElementById("q");
 let lines = [];
+let rulesets = {};
 let all = false;
 
 // Tout ce qui vient du journal passe par textContent : jamais interprété comme du HTML.
@@ -82,32 +86,41 @@ async function exists(url) {
   try { return (await fetch(url, { method: "HEAD" })).ok; } catch { return false; }
 }
 
+function link(text, href) {
+  const a = el("a", text);
+  a.href = href;
+  a.target = "_blank";
+  a.rel = "noopener";
+  return a;
+}
+
 // Le rapport se déduit de la politique et du digest, pas du champ `report`, qui suit trois
-// conventions (.md, chemin du volume uske, absent). Le HTML d'abord, puis le Markdown.
-async function fillReport(cell, line) {
-  if (line.digest) {
-    const base = `results/reports/${encodeURIComponent(line.policy)}/${encodeURIComponent(line.digest)}`;
-    for (const ext of [".html", ".md"]) {
-      if (await exists(base + ext)) {
-        const a = el("a", ext === ".html" ? "rapport" : "rapport (md)");
-        a.href = base + ext;
-        a.target = "_blank";
-        a.rel = "noopener";
-        cell.replaceChildren(a);
-        return;
-      }
-    }
+// conventions (.md, chemin du volume uske, absent). Le HTML d'abord, puis le Markdown. Résolu une
+// fois par ligne : la recherche redessine la table sans refaire les requêtes.
+async function resolveReport(line) {
+  if (!line.digest) return null;
+  const base = `results/reports/${encodeURIComponent(line.policy)}/${encodeURIComponent(line.digest)}`;
+  for (const ext of [".html", ".md"]) {
+    if (await exists(base + ext)) return { href: base + ext, text: ext === ".html" ? "rapport" : "rapport (md)" };
   }
-  cell.replaceChildren(el("span", "pas de report", "none"));
+  return null;
+}
+
+async function fillReport(cell, line) {
+  line.report_link ??= resolveReport(line);
+  const r = await line.report_link;
+  cell.replaceChildren(r ? link(r.text, r.href) : el("span", "pas de report", "none"));
 }
 
 const LABELS = ["Date", "Image", "État", "Raison", "Ruleset", "Rapport"];
 
 function render() {
-  const shown = lines.filter(l => all || !HIDDEN_BY_DEFAULT.has(l.state));
-  const kept = lines.length - lines.filter(l => HIDDEN_BY_DEFAULT.has(l.state)).length;
-  buttons[0].textContent = `Refus et inconclusive (${kept})`;
-  buttons[1].textContent = `Tout (${lines.length})`;
+  const q = search.value.trim().toLowerCase();
+  const found = lines.filter(l => (l.ref || l.raw || "").toLowerCase().includes(q));
+  const kept = found.filter(l => !HIDDEN_BY_DEFAULT.has(l.state));
+  const shown = all ? found : kept;
+  buttons[0].textContent = `Refus et inconclusive (${kept.length})`;
+  buttons[1].textContent = `Tout (${found.length})`;
   rows.replaceChildren();
   if (!shown.length) rows.append(message("Aucune décision."));
   for (const l of shown) {
@@ -122,8 +135,17 @@ function render() {
       why.append(el("span", `Arbitrage ${a.by || "?"}, ${a.date || "?"} : ${a.reason || ""}`, "arb"));
     }
     tr.append(why);
+    // Le ruleset est le sha256 du playbook qui a jugé : rulesets.json donne sa source à ce commit.
     const rs = el("td");
-    if (l.ruleset) rs.append(el("code", l.ruleset.replace(/^sha256:/, "").slice(0, 12), null));
+    if (l.ruleset) {
+      const short = el("code", l.ruleset.replace(/^sha256:/, "").slice(0, 12));
+      const src = rulesets[l.ruleset];
+      if (typeof src === "string" && src.startsWith("https://")) {
+        const a = link("", src);
+        a.append(short);
+        rs.append(a);
+      } else rs.append(short);
+    }
     rs.title = l.ruleset || "";
     tr.append(rs);
     const rep = el("td", "…", "none");
@@ -134,6 +156,8 @@ function render() {
   }
 }
 
+search.addEventListener("input", render);
+
 buttons.forEach(b => b.addEventListener("click", () => {
   all = b.dataset.all === "true";
   buttons.forEach(o => o.setAttribute("aria-pressed", String(o === b)));
@@ -141,6 +165,8 @@ buttons.forEach(b => b.addEventListener("click", () => {
 }));
 
 async function load() {
+  // Sans correspondance publiée (copie locale, ancien déploiement), les rulesets restent sans lien.
+  rulesets = await fetch("results/rulesets.json").then(r => r.ok ? r.json() : {}).catch(() => ({}));
   const policies = await (await fetch("results/index.json")).json();
   for (const policy of policies) {
     const text = await (await fetch(`results/${encodeURIComponent(policy)}.jsonl`)).text();
