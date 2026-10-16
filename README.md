@@ -20,15 +20,20 @@ uv run --project ../uske uske list --policies policies
 uv run --project ../regis regis playbook validate playbooks/version/playbook.yaml
 ```
 
-## État
+## Criblage
 
-Le criblage dans GitHub Actions n'est pas encore écrit : voir le change OpenSpec
-`dogfood-base-images` à la racine du workspace `oci/`, groupe 2.
+[`screen.sh`](screen.sh) enchaîne les étapes du `WorkflowTemplate` Argo de `uske`, dans le même
+ordre, chacune dans le conteneur publié de son outil. [`screening`](.github/workflows/screening.yml)
+le lance chaque lundi et à la demande, en mode `apply`. Sur une PR, il tourne en mode `judge` :
+plan et verdicts seulement, sans journal ni placement.
 
-**À faire avant le premier criblage** : le journal est commité directement sur `main` par le bot
-CI. La règle `main` de `.github/settings.json` doit autoriser l'app CI à contourner l'obligation
-de PR (`bypass_actors`, `actor_type: Integration`). Son identifiant est à prendre après
-l'installation de l'app sur `sncFdevelopers`.
+Le journal (`results/<policy>.jsonl`) et les rapports HTML sont commités sur `main` par
+`github-actions[bot]`, avant tout placement. Les rulesets d'un dépôt personnel ne savent pas
+exempter GitHub Actions. La règle `main` n'impose donc pas de PR : elle interdit seulement la
+suppression, le force-push et l'historique non linéaire.
+
+Pour rouvrir une source mise en quarantaine, ajoute au journal une ligne `uske/reopened` (voir le
+README d'`uske`) et ouvre une PR.
 
 ## Licence
 
