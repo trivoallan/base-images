@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>docker.io/library/alpine:sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 — regis report</title>
+  <style>
+    :root {
+      --bg:#fff; --fg:#18181b; --muted:#71717a; --line:#e4e4e7; --panel:#fafafa;
+      --crit:#991b1b; --crit-bg:#fef2f2; --high:#c2410c; --high-bg:#fff7ed;
+      --med:#a16207; --low:#166534; --low-bg:#f0fdf4; --accent:#18181b;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:system-ui,-apple-system,sans-serif; font-size:14px; line-height:1.5; color:var(--fg); background:var(--bg); }
+    .mono { font-family:ui-monospace,"SF Mono",Menlo,monospace; }
+    a { color:inherit; }
+    .layout { display:grid; grid-template-columns:200px 1fr; max-width:1200px; margin:0 auto; min-height:100vh; }
+    .sidebar { position:sticky; top:0; align-self:start; max-height:100vh; overflow:auto; background:var(--panel); border-right:1px solid var(--line); padding:1.25rem 1rem; }
+    .brand { font-weight:800; letter-spacing:.05em; margin-bottom:1rem; }
+    .toc a { display:flex; justify-content:space-between; gap:.5rem; text-decoration:none; color:var(--muted); padding:.2rem 0; font-size:13px; }
+    .toc a:hover { color:var(--fg); }
+    .st-fail { color:var(--crit); font-weight:700; }
+    .st-pass { color:var(--low); }
+    main { padding:1.5rem 2rem; min-width:0; }
+    header.rep { border-bottom:1px solid var(--line); padding-bottom:1rem; margin-bottom:1.25rem; }
+    header.rep h1 { font-size:1.3rem; word-break:break-all; }
+    header.rep .meta { display:grid; grid-template-columns:max-content 1fr; gap:.1rem .75rem; font-size:13px; margin-top:.5rem; }
+    header.rep .meta dt { font-weight:600; color:var(--muted); }
+    header.rep .meta dd { color:var(--fg); word-break:break-all; }
+    .verdict { margin:1rem 0 1.25rem; }
+    .hero { display:flex; align-items:center; gap:1rem; }
+    .ring { width:64px; height:64px; border-radius:50%; border:5px solid var(--accent); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.3rem; flex:0 0 auto; }
+    .verdict-headline { font-size:1.2rem; margin:0; }
+    .counts { color:var(--muted); font-size:13px; margin-top:.15rem; }
+    .verdict-badges { margin-top:.5rem; }
+    .pill, .badge { display:inline-block; padding:.12rem .5rem; border-radius:999px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+    .badge { border-radius:3px; }
+    .badge-critical { background:var(--crit-bg); color:var(--crit); }
+    .badge-high { background:var(--high-bg); color:var(--high); }
+    .badge-medium { background:#fefce8; color:var(--med); }
+    .badge-low { background:var(--low-bg); color:var(--low); }
+    .badge-pass, .badge-passed { background:var(--low-bg); color:var(--low); }
+    .badge-fail, .badge-failed { background:var(--crit-bg); color:var(--crit); }
+    .badge-warn, .badge-warning, .badge-incomplete { background:var(--high-bg); color:var(--high); }
+    .badge-none { background:var(--panel); color:var(--muted); }
+    .triage { border:1px solid var(--line); border-left:3px solid var(--high); border-radius:6px; background:var(--panel); padding:.75rem 1rem; margin:1rem 0; }
+    .triage.clear { border-left-color:var(--low); }
+    .triage h2 { font-size:.95rem; margin-bottom:.4rem; }
+    .triage table { width:100%; border-collapse:collapse; font-size:13px; margin:0; }
+    .triage td { padding:.25rem .4rem; border:none; border-top:1px solid var(--line); vertical-align:top; background:transparent; }
+    .triage th { padding:.25rem .4rem; border:none; border-bottom:1px solid var(--line); text-align:left; font-size:11px; text-transform:uppercase; color:var(--muted); background:transparent; }
+    .sev { display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; margin:1rem 0; }
+    .sev .cell { border:1px solid var(--line); border-radius:6px; text-align:center; padding:.5rem; }
+    .sev .n { display:block; font-size:1.4rem; font-weight:800; line-height:1; }
+    .sev .l { font-size:11px; text-transform:uppercase; color:var(--muted); }
+    .sev .critical .n { color:var(--crit); } .sev .high .n { color:var(--high); }
+    .sev .medium .n { color:var(--med); } .sev .low .n { color:var(--low); }
+    h2.section-title { font-size:1rem; margin:1.5rem 0 .5rem; }
+    details.an { border:1px solid var(--line); border-radius:6px; margin:.75rem 0; }
+    details.an > summary { cursor:pointer; padding:.5rem .75rem; font-weight:700; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+    details.an > summary::-webkit-details-marker { display:none; }
+    details.an > summary::before { content:"▸"; margin-right:.5rem; color:var(--muted); }
+    details.an[open] > summary::before { content:"▾"; }
+    details.an .an-body { padding:.25rem .75rem .75rem; }
+    details.an:target { border-color:var(--accent); }
+    table { border-collapse:collapse; width:100%; margin:.5rem 0; font-size:13px; }
+    th { background:var(--panel); text-align:left; padding:.4rem .75rem; border:1px solid var(--line); font-weight:600; color:#52525b; }
+    td { padding:.35rem .75rem; border:1px solid var(--line); vertical-align:top; }
+    ul { padding-left:1.2rem; } li { margin:.1rem 0; }
+    dl.scalars { display:grid; grid-template-columns:max-content 1fr; gap:.15rem .75rem; font-size:13px; }
+    dl.scalars dt { font-weight:600; color:var(--muted); }
+    em { color:var(--muted); font-style:normal; }
+    footer { margin-top:2rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+    @media (max-width:720px) {
+      .layout { grid-template-columns:1fr; }
+      .sidebar { position:sticky; top:0; max-height:none; height:auto; border-right:none; border-bottom:1px solid var(--line); padding:.6rem .75rem; z-index:5; }
+      .brand { display:inline-block; margin:0 .5rem 0 0; }
+      .toc { display:flex; gap:.4rem; overflow-x:auto; white-space:nowrap; }
+      .toc a { flex:0 0 auto; border:1px solid var(--line); border-radius:999px; padding:.2rem .6rem; }
+      .sev { grid-template-columns:repeat(2,1fr); }
+      main { padding:1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">regis</div>
+    <nav class="toc">
+      <a href="#verdict"><span>Verdict</span></a>
+      <a href="#triage"><span>Triage</span></a>
+      
+      <a href="#endoflife"><span>endoflife</span><span class="st-pass">✓</span></a>
+      
+      <a href="#dockle"><span>dockle</span><span class="st-pass">✓</span></a>
+      
+      <a href="#hadolint"><span>hadolint</span><span class="st-pass">✓</span></a>
+      
+      <a href="#popularity"><span>popularity</span><span class="st-pass">✓</span></a>
+      
+      <a href="#cve"><span>cve</span><span class="st-fail">✗</span></a>
+      
+      <a href="#sbom"><span>sbom</span><span class="st-pass">✓</span></a>
+      
+      <a href="#provenance"><span>provenance</span><span class="st-pass">✓</span></a>
+      
+      <a href="#freshness"><span>freshness</span><span class="st-pass">✓</span></a>
+      
+      <a href="#scorecarddev"><span>scorecarddev</span><span class="st-pass">✓</span></a>
+      
+      <a href="#oci"><span>oci</span><span class="st-pass">✓</span></a>
+      
+      <a href="#versioning"><span>versioning</span><span class="st-pass">✓</span></a>
+      
+      <a href="#size"><span>size</span><span class="st-pass">✓</span></a>
+      
+      <a href="#secrets"><span>secrets</span><span class="st-pass">✓</span></a>
+      
+      <a href="#metadata"><span>metadata</span><span class="st-pass">✓</span></a>
+      
+    </nav>
+  </aside>
+
+  <main>
+    <header class="rep" id="top">
+      <h1>docker.io/library/alpine:sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</h1>
+      <dl class="meta">
+        <dt>Registry</dt><dd>docker.io</dd>
+        <dt>Repository</dt><dd>library/alpine</dd>
+        <dt>Tag</dt><dd class="mono">sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</dd>
+        
+        <dt>Digest</dt><dd class="mono">sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</dd>
+        
+        
+        <dt>Analysis date</dt><dd>2026-10-16T15:38:57.973836+00:00</dd>
+        
+      </dl>
+    </header>
+
+    
+    <section id="verdict" class="verdict">
+      <div class="hero">
+        <div class="ring" aria-label="Score 89 out of 100">89</div>
+        <div>
+          <h2 class="verdict-headline">🏷️ Placement direct · 89/100</h2>
+          <p class="counts">8/9 rules · 1 failed · worst: 🟧 warning</p>
+        </div>
+      </div>
+      
+    </section>
+    
+
+    
+    
+    <section id="triage" class="triage ">
+      <h2>⚠ Attention required</h2>
+      
+      <table>
+        <thead><tr><th></th><th>Rule</th><th>Severity</th><th>Detail</th></tr></thead>
+        <tbody>
+          
+          <tr><td>✗</td><td class="mono">cve-fixable</td><td>warning</td><td>Image has 1 vulnerabilities with available fixes.</td></tr>
+          
+          
+        </tbody>
+      </table>
+      
+    </section>
+    
+
+    
+    <section class="sev">
+      
+      <div class="cell critical"><span class="n">0</span><span class="l">critical</span></div>
+      
+      <div class="cell high"><span class="n">9</span><span class="l">high</span></div>
+      
+      <div class="cell medium"><span class="n">13</span><span class="l">medium</span></div>
+      
+      <div class="cell low"><span class="n">8</span><span class="l">low</span></div>
+      
+    </section>
+    
+
+    
+    <section id="playbooks">
+      <h2 class="section-title">Playbook results</h2>
+      <table>
+        <thead>
+          <tr><th>Playbook</th><th>Verdict</th><th>Score</th><th>Failing rules</th></tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            <td>—</td>
+            <td>
+              
+              <span class="badge badge-">—</span>
+            </td>
+            <td>89%</td>
+            <td>1</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </section>
+    
+
+    
+    
+    <details class="an" id="endoflife">
+      <summary>
+        <span>endoflife</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>endoflife</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>product</th><td>alpine</td></tr>
+        
+        <tr><th>product_found</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>tag</th><td>sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</td></tr>
+        
+        <tr><th>matched_cycle</th><td><em>—</em></td></tr>
+        
+        <tr><th>is_eol</th><td><em>—</em></td></tr>
+        
+        <tr><th>active_cycles_count</th><td>0</td></tr>
+        
+        <tr><th>eol_cycles_count</th><td>32</td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="dockle">
+      <summary>
+        <span>dockle</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>dockle</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>tag</th><td>sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</td></tr>
+        
+        <tr><th>passed</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>issues_count</th><td>3</td></tr>
+        
+        <tr><th>issues_by_level</th><td><table>
+      <tbody>
+        
+        <tr><th>FATAL</th><td>0</td></tr>
+        
+        <tr><th>WARN</th><td>1</td></tr>
+        
+        <tr><th>INFO</th><td>2</td></tr>
+        
+        <tr><th>SKIP</th><td>0</td></tr>
+        
+        <tr><th>PASS</th><td>0</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>issues</th><td><table>
+    <thead><tr><th>code</th><th>level</th><th>title</th><th>alerts</th></tr></thead>
+    <tbody>
+      
+      <tr><td>CIS-DI-0001</td><td>WARN</td><td>Create a user for the container</td><td>[&#39;Last user should not be root&#39;]</td></tr>
+      
+      <tr><td>CIS-DI-0005</td><td>INFO</td><td>Enable Content trust for Docker</td><td>[&#39;export DOCKER_CONTENT_TRUST=1 before docker pull/build&#39;]</td></tr>
+      
+      <tr><td>CIS-DI-0006</td><td>INFO</td><td>Add HEALTHCHECK instruction to the container image</td><td>[&#39;not found HEALTHCHECK statement&#39;]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="hadolint">
+      <summary>
+        <span>hadolint</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>hadolint</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>tag</th><td>sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</td></tr>
+        
+        <tr><th>passed</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>issues_count</th><td>1</td></tr>
+        
+        <tr><th>issues_by_level</th><td><table>
+      <tbody>
+        
+        <tr><th>error</th><td>0</td></tr>
+        
+        <tr><th>warning</th><td>0</td></tr>
+        
+        <tr><th>info</th><td>1</td></tr>
+        
+        <tr><th>style</th><td>0</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>issues</th><td><table>
+    <thead><tr><th>code</th><th>level</th><th>message</th><th>line</th></tr></thead>
+    <tbody>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>3</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>dockerfile</th><td>FROM scratch
+RUN ADD alpine-minirootfs-3.24.2-x86_64.tar.gz / # buildkit
+RUN CMD [&#34;/bin/sh&#34;]</td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="popularity">
+      <summary>
+        <span>popularity</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>popularity</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>available</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>pull_count</th><td>12372559259</td></tr>
+        
+        <tr><th>star_count</th><td>11567</td></tr>
+        
+        <tr><th>description</th><td>A minimal Docker image based on Alpine Linux with a complete package index and only 5 MB in size!</td></tr>
+        
+        <tr><th>date_registered</th><td>2015-03-17T23:16:05.407728Z</td></tr>
+        
+        <tr><th>is_official</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>source</th><td><table>
+      <tbody>
+        
+        <tr><th>fetched_at</th><td>2026-10-16T15:38:48.043248+00:00</td></tr>
+        
+        <tr><th>built_at</th><td>2026-09-18T17:24:50.199997Z</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="cve" open>
+      <summary>
+        <span>cve</span>
+        <span class="st-fail">✗</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>cve</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>tag</th><td>sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</td></tr>
+        
+        <tr><th>scanner_version</th><td>0.112.0</td></tr>
+        
+        <tr><th>vulnerability_count</th><td>30</td></tr>
+        
+        <tr><th>critical_count</th><td>0</td></tr>
+        
+        <tr><th>high_count</th><td>9</td></tr>
+        
+        <tr><th>medium_count</th><td>13</td></tr>
+        
+        <tr><th>low_count</th><td>8</td></tr>
+        
+        <tr><th>negligible_count</th><td>0</td></tr>
+        
+        <tr><th>unknown_count</th><td>0</td></tr>
+        
+        <tr><th>fixed_count</th><td>1</td></tr>
+        
+        <tr><th>targets</th><td><table>
+    <thead><tr><th>Target</th><th>Vulnerabilities</th></tr></thead>
+    <tbody>
+      
+      <tr><td>apk</td><td>[{&#39;VulnerabilityID&#39;: &#39;CVE-2026-54873&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-54873&#39;, &#39;Description&#39;: &#39;Issue summary: QUIC process may keep memory for QUIC packet\nbuffer for much longer period than necessary.\n\nImpact summary: Remote peer can exploit this vulnerability\nby sending maliciously crafted packets, making the local\nQUIC stack to keep the memory for packet buffers allocated.\nThe time for which the memory remains allocated is entirely\nunder the control of the potentially malicious remote peer.\n\nCWE: CWE-770: Allocation of Resources Without Limits or Throttling\n\nDescription: To save copy operation from the packet buffer to the\nstream reassemble buffer the QUIC stack leaves the stream data\non the packet buffer waiting to be copied to a buffer provided\nby the local receiving application. The QUIC stack releases\na reference to the packet buffer only after the data are copied\nto the application buffer. This design is more efficient for\nlegitimate data transfers but enables an attacker to allocate a lot\nmore memory than actually required by the data kept in the receiving\nstream buffer.\n\nTo mitigate the vulnerability, the QUIC stack now calculates\nand monitors memory overhead for every stream. The memory overhead\nfor a single stream frame is calculated as a difference between the\nsize of the whole packet that carries the stream frame and the size\nof the stream frame itself. The memory overhead for a single stream\nframe is added to the total (cumulative) memory overhead QUIC stack\nkeeps for each stream. Once the cumulative memory overhead exceeds\n64kB, the QUIC stack moves the stream frame data from the packet\nbuffer to the stream buffer, starting with the next packet received.\n\nFIPS impact: no\nThe FIPS module is not affected as the QUIC implementation is outside of\nthe OpenSSL FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-54873&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-54873&#39;, &#39;Description&#39;: &#39;Issue summary: QUIC process may keep memory for QUIC packet\nbuffer for much longer period than necessary.\n\nImpact summary: Remote peer can exploit this vulnerability\nby sending maliciously crafted packets, making the local\nQUIC stack to keep the memory for packet buffers allocated.\nThe time for which the memory remains allocated is entirely\nunder the control of the potentially malicious remote peer.\n\nCWE: CWE-770: Allocation of Resources Without Limits or Throttling\n\nDescription: To save copy operation from the packet buffer to the\nstream reassemble buffer the QUIC stack leaves the stream data\non the packet buffer waiting to be copied to a buffer provided\nby the local receiving application. The QUIC stack releases\na reference to the packet buffer only after the data are copied\nto the application buffer. This design is more efficient for\nlegitimate data transfers but enables an attacker to allocate a lot\nmore memory than actually required by the data kept in the receiving\nstream buffer.\n\nTo mitigate the vulnerability, the QUIC stack now calculates\nand monitors memory overhead for every stream. The memory overhead\nfor a single stream frame is calculated as a difference between the\nsize of the whole packet that carries the stream frame and the size\nof the stream frame itself. The memory overhead for a single stream\nframe is added to the total (cumulative) memory overhead QUIC stack\nkeeps for each stream. Once the cumulative memory overhead exceeds\n64kB, the QUIC stack moves the stream frame data from the packet\nbuffer to the stream buffer, starting with the next packet received.\n\nFIPS impact: no\nThe FIPS module is not affected as the QUIC implementation is outside of\nthe OpenSSL FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-84782&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-84782&#39;, &#39;Description&#39;: &#34;Issue summary: The DTLS retransmission logic does not correctly handle\na handshake message write that is suspended part-way through.\nThe retransmitted message can be read past the message buffer and\nthe retransmission overwrites the internal state the suspended write\nneeds to resume correctly.\n\nImpact summary: The retransmitted message can disclose a heap memory\nto the peer as plaintext handshake data or cause a crash and a Denial\nof Service when the read reaches an unmapped memory region.\n\nCWE: CWE-125: Out-of-bounds Read\n\nDescription: DTLS handshake messages can be written out in multiple\nfragments, and a write can suspend mid-message (returning WANT_WRITE)\nif the underlying transport temporarily cannot accept more data. While\nsuch a write is suspended, the DTLS retransmission timer may\nindependently fire and ask the retransmission logic to resend an\nearlier, already-acknowledged-as-sent message from its retransmit\nqueue.\n\nThe retransmission logic reused the same internal buffer and position\ntracking as the message that was still being written, without\nresetting the position back to the start of the message being\nretransmitted. As a result the retransmission was read starting from\nwherever the suspended write had left off, producing a mislabelled\nmessage whose body was leftover bytes from the other, larger message\nstill in flight - content that was never meant to be sent at that\npoint, and which could run past the end of the allocated buffer.\n\nSeparately, even when the retransmission is positioned correctly,\nallowing it to run to completion while another write is suspended\noverwrites the same shared bookkeeping that the suspended write\ndepends on to resume. When the application later resumes the\nsuspended write (via a subsequent SSL_read(), SSL_write(),\nSSL_accept(), or SSL_connect() call), it finds that bookkeeping in a\nstate inconsistent with the message and aborts the process in\na debugging build.\n\nThe fix resets the retransmission&#39;s read position to the start of the\nmessage before resending, and skips retransmission entirely whenever a\nhandshake write is still suspended, deferring to the next call that\nresumes it instead.\n\nFIPS impact: no\nThe affected code is outside the FIPS module boundary.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-84782&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-84782&#39;, &#39;Description&#39;: &#34;Issue summary: The DTLS retransmission logic does not correctly handle\na handshake message write that is suspended part-way through.\nThe retransmitted message can be read past the message buffer and\nthe retransmission overwrites the internal state the suspended write\nneeds to resume correctly.\n\nImpact summary: The retransmitted message can disclose a heap memory\nto the peer as plaintext handshake data or cause a crash and a Denial\nof Service when the read reaches an unmapped memory region.\n\nCWE: CWE-125: Out-of-bounds Read\n\nDescription: DTLS handshake messages can be written out in multiple\nfragments, and a write can suspend mid-message (returning WANT_WRITE)\nif the underlying transport temporarily cannot accept more data. While\nsuch a write is suspended, the DTLS retransmission timer may\nindependently fire and ask the retransmission logic to resend an\nearlier, already-acknowledged-as-sent message from its retransmit\nqueue.\n\nThe retransmission logic reused the same internal buffer and position\ntracking as the message that was still being written, without\nresetting the position back to the start of the message being\nretransmitted. As a result the retransmission was read starting from\nwherever the suspended write had left off, producing a mislabelled\nmessage whose body was leftover bytes from the other, larger message\nstill in flight - content that was never meant to be sent at that\npoint, and which could run past the end of the allocated buffer.\n\nSeparately, even when the retransmission is positioned correctly,\nallowing it to run to completion while another write is suspended\noverwrites the same shared bookkeeping that the suspended write\ndepends on to resume. When the application later resumes the\nsuspended write (via a subsequent SSL_read(), SSL_write(),\nSSL_accept(), or SSL_connect() call), it finds that bookkeeping in a\nstate inconsistent with the message and aborts the process in\na debugging build.\n\nThe fix resets the retransmission&#39;s read position to the start of the\nmessage before resending, and skips retransmission entirely whenever a\nhandshake write is still suspended, deferring to the next call that\nresumes it instead.\n\nFIPS impact: no\nThe affected code is outside the FIPS module boundary.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-84784&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-84784&#39;, &#39;Description&#39;: &#39;Issue summary: A malicious remote peer may flood the local QUIC\nstack with NEW_CONNECTION_ID frames by avoiding a limit check on\nhow many connection IDs the remote QUIC stack can use.\n\nImpact summary: The local QUIC stack sends a RETIRE_CONN_ID frame\nfor every NEW_CONNECTION_ID frame it receives. The RETIRE_CONN_ID\nframe is dispatched via the Control Frame Queue (CFQ). If the remote\npeer also withholds ACKs, then it can force the local stack\nto allocate ~400MB (depending on ACK delay).\n\nCWE: CWE-770: Allocation of Resources Without Limits or Throttling\n\nDescription: RFC 9000 sections 5.1.1 and 5.1.2 [1] describe the mechanism\nby which a remote peer can notify the local QUIC stack to change the\ndestination connection ID (a.k.a. CID) the local stack uses to\nidentify the connection at the remote peer. Each CID is associated\nwith a sequence number. The sequence number is transmitted\nin NEW_CONNECTION_ID and RETIRE_CONNECTION_ID frames to identify the CID\nwhich is being either associated with a connection or retired.\n\nThe remote peer sends a NEW_CONNECTION_ID frame to let the local stack know\na new CID is being associated with an existing connection. The\nNEW_CONNECTION_ID frame carries the new CID, its sequence number, and the\nretire-prior-to number. The retire-prior-to identifies existing\nCIDs that are to be retired. The local QUIC stack must send a\nRETIRE_CONNECTION_ID for every destination CID whose sequence number\nis less than retire-prior-to. The CID becomes retired after the\nlocal stack receives an ACK for its RETIRE_CONNECTION_ID frame.\n\nAlthough the OpenSSL QUIC stack supports at most one destination CID\nfor every connection, it can be tricked into processing more than\none RETIRE_CONNECTION_ID frame per connection. The OpenSSL QUIC\nstack currently retires the destination CID as soon as it receives\nthe NEW_CONNECTION_ID, while in fact the destination CID must\nbe retired after an ACK for the RETIRE_CONNECTION_ID frame is received.\nCorrecting the flawed logic also fixes the backlog growth.\n\n[1] https://datatracker.ietf.org/doc/html/rfc9000#name-issuing-connection-ids\n\nFIPS impact: no\nThe FIPS module is not affected as the QUIC implementation is outside of\nthe OpenSSL FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-84784&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-84784&#39;, &#39;Description&#39;: &#39;Issue summary: A malicious remote peer may flood the local QUIC\nstack with NEW_CONNECTION_ID frames by avoiding a limit check on\nhow many connection IDs the remote QUIC stack can use.\n\nImpact summary: The local QUIC stack sends a RETIRE_CONN_ID frame\nfor every NEW_CONNECTION_ID frame it receives. The RETIRE_CONN_ID\nframe is dispatched via the Control Frame Queue (CFQ). If the remote\npeer also withholds ACKs, then it can force the local stack\nto allocate ~400MB (depending on ACK delay).\n\nCWE: CWE-770: Allocation of Resources Without Limits or Throttling\n\nDescription: RFC 9000 sections 5.1.1 and 5.1.2 [1] describe the mechanism\nby which a remote peer can notify the local QUIC stack to change the\ndestination connection ID (a.k.a. CID) the local stack uses to\nidentify the connection at the remote peer. Each CID is associated\nwith a sequence number. The sequence number is transmitted\nin NEW_CONNECTION_ID and RETIRE_CONNECTION_ID frames to identify the CID\nwhich is being either associated with a connection or retired.\n\nThe remote peer sends a NEW_CONNECTION_ID frame to let the local stack know\na new CID is being associated with an existing connection. The\nNEW_CONNECTION_ID frame carries the new CID, its sequence number, and the\nretire-prior-to number. The retire-prior-to identifies existing\nCIDs that are to be retired. The local QUIC stack must send a\nRETIRE_CONNECTION_ID for every destination CID whose sequence number\nis less than retire-prior-to. The CID becomes retired after the\nlocal stack receives an ACK for its RETIRE_CONNECTION_ID frame.\n\nAlthough the OpenSSL QUIC stack supports at most one destination CID\nfor every connection, it can be tricked into processing more than\none RETIRE_CONNECTION_ID frame per connection. The OpenSSL QUIC\nstack currently retires the destination CID as soon as it receives\nthe NEW_CONNECTION_ID, while in fact the destination CID must\nbe retired after an ACK for the RETIRE_CONNECTION_ID frame is received.\nCorrecting the flawed logic also fixes the backlog growth.\n\n[1] https://datatracker.ietf.org/doc/html/rfc9000#name-issuing-connection-ids\n\nFIPS impact: no\nThe FIPS module is not affected as the QUIC implementation is outside of\nthe OpenSSL FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-85091&#39;, &#39;PkgName&#39;: &#39;zlib&#39;, &#39;InstalledVersion&#39;: &#39;1.3.2-r0&#39;, &#39;FixedVersion&#39;: &#39;1.3.2-r1&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-85091&#39;, &#39;Description&#39;: &#39;&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-72897&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-72897&#39;, &#39;Description&#39;: &#34;Issue summary: A TLS server that calls SSL_set_SSL_CTX() to switch a\nconnection to a different SSL_CTX part way through a handshake may access\nmemory beyond the end of an internal array if the replacement context knows\nabout more provider signature algorithms than the context the connection was\ncreated from. Applications which never call SSL_set_SSL_CTX() are not\naffected.\n\nImpact summary: A remote peer may be able to cause a small out-of-bounds\nread, and in some circumstances a fixed-value out-of-bounds write, on the\nserver heap. This may lead to a Denial of Service.\n\nCWE: CWE-787: Out-of-bounds Write\n\nDescription: A TLS connection records how many certificate slots it has\nwhen it is created, taken from the SSL_CTX that created it: the built-in\ncertificate types plus one slot for each provider TLS-SIGALG entry that\ncontext was aware of. That count sizes an internal array of per-slot\ncertificate validity flags.\n\nAn application may replace a connection&#39;s SSL_CTX part way through the\nhandshake by calling SSL_set_SSL_CTX(), most commonly from a servername\ncallback in order to serve a different virtual host. Doing so did not\nrefresh the recorded count. A provider signature algorithm&#39;s slot index is\nits position in the list of whichever context resolves it, so if the\nreplacement context is aware of more of them than the original, an\nalgorithm offered by the peer can resolve to an index beyond the end of the\narray. Processing the peer&#39;s signature algorithms then reads one four byte\nword past the end for each such algorithm and, where the word read is zero,\nwrites a fixed value over it. A peer offering many of them can corrupt heap\nmetadata and abort the process.\n\nOnly provider signature algorithms which occupy one of the excess slots,\nand which the server also has configured, have this effect. Codepoints the\nreplacement context does not recognise are discarded without being resolved\nto a slot, and provider signature algorithms are usable only from TLS 1.3.\n\nThe two contexts must therefore be aware of different numbers of provider\nsignature algorithms, which requires separate library contexts, a provider\nloaded between the two being created, or providers which differ in what\nthey advertise - in 4.0, for example, the default provider advertises SM2\nwhere the FIPS provider does not. A deployment meeting the condition is\nalso unable to negotiate the affected algorithms with legitimate clients,\nsince the same stale count hides the corresponding certificates, so the\nmisconfiguration is likely to be noticed. For that reason, and because the\nconfiguration is not the default, this issue has been assessed as Low\nseverity.\n\nFIPS impact: no\nNo FIPS modules are affected by this issue as the affected code is outside\nthe OpenSSL FIPS module boundary.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-72897&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-72897&#39;, &#39;Description&#39;: &#34;Issue summary: A TLS server that calls SSL_set_SSL_CTX() to switch a\nconnection to a different SSL_CTX part way through a handshake may access\nmemory beyond the end of an internal array if the replacement context knows\nabout more provider signature algorithms than the context the connection was\ncreated from. Applications which never call SSL_set_SSL_CTX() are not\naffected.\n\nImpact summary: A remote peer may be able to cause a small out-of-bounds\nread, and in some circumstances a fixed-value out-of-bounds write, on the\nserver heap. This may lead to a Denial of Service.\n\nCWE: CWE-787: Out-of-bounds Write\n\nDescription: A TLS connection records how many certificate slots it has\nwhen it is created, taken from the SSL_CTX that created it: the built-in\ncertificate types plus one slot for each provider TLS-SIGALG entry that\ncontext was aware of. That count sizes an internal array of per-slot\ncertificate validity flags.\n\nAn application may replace a connection&#39;s SSL_CTX part way through the\nhandshake by calling SSL_set_SSL_CTX(), most commonly from a servername\ncallback in order to serve a different virtual host. Doing so did not\nrefresh the recorded count. A provider signature algorithm&#39;s slot index is\nits position in the list of whichever context resolves it, so if the\nreplacement context is aware of more of them than the original, an\nalgorithm offered by the peer can resolve to an index beyond the end of the\narray. Processing the peer&#39;s signature algorithms then reads one four byte\nword past the end for each such algorithm and, where the word read is zero,\nwrites a fixed value over it. A peer offering many of them can corrupt heap\nmetadata and abort the process.\n\nOnly provider signature algorithms which occupy one of the excess slots,\nand which the server also has configured, have this effect. Codepoints the\nreplacement context does not recognise are discarded without being resolved\nto a slot, and provider signature algorithms are usable only from TLS 1.3.\n\nThe two contexts must therefore be aware of different numbers of provider\nsignature algorithms, which requires separate library contexts, a provider\nloaded between the two being created, or providers which differ in what\nthey advertise - in 4.0, for example, the default provider advertises SM2\nwhere the FIPS provider does not. A deployment meeting the condition is\nalso unable to negotiate the affected algorithms with legitimate clients,\nsince the same stale count hides the corresponding certificates, so the\nmisconfiguration is likely to be noticed. For that reason, and because the\nconfiguration is not the default, this issue has been assessed as Low\nseverity.\n\nFIPS impact: no\nNo FIPS modules are affected by this issue as the affected code is outside\nthe OpenSSL FIPS module boundary.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-75806&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-75806&#39;, &#39;Description&#39;: &#39;Issue summary: An established DTLS 1.2 association using an AEAD cipher suite\ncan be terminated by a single unauthenticated datagram whose encrypted\nfragment is shorter than the mandatory explicit IV and authentication tag\noverhead.\n\nImpact summary: An attacker who can send a datagram that is routed to an\nexisting DTLS 1.2 association can tear that association down without knowing\nany key material. This is a Denial of Service limited to the targeted\nassociation. There is no memory safety or confidentiality impact.\n\nCWE: CWE-1284: Improper Validation of Specified Quantity in Input\n\nDescription: In TLS 1.2 and DTLS 1.2 every record protected by an AEAD cipher\nsuite carries an explicit IV followed by the ciphertext and an authentication\ntag. When decrypting such a record the record layer passed the record length to\nthe cipher implementation before checking that the record was long enough to\ncontain the explicit IV and the tag. For a record shorter than that overhead the\ncipher implementation rejected the impossible length, and the record layer\ntreated this as an internal failure and raised a fatal internal_error alert\ninstead of treating the record as one that failed authentication.\n\nIn TLS 1.2 the same record causes a fatal internal_error alert instead of the\nexpected bad_record_mac alert. Since any undecryptable record already\nterminates a TLS connection, this is a protocol conformance issue rather than\na security issue in TLS.\n\nThe fix validates the record length against the explicit IV and tag length\nbefore any AEAD processing, so that TLS reports bad_record_mac and DTLS\nsilently discards the record.\n\nFIPS impact: no\nThe affected code is outside the FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-75806&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-75806&#39;, &#39;Description&#39;: &#39;Issue summary: An established DTLS 1.2 association using an AEAD cipher suite\ncan be terminated by a single unauthenticated datagram whose encrypted\nfragment is shorter than the mandatory explicit IV and authentication tag\noverhead.\n\nImpact summary: An attacker who can send a datagram that is routed to an\nexisting DTLS 1.2 association can tear that association down without knowing\nany key material. This is a Denial of Service limited to the targeted\nassociation. There is no memory safety or confidentiality impact.\n\nCWE: CWE-1284: Improper Validation of Specified Quantity in Input\n\nDescription: In TLS 1.2 and DTLS 1.2 every record protected by an AEAD cipher\nsuite carries an explicit IV followed by the ciphertext and an authentication\ntag. When decrypting such a record the record layer passed the record length to\nthe cipher implementation before checking that the record was long enough to\ncontain the explicit IV and the tag. For a record shorter than that overhead the\ncipher implementation rejected the impossible length, and the record layer\ntreated this as an internal failure and raised a fatal internal_error alert\ninstead of treating the record as one that failed authentication.\n\nIn TLS 1.2 the same record causes a fatal internal_error alert instead of the\nexpected bad_record_mac alert. Since any undecryptable record already\nterminates a TLS connection, this is a protocol conformance issue rather than\na security issue in TLS.\n\nThe fix validates the record length against the explicit IV and tag length\nbefore any AEAD processing, so that TLS reports bad_record_mac and DTLS\nsilently discards the record.\n\nFIPS impact: no\nThe affected code is outside the FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-75804&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-75804&#39;, &#39;Description&#39;: &#39;Issue summary: OpenSSL QUIC stack does not enforce connection\nlevel flow control for streams. Remote peers may send more bytes\nas long as they fit within the stream flow control limits.\n\nImpact summary: A malicious remote peer may exploit the lack of connection\nflow control for streams to make the QUIC stack receive ~100MB of memory\ninstead of 768 KiB (default flow control window size).\n\nCWE: CWE-770: Allocation of Resources Without Limits or Throttling\n\nDescription: The local QUIC stack advertises two flow control limits\nto its remote peer: stream flow control limit and connection flow\ncontrol limit. The remote peer must follow both limits when transmitting\nstream data.\n\nWhenever the local QUIC stack receives a stream frame, it validates\nthat the size of the received stream frame stays within flow control limits.\nIf either limit is exceeded (stream level or connection level), then\nthe QUIC stack must close the connection with a flow control error.\n\nThe vulnerable OpenSSL QUIC stack enforces the stream-level but not\nthe connection-level limit. To exploit the issue, three conditions must be met:\n  - the remote peer opens several streams\n  - each stream must stay within the stream-level flow control limit\n  - there must be no zero-offset byte sent on any of the streams\n    (to prevent the vulnerable QUIC stack from consuming data).\nBy meeting the conditions above, the remote peer may make the local stack\nallocate 2 x MAX_STREAMS x (stream flow control limit) bytes\nof memory. MAX_STREAMS defaults to 100, and the limit applies to both\nbidirectional and unidirectional streams, making it 200 in total. The default\nflow control window for a stream is 512kB. The remote peer may\nforce the vulnerable QUIC stack to allocate 100MB of heap per connection.\n\nFIPS impact: no\nThe FIPS module is not affected as the QUIC implementation is outside of\nthe OpenSSL FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-75804&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-75804&#39;, &#39;Description&#39;: &#39;Issue summary: OpenSSL QUIC stack does not enforce connection\nlevel flow control for streams. Remote peers may send more bytes\nas long as they fit within the stream flow control limits.\n\nImpact summary: A malicious remote peer may exploit the lack of connection\nflow control for streams to make the QUIC stack receive ~100MB of memory\ninstead of 768 KiB (default flow control window size).\n\nCWE: CWE-770: Allocation of Resources Without Limits or Throttling\n\nDescription: The local QUIC stack advertises two flow control limits\nto its remote peer: stream flow control limit and connection flow\ncontrol limit. The remote peer must follow both limits when transmitting\nstream data.\n\nWhenever the local QUIC stack receives a stream frame, it validates\nthat the size of the received stream frame stays within flow control limits.\nIf either limit is exceeded (stream level or connection level), then\nthe QUIC stack must close the connection with a flow control error.\n\nThe vulnerable OpenSSL QUIC stack enforces the stream-level but not\nthe connection-level limit. To exploit the issue, three conditions must be met:\n  - the remote peer opens several streams\n  - each stream must stay within the stream-level flow control limit\n  - there must be no zero-offset byte sent on any of the streams\n    (to prevent the vulnerable QUIC stack from consuming data).\nBy meeting the conditions above, the remote peer may make the local stack\nallocate 2 x MAX_STREAMS x (stream flow control limit) bytes\nof memory. MAX_STREAMS defaults to 100, and the limit applies to both\nbidirectional and unidirectional streams, making it 200 in total. The default\nflow control window for a stream is 512kB. The remote peer may\nforce the vulnerable QUIC stack to allocate 100MB of heap per connection.\n\nFIPS impact: no\nThe FIPS module is not affected as the QUIC implementation is outside of\nthe OpenSSL FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2025-60876&#39;, &#39;PkgName&#39;: &#39;busybox&#39;, &#39;InstalledVersion&#39;: &#39;1.37.0-r31&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2025-60876&#39;, &#39;Description&#39;: &#39;BusyBox wget thru 1.3.7 accepted raw CR (0x0D)/LF (0x0A) and other C0 control bytes in the HTTP request-target (path/query), allowing the request line to be split and attacker-controlled headers to be injected. To preserve the HTTP/1.1 request-line shape METHOD SP request-target SP HTTP/1.1, a raw space (0x20) in the request-target must also be rejected (clients should use %20).&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2025-60876&#39;, &#39;PkgName&#39;: &#39;busybox-binsh&#39;, &#39;InstalledVersion&#39;: &#39;1.37.0-r31&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2025-60876&#39;, &#39;Description&#39;: &#39;BusyBox wget thru 1.3.7 accepted raw CR (0x0D)/LF (0x0A) and other C0 control bytes in the HTTP request-target (path/query), allowing the request line to be split and attacker-controlled headers to be injected. To preserve the HTTP/1.1 request-line shape METHOD SP request-target SP HTTP/1.1, a raw space (0x20) in the request-target must also be rejected (clients should use %20).&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2025-60876&#39;, &#39;PkgName&#39;: &#39;ssl_client&#39;, &#39;InstalledVersion&#39;: &#39;1.37.0-r31&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2025-60876&#39;, &#39;Description&#39;: &#39;BusyBox wget thru 1.3.7 accepted raw CR (0x0D)/LF (0x0A) and other C0 control bytes in the HTTP request-target (path/query), allowing the request line to be split and attacker-controlled headers to be injected. To preserve the HTTP/1.1 request-line shape METHOD SP request-target SP HTTP/1.1, a raw space (0x20) in the request-target must also be rejected (clients should use %20).&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-42772&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-42772&#39;, &#39;Description&#39;: &#39;Issue summary: The QUIC stream reassembly algorithm performance deteriorates\nprogressively as packets are arriving out of order. The worst case has\na quadratic complexity proportional to the number of stream frames kept in\nthe buffer for the received stream data.\n\nImpact summary: A remote QUIC peer that completes the handshake can create\na connection-scoped CPU pressure and potentially a Denial of Service using\ncompliant STREAM frames inside the advertised receive window, with low\nattacker bandwidth.\n\nCWE: CWE-407: Inefficient Algorithmic Complexity\n\nDescription: OpenSSL manages received QUIC stream fragments using a\ndoubly-linked list. While it optimizes for append operations (at the end of\nthe list), it falls back to a head-to-tail linear search for any fragment\nthat does not immediately follow the current `tail`.\n\nBy manipulating the sequence of offsets, an attacker can force the server\nto perform O(n^2) operations, consuming excessive CPU time for the\nQUIC process.\n\nFIPS impact: no\nThe FIPS module is not affected as the QUIC implementation is outside of\nthe OpenSSL FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-42772&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-42772&#39;, &#39;Description&#39;: &#39;Issue summary: The QUIC stream reassembly algorithm performance deteriorates\nprogressively as packets are arriving out of order. The worst case has\na quadratic complexity proportional to the number of stream frames kept in\nthe buffer for the received stream data.\n\nImpact summary: A remote QUIC peer that completes the handshake can create\na connection-scoped CPU pressure and potentially a Denial of Service using\ncompliant STREAM frames inside the advertised receive window, with low\nattacker bandwidth.\n\nCWE: CWE-407: Inefficient Algorithmic Complexity\n\nDescription: OpenSSL manages received QUIC stream fragments using a\ndoubly-linked list. While it optimizes for append operations (at the end of\nthe list), it falls back to a head-to-tail linear search for any fragment\nthat does not immediately follow the current `tail`.\n\nBy manipulating the sequence of offsets, an attacker can force the server\nto perform O(n^2) operations, consuming excessive CPU time for the\nQUIC process.\n\nFIPS impact: no\nThe FIPS module is not affected as the QUIC implementation is outside of\nthe OpenSSL FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-35189&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-35189&#39;, &#39;Description&#39;: &#39;Issue summary: A certificate with many nameRelativeToCRLIssuer CRL\ndistribution points causes disproportionate heap growth when OpenSSL caches\nX.509 extensions.\n\nImpact summary: Receiving a crafted certificate from a malicious peer can lead\nto significant memory pressure and possible Denial of Service in clients or\nin servers that solicit client certificates.\n\nCWE: CWE-770: Allocation of Resources Without Limits or Throttling\n\nDescription: A certificate or a set of certificates that fits under the limit for\nsize of certificates accepted from the peer (~100 KiB) can result in allocation\nof several hundred MiB of resident memory on the receiving side\nduring a normal TLS handshake.  This may be enough to crash the client or\nserver, if multiple concurrent connections lead to similarly large memory\nallocations.\n\nThe fix postpones processing of the CRL distribution points extensions in\ncertificates to the time when the processed value is required for CRL processing.\nThis avoids keeping large memory allocations for a long time when such\ncertificates are received.\n\nFIPS impact: no\nThe affected code is outside the FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-35189&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-35189&#39;, &#39;Description&#39;: &#39;Issue summary: A certificate with many nameRelativeToCRLIssuer CRL\ndistribution points causes disproportionate heap growth when OpenSSL caches\nX.509 extensions.\n\nImpact summary: Receiving a crafted certificate from a malicious peer can lead\nto significant memory pressure and possible Denial of Service in clients or\nin servers that solicit client certificates.\n\nCWE: CWE-770: Allocation of Resources Without Limits or Throttling\n\nDescription: A certificate or a set of certificates that fits under the limit for\nsize of certificates accepted from the peer (~100 KiB) can result in allocation\nof several hundred MiB of resident memory on the receiving side\nduring a normal TLS handshake.  This may be enough to crash the client or\nserver, if multiple concurrent connections lead to similarly large memory\nallocations.\n\nThe fix postpones processing of the CRL distribution points extensions in\ncertificates to the time when the processed value is required for CRL processing.\nThis avoids keeping large memory allocations for a long time when such\ncertificates are received.\n\nFIPS impact: no\nThe affected code is outside the FIPS module boundary.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-35191&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;LOW&#39;, &#39;Title&#39;: &#39;CVE-2026-35191&#39;, &#39;Description&#39;: &#34;Issue summary: The OpenSSL QUIC server, when configured to not preform address\nvalidation, can be forced to count incoming packets multiple times in its\nunvalidated credit computation, leading to a violation of the RFC 9000\nunvalidated connection amplification limit of 3 times the amount of data\nreceived.\n\nImpact summary: A remote attacker able to spoof packets to a server using the\nOpenSSL QUIC implementation might use the server for an amplification of\na DDoS attack.\n\nCWE: CWE-440: Expected Behavior Violation \n\nDescription: OpenSSL&#39;s QUIC stack, when operating as a server, enforces client\naddress validation (RFC 9000, Section 8), to confirm the peer address is not\nused for a traffic amplification attack.  If this feature is disabled on the\nserver, the QUIC stack limits the amount of server data that can be sent to 3\ntimes the amount of data received from the peer address, until such time as the\nTLS handshake is completed.\n\nThe OpenSSL QUIC server, when operating in non-validation mode, adds the\nlength of the whole datagram received to the unvalidated credit limit when\nprocessing each QUIC packet in the datagram. A remote peer may,\nafter establishing a connection with an initial client hello frame, send a\nsubsequent datagram containing multiple QUIC packets, leading the server to\naccount the entire datagram length for each packet in the datagram, resulting\nin the server believing that the peer has sent more data than it actually has,\nthereby violating the 3x amplification limit mandated by the RFC.\n\nFIPS impact: no\nAs the QUIC stack lives outside the FIPS module boundary, no FIPS modules\nare affected by this CVE.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-35191&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;LOW&#39;, &#39;Title&#39;: &#39;CVE-2026-35191&#39;, &#39;Description&#39;: &#34;Issue summary: The OpenSSL QUIC server, when configured to not preform address\nvalidation, can be forced to count incoming packets multiple times in its\nunvalidated credit computation, leading to a violation of the RFC 9000\nunvalidated connection amplification limit of 3 times the amount of data\nreceived.\n\nImpact summary: A remote attacker able to spoof packets to a server using the\nOpenSSL QUIC implementation might use the server for an amplification of\na DDoS attack.\n\nCWE: CWE-440: Expected Behavior Violation \n\nDescription: OpenSSL&#39;s QUIC stack, when operating as a server, enforces client\naddress validation (RFC 9000, Section 8), to confirm the peer address is not\nused for a traffic amplification attack.  If this feature is disabled on the\nserver, the QUIC stack limits the amount of server data that can be sent to 3\ntimes the amount of data received from the peer address, until such time as the\nTLS handshake is completed.\n\nThe OpenSSL QUIC server, when operating in non-validation mode, adds the\nlength of the whole datagram received to the unvalidated credit limit when\nprocessing each QUIC packet in the datagram. A remote peer may,\nafter establishing a connection with an initial client hello frame, send a\nsubsequent datagram containing multiple QUIC packets, leading the server to\naccount the entire datagram length for each packet in the datagram, resulting\nin the server believing that the peer has sent more data than it actually has,\nthereby violating the 3x amplification limit mandated by the RFC.\n\nFIPS impact: no\nAs the QUIC stack lives outside the FIPS module boundary, no FIPS modules\nare affected by this CVE.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-75805&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-75805&#39;, &#39;Description&#39;: &#34;Issue summary: A CMP client that requests certificate revocation on the basis\nof a PKCS#10 CSR may dereference a NULL pointer and terminate abnormally when\nprocessing a crafted revocation response. \n\nImpact summary: The NULL pointer dereference happens on a read which \nleads to a crash and a Denial of Service for the affected client application.\n\nCWE: CWE-476: NULL-pointer dereference\n\nDescription: A CMP client revoking a certificate has to tell the server which\ncertificate to revoke, and may do so by supplying a PKCS#10 CSR instead of the\ncertificate itself or its issuer name and serial number. This is\n&#39;openssl cmp -cmd rr -csr &lt;file&gt;&#39; on the command line, or\nOSSL_CMP_exec_RR_ses() with the certificate supplied via\nOSSL_CMP_CTX_set1_p10CSR() through the API.\n\nA CSR does not contain the issuer name and serial number of the certificate,\nso the client does not send them. A server may optionally name the\ncertificate it revoked in its response, and the client then compares that\nname against what it sent. Having sent neither an issuer name nor a serial\nnumber, it has nothing to compare against, and a server returning a specially\ncrafted name causes the client to read from a NULL pointer and crash.\n\nThe revocation response is checked for valid message protection before\nthe affected code is reached, so an attacker must be a malicious or\ncompromised CMP server, or a man-in-the-middle in possession of the\nsecret used for message protection. Clients that identify the certificate\nto be revoked by a certificate or by issuer and serial number rather\nthan by a PKCS#10 CSR are not affected.\n\nFIPS impact: no\nNo FIPS modules are affected by this issue, as the CMP protocol\nimplementation is outside the OpenSSL FIPS module boundary.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-75805&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-75805&#39;, &#39;Description&#39;: &#34;Issue summary: A CMP client that requests certificate revocation on the basis\nof a PKCS#10 CSR may dereference a NULL pointer and terminate abnormally when\nprocessing a crafted revocation response. \n\nImpact summary: The NULL pointer dereference happens on a read which \nleads to a crash and a Denial of Service for the affected client application.\n\nCWE: CWE-476: NULL-pointer dereference\n\nDescription: A CMP client revoking a certificate has to tell the server which\ncertificate to revoke, and may do so by supplying a PKCS#10 CSR instead of the\ncertificate itself or its issuer name and serial number. This is\n&#39;openssl cmp -cmd rr -csr &lt;file&gt;&#39; on the command line, or\nOSSL_CMP_exec_RR_ses() with the certificate supplied via\nOSSL_CMP_CTX_set1_p10CSR() through the API.\n\nA CSR does not contain the issuer name and serial number of the certificate,\nso the client does not send them. A server may optionally name the\ncertificate it revoked in its response, and the client then compares that\nname against what it sent. Having sent neither an issuer name nor a serial\nnumber, it has nothing to compare against, and a server returning a specially\ncrafted name causes the client to read from a NULL pointer and crash.\n\nThe revocation response is checked for valid message protection before\nthe affected code is reached, so an attacker must be a malicious or\ncompromised CMP server, or a man-in-the-middle in possession of the\nsecret used for message protection. Clients that identify the certificate\nto be revoked by a certificate or by issuer and serial number rather\nthan by a PKCS#10 CSR are not affected.\n\nFIPS impact: no\nNo FIPS modules are affected by this issue, as the CMP protocol\nimplementation is outside the OpenSSL FIPS module boundary.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-54875&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;LOW&#39;, &#39;Title&#39;: &#39;CVE-2026-54875&#39;, &#39;Description&#39;: &#39;Issue summary: A non-constant-time optimized implementation of scalar\npoint multiplication is used for SM2 private key operations on ARM64 and\nRISC-V platforms.\n\nImpact summary: An attacker able to measure the time taken by, or to observe\nthe cache-line access pattern of SM2 signing or decryption on an affected\nplatform can learn information about the secret scalar.\n\nCWE: CWE-208: Observable Timing Discrepancy\n\nDescription: On ARM64 and RISC-V processors, the SM2 curve uses an optimized\nscalar multiplication implementation whose conditional branches and table\nlook ups are chosen according to the bits of the secret scalar. The execution\ntime and the cache-access pattern therefore depend on the long-term private\nkey (during SM2 decryption) or the per-signature nonce (during SM2 signature\ngeneration), forming a timing and cache side-channel.\n\nFIPS Impact: no\nSM2 is not a FIPS algorithm and the optimized SM2 implementation is not part\nof the FIPS module.\n\nOpenSSL 4.0, 3.6, 3.5 and 3.4 are vulnerable to this issue on AArch64 and\nRISC-V.\n\nOpenSSL 3.0, 1.1.1 and 1.0.2 are not affected by this issue.\n\nOpenSSL 4.0 users should upgrade to OpenSSL 4.0.3.\nOpenSSL 3.6 users should upgrade to OpenSSL 3.6.5.\nOpenSSL 3.5 users should upgrade to OpenSSL 3.5.9.\nOpenSSL 3.4 users should upgrade to OpenSSL 3.4.8.\n\nThis issue was reported on 2 May 2026 by Abhinav Agarwal.\nIt was independently reported on 6 June 2026 by Feng Xue.\nThe fix was developed by Igor Ustinov.\n\n-- cut (non-publishing metadata for internal use) --\nReported by: Abhinav Agarwal, Feng Xue\nFixed by: Igor Ustinov&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-54875&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;LOW&#39;, &#39;Title&#39;: &#39;CVE-2026-54875&#39;, &#39;Description&#39;: &#39;Issue summary: A non-constant-time optimized implementation of scalar\npoint multiplication is used for SM2 private key operations on ARM64 and\nRISC-V platforms.\n\nImpact summary: An attacker able to measure the time taken by, or to observe\nthe cache-line access pattern of SM2 signing or decryption on an affected\nplatform can learn information about the secret scalar.\n\nCWE: CWE-208: Observable Timing Discrepancy\n\nDescription: On ARM64 and RISC-V processors, the SM2 curve uses an optimized\nscalar multiplication implementation whose conditional branches and table\nlook ups are chosen according to the bits of the secret scalar. The execution\ntime and the cache-access pattern therefore depend on the long-term private\nkey (during SM2 decryption) or the per-signature nonce (during SM2 signature\ngeneration), forming a timing and cache side-channel.\n\nFIPS Impact: no\nSM2 is not a FIPS algorithm and the optimized SM2 implementation is not part\nof the FIPS module.\n\nOpenSSL 4.0, 3.6, 3.5 and 3.4 are vulnerable to this issue on AArch64 and\nRISC-V.\n\nOpenSSL 3.0, 1.1.1 and 1.0.2 are not affected by this issue.\n\nOpenSSL 4.0 users should upgrade to OpenSSL 4.0.3.\nOpenSSL 3.6 users should upgrade to OpenSSL 3.6.5.\nOpenSSL 3.5 users should upgrade to OpenSSL 3.5.9.\nOpenSSL 3.4 users should upgrade to OpenSSL 3.4.8.\n\nThis issue was reported on 2 May 2026 by Abhinav Agarwal.\nIt was independently reported on 6 June 2026 by Feng Xue.\nThe fix was developed by Igor Ustinov.\n\n-- cut (non-publishing metadata for internal use) --\nReported by: Abhinav Agarwal, Feng Xue\nFixed by: Igor Ustinov&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-54872&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;LOW&#39;, &#39;Title&#39;: &#39;CVE-2026-54872&#39;, &#39;Description&#39;: &#39;Issue summary: The generic elliptic-curve scalar multiplication used for\nECDSA and SM2 signature operations with curves that do not have a dedicated\nimplementation leaks information about the secret nonce through timing.\n\nImpact summary: An attacker able to measure signing times may learn\ninformation about the per-signature secret nonce, which over many signatures\ncan, via a lattice / Hidden Number Problem attack, lead to recovery of the\nprivate key.\n\nCWE: CWE-208: Observable Timing Discrepancy\n\nDescription: The generic elliptic-curve scalar multiplication used for\ncurves that do not have a dedicated constant-time implementation pads the\nsecret scalar with non-constant-time BIGNUM operations, so the time taken\ndepends on the value of the secret scalar derived from the ECDSA and SM2 nonce.\n\nThe leak is very small; observing it requires a large number of\nmeasurements. The effect is largest for curves whose group order lies\non a machine-word boundary, such as brainpoolP384r1.\n\nApplications using ECDSA signing over the Brainpool and other generic prime\ncurves, and SM2 signing on platforms that use the generic implementation,\nare vulnerable to this issue.\n\nThe NIST curves P-256, P-384 and P-521 use dedicated constant-time\nimplementations and are not affected.\n\nFIPS Impact: no\nThe FIPS modules are not affected: the approved NIST curves used in the FIPS\nprovider have dedicated constant-time implementations and do not use the\naffected code path.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-54872&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;LOW&#39;, &#39;Title&#39;: &#39;CVE-2026-54872&#39;, &#39;Description&#39;: &#39;Issue summary: The generic elliptic-curve scalar multiplication used for\nECDSA and SM2 signature operations with curves that do not have a dedicated\nimplementation leaks information about the secret nonce through timing.\n\nImpact summary: An attacker able to measure signing times may learn\ninformation about the per-signature secret nonce, which over many signatures\ncan, via a lattice / Hidden Number Problem attack, lead to recovery of the\nprivate key.\n\nCWE: CWE-208: Observable Timing Discrepancy\n\nDescription: The generic elliptic-curve scalar multiplication used for\ncurves that do not have a dedicated constant-time implementation pads the\nsecret scalar with non-constant-time BIGNUM operations, so the time taken\ndepends on the value of the secret scalar derived from the ECDSA and SM2 nonce.\n\nThe leak is very small; observing it requires a large number of\nmeasurements. The effect is largest for curves whose group order lies\non a machine-word boundary, such as brainpoolP384r1.\n\nApplications using ECDSA signing over the Brainpool and other generic prime\ncurves, and SM2 signing on platforms that use the generic implementation,\nare vulnerable to this issue.\n\nThe NIST curves P-256, P-384 and P-521 use dedicated constant-time\nimplementations and are not affected.\n\nFIPS Impact: no\nThe FIPS modules are not affected: the approved NIST curves used in the FIPS\nprovider have dedicated constant-time implementations and do not use the\naffected code path.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-77696&#39;, &#39;PkgName&#39;: &#39;libcrypto3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;LOW&#39;, &#39;Title&#39;: &#39;CVE-2026-77696&#39;, &#39;Description&#39;: &#39;Issue summary: SM2 signature generation uses non-constant-time arithmetic\non secret values, forming a timing side-channel.\n\nImpact summary: An attacker able to measure SM2 signing times may learn\ninformation about the per-signature secret nonce, which over many signatures\ncan, via a lattice / Hidden Number Problem attack, lead to recovery of the\nprivate key.\n\nCWE: CWE-208: Observable Timing Discrepancy\n\nDescription: SM2 signature generation computes the signature value using\nvariable-time BIGNUM operations on the secret nonce and the private key, so\nthe time taken to produce an SM2 signature depends on these secret values,\nforming a timing side-channel.\n\nApplications performing SM2 signature generation are affected on all\nplatforms.\n\nFIPS Impact: no\nSM2 is not a FIPS algorithm.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-77696&#39;, &#39;PkgName&#39;: &#39;libssl3&#39;, &#39;InstalledVersion&#39;: &#39;3.5.8-r0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;LOW&#39;, &#39;Title&#39;: &#39;CVE-2026-77696&#39;, &#39;Description&#39;: &#39;Issue summary: SM2 signature generation uses non-constant-time arithmetic\non secret values, forming a timing side-channel.\n\nImpact summary: An attacker able to measure SM2 signing times may learn\ninformation about the per-signature secret nonce, which over many signatures\ncan, via a lattice / Hidden Number Problem attack, lead to recovery of the\nprivate key.\n\nCWE: CWE-208: Observable Timing Discrepancy\n\nDescription: SM2 signature generation computes the signature value using\nvariable-time BIGNUM operations on the secret nonce and the private key, so\nthe time taken to produce an SM2 signature depends on these secret values,\nforming a timing side-channel.\n\nApplications performing SM2 signature generation are affected on all\nplatforms.\n\nFIPS Impact: no\nSM2 is not a FIPS algorithm.&#39;}]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>source</th><td><table>
+      <tbody>
+        
+        <tr><th>fetched_at</th><td>2026-10-16T15:38:48.609831+00:00</td></tr>
+        
+        <tr><th>built_at</th><td>2026-10-16T06:29:51Z</td></tr>
+        
+        <tr><th>version</th><td>v6.1.10</td></tr>
+        
+        <tr><th>checksum</th><td>sha256:9985d2b30dc728eea2941d23e7d7a2e04daebd65c50a959c6136a858927516b9</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="sbom">
+      <summary>
+        <span>sbom</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>sbom</td></tr>
+        
+        <tr><th>scanner_version</th><td>1.44.0</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>tag</th><td>sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</td></tr>
+        
+        <tr><th>has_sbom</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>sbom_format</th><td>CycloneDX</td></tr>
+        
+        <tr><th>sbom_version</th><td>1.6</td></tr>
+        
+        <tr><th>total_components</th><td>96</td></tr>
+        
+        <tr><th>component_types</th><td><table>
+      <tbody>
+        
+        <tr><th>library</th><td>16</td></tr>
+        
+        <tr><th>operating-system</th><td>1</td></tr>
+        
+        <tr><th>file</th><td>79</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>total_dependencies</th><td>12</td></tr>
+        
+        <tr><th>licenses</th><td><ul><li>Apache-2.0</li><li>GPL-2.0-only</li><li>MIT</li><li>Zlib</li></ul></td></tr>
+        
+        <tr><th>copyleft_licenses</th><td><ul><li>GPL-2.0-only</li></ul></td></tr>
+        
+        <tr><th>components</th><td><table>
+    <thead><tr><th>name</th><th>version</th><th>type</th><th>purl</th><th>licenses</th></tr></thead>
+    <tbody>
+      
+      <tr><td>alpine-baselayout</td><td>3.7.2-r1</td><td>library</td><td>pkg:apk/alpine/alpine-baselayout@3.7.2-r1?arch=x86_64&amp;distro=alpine-3.24.2</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>alpine-baselayout-data</td><td>3.7.2-r1</td><td>library</td><td>pkg:apk/alpine/alpine-baselayout-data@3.7.2-r1?arch=x86_64&amp;distro=alpine-3.24.2&amp;upstream=alpine-baselayout</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>alpine-keys</td><td>2.6-r0</td><td>library</td><td>pkg:apk/alpine/alpine-keys@2.6-r0?arch=x86_64&amp;distro=alpine-3.24.2</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>alpine-release</td><td>3.24.2-r0</td><td>library</td><td>pkg:apk/alpine/alpine-release@3.24.2-r0?arch=x86_64&amp;distro=alpine-3.24.2&amp;upstream=alpine-base</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>apk-tools</td><td>3.0.8-r0</td><td>library</td><td>pkg:apk/alpine/apk-tools@3.0.8-r0?arch=x86_64&amp;distro=alpine-3.24.2</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>busybox</td><td>1.37.0-r31</td><td>library</td><td>pkg:apk/alpine/busybox@1.37.0-r31?arch=x86_64&amp;distro=alpine-3.24.2</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>busybox-binsh</td><td>1.37.0-r31</td><td>library</td><td>pkg:apk/alpine/busybox-binsh@1.37.0-r31?arch=x86_64&amp;distro=alpine-3.24.2&amp;upstream=busybox</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>ca-certificates-bundle</td><td>20260909-r0</td><td>library</td><td>pkg:apk/alpine/ca-certificates-bundle@20260909-r0?arch=x86_64&amp;distro=alpine-3.24.2&amp;upstream=ca-certificates</td><td>[]</td></tr>
+      
+      <tr><td>libapk</td><td>3.0.8-r0</td><td>library</td><td>pkg:apk/alpine/libapk@3.0.8-r0?arch=x86_64&amp;distro=alpine-3.24.2&amp;upstream=apk-tools</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>libcrypto3</td><td>3.5.8-r0</td><td>library</td><td>pkg:apk/alpine/libcrypto3@3.5.8-r0?arch=x86_64&amp;distro=alpine-3.24.2&amp;upstream=openssl</td><td>[&#39;Apache-2.0&#39;]</td></tr>
+      
+      <tr><td>libssl3</td><td>3.5.8-r0</td><td>library</td><td>pkg:apk/alpine/libssl3@3.5.8-r0?arch=x86_64&amp;distro=alpine-3.24.2&amp;upstream=openssl</td><td>[&#39;Apache-2.0&#39;]</td></tr>
+      
+      <tr><td>musl</td><td>1.2.6-r2</td><td>library</td><td>pkg:apk/alpine/musl@1.2.6-r2?arch=x86_64&amp;distro=alpine-3.24.2</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>musl-utils</td><td>1.2.6-r2</td><td>library</td><td>pkg:apk/alpine/musl-utils@1.2.6-r2?arch=x86_64&amp;distro=alpine-3.24.2&amp;upstream=musl</td><td>[]</td></tr>
+      
+      <tr><td>scanelf</td><td>1.3.9-r1</td><td>library</td><td>pkg:apk/alpine/scanelf@1.3.9-r1?arch=x86_64&amp;distro=alpine-3.24.2&amp;upstream=pax-utils</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>ssl_client</td><td>1.37.0-r31</td><td>library</td><td>pkg:apk/alpine/ssl_client@1.37.0-r31?arch=x86_64&amp;distro=alpine-3.24.2&amp;upstream=busybox</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>zlib</td><td>1.3.2-r0</td><td>library</td><td>pkg:apk/alpine/zlib@1.3.2-r0?arch=x86_64&amp;distro=alpine-3.24.2</td><td>[&#39;Zlib&#39;]</td></tr>
+      
+      <tr><td>alpine</td><td>3.24.2</td><td>operating-system</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/bin/busybox</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/alpine-release</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/apk/keys/alpine-devel@lists.alpinelinux.org-4a6a0840.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/apk/keys/alpine-devel@lists.alpinelinux.org-5261cecb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/apk/keys/alpine-devel@lists.alpinelinux.org-6165ee59.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/busybox-paths.d/busybox</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/crontabs/root</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/fstab</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/group</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/hostname</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/hosts</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/inittab</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/issue</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/logrotate.d/acpid</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modprobe.d/aliases.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modprobe.d/blacklist.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modprobe.d/i386.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modules</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/motd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/network/if-up.d/dad</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/nsswitch.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/passwd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile.d/20locale.sh</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile.d/README</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile.d/color_prompt.sh.disabled</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/protocols</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/secfixes.d/alpine</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/securetty</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/services</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/shadow</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/shells</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/certs/ca-certificates.crt</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/ct_log_list.cnf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/ct_log_list.cnf.dist</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/openssl.cnf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/openssl.cnf.dist</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/sysctl.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/udhcpc/udhcpc.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/lib/apk/db/installed</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/lib/ld-musl-x86_64.so.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/sbin/apk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/sbin/ldconfig</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/getconf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/getent</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/iconv</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/ldd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/scanelf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/ssl_client</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/afalg.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/capi.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/loader_attic.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/padlock.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libapk.so.3.0.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libcrypto.so.3</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libssl.so.3</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libz.so.1.3.2</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/os-release</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/ossl-modules/legacy.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/sysctl.d/00-alpine.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-4a6a0840.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-5243ef4b.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-524d27bb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-5261cecb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-58199dcc.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-58cbb476.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-58e4f17d.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-5e69ca50.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-60ac2099.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-6165ee59.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-61666e3f.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616a9724.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616abc23.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616ac3bc.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616adfeb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616ae350.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616db30d.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-66ba20fe.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/udhcpc/default.script</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="provenance">
+      <summary>
+        <span>provenance</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>provenance</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>tag</th><td>sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</td></tr>
+        
+        <tr><th>has_provenance</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>has_cosign_signature</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>source_tracked</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>indicators_count</th><td>0</td></tr>
+        
+        <tr><th>indicators</th><td><em>none</em></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="freshness">
+      <summary>
+        <span>freshness</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>freshness</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>tag</th><td>sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</td></tr>
+        
+        <tr><th>tag_created</th><td>2026-09-17T20:37:20.889221879Z</td></tr>
+        
+        <tr><th>latest_created</th><td>2026-09-17T20:37:20.889221879Z</td></tr>
+        
+        <tr><th>age_days</th><td>28</td></tr>
+        
+        <tr><th>behind_latest_days</th><td>0</td></tr>
+        
+        <tr><th>reproducible_build</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>is_latest</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="scorecarddev">
+      <summary>
+        <span>scorecarddev</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>scorecarddev</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>source_repo</th><td>https://github.com/alpinelinux/docker-alpine</td></tr>
+        
+        <tr><th>scorecard_available</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>score</th><td><em>—</em></td></tr>
+        
+        <tr><th>checks</th><td><em>none</em></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="oci">
+      <summary>
+        <span>oci</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>oci</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>tag</th><td>sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</td></tr>
+        
+        <tr><th>platforms</th><td><table>
+    <thead><tr><th>architecture</th><th>os</th><th>created</th><th>labels</th><th>user</th><th>env</th><th>exposed_ports</th><th>layers_count</th><th>size</th><th>digest</th></tr></thead>
+    <tbody>
+      
+      <tr><td>amd64</td><td>linux</td><td>2026-09-17T20:37:20.889221879Z</td><td>{}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>1</td><td>3850349</td><td>sha256:d56c381f961d307a21b3ca004cf1e3910f106644aefb1f43e654c8a56c4fd395</td></tr>
+      
+      <tr><td>arm</td><td>linux</td><td>2026-09-17T20:37:46.890589848Z</td><td>{}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>1</td><td>3555736</td><td>sha256:d3c3fda3e4d3f0fcfc86cf469c6dfbe65017143dde23feb4b11df37c373cdc76</td></tr>
+      
+      <tr><td>arm</td><td>linux</td><td>2026-09-17T20:37:03.337505716Z</td><td>{}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>1</td><td>3265825</td><td>sha256:0a13654ecd9b19a728f0bee49d7245ffcd9b9f31ed8d69fe8753e39a8432bda2</td></tr>
+      
+      <tr><td>arm64</td><td>linux</td><td>2026-09-17T20:37:05.258369293Z</td><td>{}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>1</td><td>4188286</td><td>sha256:260479a1cfaf304c4c20da7f8405d3ce313513dcd534bb743257bdd2fe0f3e2d</td></tr>
+      
+      <tr><td>386</td><td>linux</td><td>2026-09-17T20:37:15.889332752Z</td><td>{}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>1</td><td>3677387</td><td>sha256:c54a80678a9e7a744b39d478329d5eb8e568c2e0321defd14cab57047557e202</td></tr>
+      
+      <tr><td>ppc64le</td><td>linux</td><td>2026-09-17T20:36:41.389983832Z</td><td>{}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>1</td><td>3818091</td><td>sha256:f34b729ba6dc5bcd147ff99af45f81c1bc68ab619067c39cafd19327dd04b7db</td></tr>
+      
+      <tr><td>riscv64</td><td>linux</td><td>2026-09-18T16:49:18.347079963Z</td><td>{}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>1</td><td>3575985</td><td>sha256:1320e86f94641acc6c531e0519ca4285f1882612d52c654dfa4f1bb65b48a04f</td></tr>
+      
+      <tr><td>s390x</td><td>linux</td><td>2026-09-17T21:38:20.153589459Z</td><td>{}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>1</td><td>3715949</td><td>sha256:ce2789264b55ef57693ad3aebc95d4ee9e46288f769f43ab5f37554853502289</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>platforms_supported</th><td><ul><li>linux/amd64</li><li>linux/arm/v6</li><li>linux/arm/v7</li><li>linux/arm64/v8</li><li>linux/386</li><li>linux/ppc64le</li><li>linux/riscv64</li><li>linux/s390x</li></ul></td></tr>
+        
+        <tr><th>tags</th><td><ul><li>2.6</li><li>2.7</li><li>20190228</li><li>20190408</li><li>20190508</li><li>20190707</li><li>20190809</li><li>20190925</li><li>20191114</li><li>20191219</li><li>20200122</li><li>20200319</li><li>20200428</li><li>20200626</li><li>20200917</li><li>20201218</li><li>20210212</li><li>20210730</li><li>20210804</li><li>20220316</li><li>20220328</li><li>20220715</li><li>20221110</li><li>20230208</li><li>20230329</li><li>20230901</li><li>20231219</li><li>20240315</li><li>20240329</li><li>20240606</li><li>20240807</li><li>20240923</li><li>20250108</li><li>20251224</li><li>20260127</li><li>20260805</li><li>3</li><li>3.1</li><li>3.10</li><li>3.10.0</li><li>3.10.1</li><li>3.10.2</li><li>3.10.3</li><li>3.10.4</li><li>3.10.5</li><li>3.10.6</li><li>3.10.7</li><li>3.10.8</li><li>3.10.9</li><li>3.11</li><li>3.11.0</li><li>3.11.10</li><li>3.11.11</li><li>3.11.12</li><li>3.11.13</li><li>3.11.2</li><li>3.11.3</li><li>3.11.5</li><li>3.11.6</li><li>3.11.7</li><li>3.11.8</li><li>3.11.9</li><li>3.12</li><li>3.12.0</li><li>3.12.1</li><li>3.12.10</li><li>3.12.11</li><li>3.12.12</li><li>3.12.2</li><li>3.12.3</li><li>3.12.4</li><li>3.12.5</li><li>3.12.6</li><li>3.12.7</li><li>3.12.8</li><li>3.12.9</li><li>3.13</li><li>3.13.0</li><li>3.13.1</li><li>3.13.10</li><li>3.13.11</li><li>3.13.12</li><li>3.13.2</li><li>3.13.3</li><li>3.13.4</li><li>3.13.5</li><li>3.13.6</li><li>3.13.7</li><li>3.13.8</li><li>3.13.9</li><li>3.14</li><li>3.14.0</li><li>3.14.1</li><li>3.14.10</li><li>3.14.2</li><li>3.14.3</li><li>3.14.4</li><li>3.14.5</li><li>3.14.6</li><li>3.14.7</li><li>3.14.8</li><li>3.14.9</li><li>3.15</li><li>3.15.0</li><li>3.15.0-rc.4</li><li>3.15.1</li><li>3.15.10</li><li>3.15.11</li><li>3.15.2</li><li>3.15.3</li><li>3.15.4</li><li>3.15.5</li><li>3.15.6</li><li>3.15.7</li><li>3.15.8</li><li>3.15.9</li><li>3.16</li><li>3.16.0</li><li>3.16.1</li><li>3.16.2</li><li>3.16.3</li><li>3.16.4</li><li>3.16.5</li><li>3.16.6</li><li>3.16.7</li><li>3.16.8</li><li>3.16.9</li><li>3.17</li><li>3.17.0</li><li>3.17.0_rc1</li><li>3.17.1</li><li>3.17.10</li><li>3.17.2</li><li>3.17.3</li><li>3.17.4</li><li>3.17.5</li><li>3.17.6</li><li>3.17.7</li><li>3.17.8</li><li>3.17.9</li><li>3.18</li><li>3.18.0</li><li>3.18.10</li><li>3.18.11</li><li>3.18.12</li><li>3.18.2</li><li>3.18.3</li><li>3.18.4</li><li>3.18.5</li><li>3.18.6</li><li>3.18.7</li><li>3.18.8</li><li>3.18.9</li><li>3.19</li><li>3.19.0</li><li>3.19.1</li><li>3.19.2</li><li>3.19.3</li><li>3.19.4</li><li>3.19.5</li><li>3.19.6</li><li>3.19.7</li><li>3.19.8</li><li>3.19.9</li><li>3.2</li><li>3.20</li><li>3.20.0</li><li>3.20.1</li><li>3.20.10</li><li>3.20.2</li><li>3.20.3</li><li>3.20.4</li><li>3.20.5</li><li>3.20.6</li><li>3.20.7</li><li>3.20.8</li><li>3.20.9</li><li>3.21</li><li>3.21.0</li><li>3.21.1</li><li>3.21.2</li><li>3.21.3</li><li>3.21.4</li><li>3.21.5</li><li>3.21.6</li><li>3.21.7</li><li>3.21.8</li><li>3.22</li><li>3.22.0</li><li>3.22.1</li><li>3.22.2</li><li>3.22.3</li><li>3.22.4</li><li>3.22.5</li><li>3.22.6</li><li>3.23</li><li>3.23.0</li><li>3.23.2</li><li>3.23.3</li><li>3.23.4</li><li>3.23.5</li><li>3.23.6</li><li>3.24</li><li>3.24.0</li><li>3.24.1</li><li>3.24.2</li><li>3.3</li><li>3.4</li><li>3.5</li><li>3.6</li><li>3.6.5</li><li>3.7</li><li>3.7.3</li><li>3.8</li><li>3.8.4</li><li>3.8.5</li><li>3.9</li><li>3.9.2</li><li>3.9.3</li><li>3.9.4</li><li>3.9.5</li><li>3.9.6</li><li>edge</li><li>latest</li></ul></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="versioning">
+      <summary>
+        <span>versioning</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>versioning</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>total_tags</th><td>224</td></tr>
+        
+        <tr><th>dominant_pattern</th><td>semver</td></tr>
+        
+        <tr><th>semver_compliant_percentage</th><td>98.7</td></tr>
+        
+        <tr><th>patterns</th><td><table>
+    <thead><tr><th>pattern</th><th>count</th><th>percentage</th><th>examples</th></tr></thead>
+    <tbody>
+      
+      <tr><td>named</td><td>3</td><td>1.3</td><td>[&#39;3.17.0_rc1&#39;, &#39;edge&#39;, &#39;latest&#39;]</td></tr>
+      
+      <tr><td>numeric</td><td>61</td><td>27.2</td><td>[&#39;2.6&#39;, &#39;2.7&#39;, &#39;20190228&#39;, &#39;20190408&#39;, &#39;20190508&#39;, &#39;20190707&#39;, &#39;20190809&#39;, &#39;20190925&#39;, &#39;20191114&#39;, &#39;20191219&#39;]</td></tr>
+      
+      <tr><td>semver</td><td>159</td><td>71.0</td><td>[&#39;3.10.0&#39;, &#39;3.10.1&#39;, &#39;3.10.2&#39;, &#39;3.10.3&#39;, &#39;3.10.4&#39;, &#39;3.10.5&#39;, &#39;3.10.6&#39;, &#39;3.10.7&#39;, &#39;3.10.8&#39;, &#39;3.10.9&#39;]</td></tr>
+      
+      <tr><td>semver-prerelease</td><td>1</td><td>0.4</td><td>[&#39;3.15.0-rc.4&#39;]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>variants</th><td><em>none</em></td></tr>
+        
+        <tr><th>aliases</th><td><ul><li>2.6</li><li>2.7</li><li>20190228</li><li>20190408</li><li>20190508</li><li>20190707</li><li>20190809</li><li>20190925</li><li>20191114</li><li>20191219</li><li>20200122</li><li>20200319</li><li>20200428</li><li>20200626</li><li>20200917</li><li>20201218</li><li>20210212</li><li>20210730</li><li>20210804</li><li>20220316</li><li>20220328</li><li>20220715</li><li>20221110</li><li>20230208</li><li>20230329</li><li>20230901</li><li>20231219</li><li>20240315</li><li>20240329</li><li>20240606</li><li>20240807</li><li>20240923</li><li>20250108</li><li>20251224</li><li>20260127</li><li>20260805</li><li>3</li><li>3.1</li><li>3.10</li><li>3.10.0</li><li>3.10.1</li><li>3.10.2</li><li>3.10.3</li><li>3.10.4</li><li>3.10.5</li><li>3.10.6</li><li>3.10.7</li><li>3.10.8</li><li>3.10.9</li><li>3.11</li><li>3.11.0</li><li>3.11.10</li><li>3.11.11</li><li>3.11.12</li><li>3.11.13</li><li>3.11.2</li><li>3.11.3</li><li>3.11.5</li><li>3.11.6</li><li>3.11.7</li><li>3.11.8</li><li>3.11.9</li><li>3.12</li><li>3.12.0</li><li>3.12.1</li><li>3.12.10</li><li>3.12.11</li><li>3.12.12</li><li>3.12.2</li><li>3.12.3</li><li>3.12.4</li><li>3.12.5</li><li>3.12.6</li><li>3.12.7</li><li>3.12.8</li><li>3.12.9</li><li>3.13</li><li>3.13.0</li><li>3.13.1</li><li>3.13.10</li><li>3.13.11</li><li>3.13.12</li><li>3.13.2</li><li>3.13.3</li><li>3.13.4</li><li>3.13.5</li><li>3.13.6</li><li>3.13.7</li><li>3.13.8</li><li>3.13.9</li><li>3.14</li><li>3.14.0</li><li>3.14.1</li><li>3.14.10</li><li>3.14.2</li><li>3.14.3</li><li>3.14.4</li><li>3.14.5</li><li>3.14.6</li><li>3.14.7</li><li>3.14.8</li><li>3.14.9</li><li>3.15</li><li>3.15.0</li><li>3.15.0-rc.4</li><li>3.15.1</li><li>3.15.10</li><li>3.15.11</li><li>3.15.2</li><li>3.15.3</li><li>3.15.4</li><li>3.15.5</li><li>3.15.6</li><li>3.15.7</li><li>3.15.8</li><li>3.15.9</li><li>3.16</li><li>3.16.0</li><li>3.16.1</li><li>3.16.2</li><li>3.16.3</li><li>3.16.4</li><li>3.16.5</li><li>3.16.6</li><li>3.16.7</li><li>3.16.8</li><li>3.16.9</li><li>3.17</li><li>3.17.0</li><li>3.17.0_rc1</li><li>3.17.1</li><li>3.17.10</li><li>3.17.2</li><li>3.17.3</li><li>3.17.4</li><li>3.17.5</li><li>3.17.6</li><li>3.17.7</li><li>3.17.8</li><li>3.17.9</li><li>3.18</li><li>3.18.0</li><li>3.18.10</li><li>3.18.11</li><li>3.18.12</li><li>3.18.2</li><li>3.18.3</li><li>3.18.4</li><li>3.18.5</li><li>3.18.6</li><li>3.18.7</li><li>3.18.8</li><li>3.18.9</li><li>3.19</li><li>3.19.0</li><li>3.19.1</li><li>3.19.2</li><li>3.19.3</li><li>3.19.4</li><li>3.19.5</li><li>3.19.6</li><li>3.19.7</li><li>3.19.8</li><li>3.19.9</li><li>3.2</li><li>3.20</li><li>3.20.0</li><li>3.20.1</li><li>3.20.10</li><li>3.20.2</li><li>3.20.3</li><li>3.20.4</li><li>3.20.5</li><li>3.20.6</li><li>3.20.7</li><li>3.20.8</li><li>3.20.9</li><li>3.21</li><li>3.21.0</li><li>3.21.1</li><li>3.21.2</li><li>3.21.3</li><li>3.21.4</li><li>3.21.5</li><li>3.21.6</li><li>3.21.7</li><li>3.21.8</li><li>3.22</li><li>3.22.0</li><li>3.22.1</li><li>3.22.2</li><li>3.22.3</li><li>3.22.4</li><li>3.22.5</li><li>3.22.6</li><li>3.23</li><li>3.23.0</li><li>3.23.2</li><li>3.23.3</li><li>3.23.4</li><li>3.23.5</li><li>3.23.6</li><li>3.24</li><li>3.24.0</li><li>3.24.1</li><li>3.24.2</li><li>3.3</li><li>3.4</li><li>3.5</li><li>3.6</li><li>3.6.5</li><li>3.7</li><li>3.7.3</li><li>3.8</li><li>3.8.4</li><li>3.8.5</li><li>3.9</li><li>3.9.2</li><li>3.9.3</li><li>3.9.4</li><li>3.9.5</li><li>3.9.6</li><li>edge</li><li>latest</li></ul></td></tr>
+        
+        <tr><th>release_lines</th><td><ul><li>20260805</li></ul></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="size">
+      <summary>
+        <span>size</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>size</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>tag</th><td>sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</td></tr>
+        
+        <tr><th>multi_arch</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>total_compressed_bytes</th><td>3850349</td></tr>
+        
+        <tr><th>total_compressed_human</th><td>3.7 MB</td></tr>
+        
+        <tr><th>layer_count</th><td>1</td></tr>
+        
+        <tr><th>config_size_bytes</th><td>0</td></tr>
+        
+        <tr><th>layers</th><td><em>none</em></td></tr>
+        
+        <tr><th>platforms</th><td><table>
+    <thead><tr><th>platform</th><th>compressed_bytes</th><th>compressed_human</th><th>layer_count</th></tr></thead>
+    <tbody>
+      
+      <tr><td>linux/amd64</td><td>3850349</td><td>3.7 MB</td><td>1</td></tr>
+      
+      <tr><td>linux/arm/v6</td><td>3555736</td><td>3.4 MB</td><td>1</td></tr>
+      
+      <tr><td>linux/arm/v7</td><td>3265825</td><td>3.1 MB</td><td>1</td></tr>
+      
+      <tr><td>linux/arm64/v8</td><td>4188286</td><td>4.0 MB</td><td>1</td></tr>
+      
+      <tr><td>linux/386</td><td>3677387</td><td>3.5 MB</td><td>1</td></tr>
+      
+      <tr><td>linux/ppc64le</td><td>3818091</td><td>3.6 MB</td><td>1</td></tr>
+      
+      <tr><td>linux/riscv64</td><td>3575985</td><td>3.4 MB</td><td>1</td></tr>
+      
+      <tr><td>linux/s390x</td><td>3715949</td><td>3.5 MB</td><td>1</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="secrets">
+      <summary>
+        <span>secrets</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>secrets</td></tr>
+        
+        <tr><th>repository</th><td>library/alpine</td></tr>
+        
+        <tr><th>tag</th><td>sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6</td></tr>
+        
+        <tr><th>scanner_version</th><td>trufflehog 3.95.3</td></tr>
+        
+        <tr><th>secrets_count</th><td>0</td></tr>
+        
+        <tr><th>verified_count</th><td>0</td></tr>
+        
+        <tr><th>findings</th><td><em>none</em></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="metadata">
+      <summary>
+        <span>metadata</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>metadata</td></tr>
+        
+        <tr><th>metadata</th><td><table>
+      <tbody>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>metadata_validation</th><td><table>
+      <tbody>
+        
+        <tr><th>ci.platform</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>ci.job.id</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>ci.job.url</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>schema_sources</th><td><em>none</em></td></tr>
+        
+        <tr><th>enforcement</th><td>enforcing</td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+
+    <footer>Generated by regis 0.40.0 on 2026-10-16 15:38 UTC</footer>
+  </main>
+</div>
+</body>
+</html>
