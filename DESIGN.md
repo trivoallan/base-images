@@ -187,6 +187,7 @@ Corners are slightly softened at 6px on cards and on the report button. Filter c
 ### Rail (decision history)
 - A vertical 2px rule-line thread with one dot per decision, oldest first, in the state hue. A 3px sheet halo detaches each dot from the thread.
 - Each entry names who was judged, in 600 weight: "Source jugée", "Reconstruction jugée" (line with `source`), "Source close" (line with `rebuilt`) or "Source rouverte". The time follows in pencil (« 16/10 17:46 UTC »), then the status pill. Below, in pencil 0.85rem: the reason code, the reference and a "rapport" link.
+- A placement line (`placed`, uske 0.8.0) is a green "Placée" dot with no status pill: it records the digest written, not a verdict, and its state only copies the source's. The card's status comes from the last verdict, never from a placement line.
 - At the same second, a rebuild's judgment comes before its source's closing line.
 - "Reconstruite par knock" is a hollow dot with no time, just before the first rebuild, naming the policy and the transit. The journal implies this step but does not date it.
 

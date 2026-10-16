@@ -312,6 +312,17 @@ function rail(img) {
       li.append(what);
       ol.append(li);
     }
+    // Une ligne `placed` (uske 0.8.0) consigne un placement, pas un verdict : son état recopie
+    // celui de la source. Elle dit seulement quel digest a été écrit à la destination.
+    if (x.placed) {
+      const li = el("li", null, "s-ok");
+      li.append(el("span", "Placée", "role"), el("span", ` · ${short(x)}`, "when"));
+      const what = el("p", "digest écrit ", "what");
+      what.append(el("code", x.placed.replace(/^sha256:/, "").slice(0, 12)));
+      li.append(what);
+      ol.append(li);
+      continue;
+    }
     const xs = info(x.state);
     const li = el("li", null, xs.cls);
     li.append(el("span", role(x), "role"), el("span", ` · ${short(x)} `, "when"), pill(xs.label));
@@ -447,7 +458,9 @@ async function load() {
     if (!groups.has(k)) groups.set(k, []);
     groups.get(k).push(d);
   }
-  images = [...groups].map(([name, decisions]) => ({ name, decisions, head: decisions[0] }));
+  // La tête est la dernière décision, pas la dernière ligne : une ligne `placed` n'est pas un
+  // verdict (uske, last_verdicts).
+  images = [...groups].map(([name, decisions]) => ({ name, decisions, head: decisions.find(x => !x.placed) || decisions[0] }));
   render();
 }
 
