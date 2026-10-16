@@ -1,8 +1,7 @@
 # Politique OFFICIELLE « Python 3 sur Alpine » : l'image de base de regis, knock et uske.
 #
-# Une politique porte une majeure (D-01) : Python 3, une seule import pour les mineures servies.
-# Les trois outils tirent aujourd'hui 3.14 (regis) et 3.13 (knock, uske) ; les deux sont
-# admises tant que l'alignement n'est pas décidé (question ouverte du design).
+# Une politique porte une majeure (D-01) : Python 3. Une seule mineure est servie, 3.14 :
+# knock et uske, encore en 3.13, monteront en 3.14 en passant leur FROM sur la porte.
 # Alpine est fixée à 3.24 : une seule variante par version de Python, sinon chaque
 # criblage jugerait deux images pour la même version.
 #
@@ -12,7 +11,7 @@
 # Le CDN est public : ici, c'est la source amont elle-même, pas un miroir interne.
 # `epoch` déclenche la réparation : le changer reconstruit chaque tag sélectionné.
 #
-# La destination `ghcr` est l'hôte ghcr.io/sncfdevelopers (préfixe de chemin), déclaré
+# La destination `ghcr` est un hôte avec préfixe de chemin (ghcr.io/<propriétaire>), déclaré
 # dans KNOCK_REGISTRIES par le workflow, jamais ici.
 apiVersion: knock.io/v1alpha1
 kind: MirrorPolicy
@@ -24,20 +23,24 @@ metadata:
     cao: oci-maintainers
 spec:
   artifactType: image
+  # Un tag sorti de la sélection est marqué (referrer pending-deletion), jamais supprimé :
+  # GHCR refuse la suppression par l'API de registre, et une erreur de policy ne doit pas
+  # pouvoir effacer une base que des Dockerfiles tirent.
+  deletionMode: mark
   source:
     registry: docker.io
     repository: library/python
   imports:
-    # Une seule import pour les deux mineures : deux imports vers le même dépôt prennent
+    # Une seule import par dépôt de destination : deux imports vers le même dépôt prennent
     # chacune les tags de l'autre pour des restes, et les planifient en suppression.
     - name: alpine
       owners:
         - group:default/oci-maintainers
       tags:
-        includeRegex: "^3\\.1[34]\\.\\d+-alpine3\\.24$"
+        includeRegex: "^3\\.14\\.\\d+-alpine3\\.24$"
         semverOnly: false              # « -alpine3.24 » se lit comme une pré-version
         aliases:
-          - "{major}.{minor}-alpine"   # 3.13-alpine, 3.14-alpine : la plus haute de chaque mineure
+          - "{major}.{minor}-alpine"   # 3.14-alpine : la plus haute
       transform:
         - rewritePackageSources: { mirror: alpine }
         - upgradePackages: { epoch: "2026-10-16" }

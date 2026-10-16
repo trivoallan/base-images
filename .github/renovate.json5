@@ -1,0 +1,31 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: ["config:best-practices", "customManagers:githubActionsVersions"], // le second suit RENOVATE_VERSION
+  timezone: "Europe/Paris",
+  schedule: ["before 9am on monday"],
+  labels: ["dependencies"],
+  minimumReleaseAge: "3 days",
+  semanticCommits: "enabled",
+  platformCommit: "enabled",
+  customManagers: [
+    {
+      // Les trois outils de la porte, épinglés dans l'env du criblage (image:tag@sha256:…).
+      // Une montée de version ouvre une PR, et le criblage en mode judge de cette PR la valide :
+      // la porte ne tourne jamais sur une version qu'elle n'a pas essayée.
+      customType: "regex",
+      managerFilePatterns: ["/^\\.github/workflows/screening\\.yml$/"],
+      matchStrings: [
+        "_IMAGE: (?<depName>ghcr\\.io/[^:\\s]+):(?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]{64})",
+      ],
+      datasourceTemplate: "docker",
+    },
+  ],
+  packageRules: [
+    { matchPackageNames: ["*"], semanticCommitType: "build", semanticCommitScope: "deps" },
+    { matchManagers: ["github-actions"], semanticCommitType: "ci" },
+    // regis publie -full et une variante slim sans suffixe : rester sur -full.
+    { matchPackageNames: ["ghcr.io/*/regis"], versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-full$" },
+    // Une montée de la porte se relit : jamais de fusion automatique.
+    { matchManagers: ["custom.regex"], automerge: false, groupName: "outils de la porte" },
+  ],
+}
