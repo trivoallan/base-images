@@ -54,8 +54,8 @@ jobs:
           docker logs buildkitd >&2
           exit 1
 
-      - name: Cache the grype database
-        uses: actions/cache@v4
+      - name: Restore the grype database
+        uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/grype
           key: grype-${{ github.run_id }}
@@ -85,3 +85,21 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           ./screen.sh
+
+      - name: Look for a grype database
+        # Un criblage qui n'a rien jugé n'a rien téléchargé : sauvegarder ce dossier vide le
+        # ferait restaurer à la place de la vraie base au criblage suivant (restore-keys: grype-).
+        # hashFiles ne lit que l'espace de travail, d'où ce test.
+        id: grype
+        if: always()
+        run: |
+          if find "$RUNNER_TEMP/grype" -name '*.db' -print -quit | grep -q .; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Save the grype database
+        if: always() && steps.grype.outputs.found == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/grype
+          key: grype-${{ github.run_id }}
