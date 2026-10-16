@@ -5,7 +5,7 @@ Les images de base Python de [`regis`](https://github.com/trivoallan/regis),
 passées par la porte que ces trois outils forment. Sans ce dépôt, ils tireraient leur base de Docker
 Hub sans aucun jugement : la porte ne protégerait pas ses propres images.
 
-Un criblage `uske` place `python:3.1x-alpine3.24` dans `ghcr.io/sncfdevelopers/base/python`,
+Un criblage `uske` place `python:3.14-alpine3.24` dans `ghcr.io/sncfdevelopers/base/python`,
 seulement après un verdict `regis`, et consigne chaque décision dans le journal de la policy.
 
 ```
@@ -34,6 +34,14 @@ suppression, le force-push et l'historique non linéaire.
 
 Pour rouvrir une source mise en quarantaine, ajoute au journal une ligne `uske/reopened` (voir le
 README d'`uske`) et ouvre une PR.
+
+## Renovate
+
+[`renovate`](.github/workflows/renovate.yml) suit les digests de `regis`, `knock` et `uske` épinglés
+dans `screening.yml`. Une montée de version ouvre une PR, et c'est le criblage en mode `judge` de
+cette PR qui la valide. Renovate passe par l'app CI, et non par `GITHUB_TOKEN`, parce qu'une PR
+ouverte avec `GITHUB_TOKEN` ne déclencherait aucun workflow. Le dépôt a donc besoin des secrets
+`CI_APP_CLIENT_ID` et `CI_APP_PRIVATE_KEY`, et l'app doit y être installée.
 
 ## Licence
 
