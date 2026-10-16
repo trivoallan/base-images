@@ -1,0 +1,60 @@
+# Politique OFFICIELLE « Python 3 sur Alpine » : l'image de base de regis, knock et uske.
+#
+# Une politique porte une majeure (D-01) : Python 3, une import par mineure servie.
+# Les trois outils tirent aujourd'hui 3.14 (regis) et 3.13 (knock, uske) ; les deux sont
+# admises tant que l'alignement n'est pas décidé (question ouverte du design).
+# Alpine est fixée à 3.24 : une seule variante par version de Python, sinon chaque
+# criblage jugerait deux images pour la même version.
+#
+# Voie reconstruction : les paquets apk sont mis à jour depuis le CDN Alpine, que la
+# configuration knock du workflow nomme `alpine` :
+#   KNOCK_TRANSFORM_PACKAGE_MIRRORS='{"alpine": {"apk": "https://dl-cdn.alpinelinux.org"}}'
+# Le CDN est public : ici, c'est la source amont elle-même, pas un miroir interne.
+# `epoch` déclenche la réparation : le changer reconstruit chaque tag sélectionné.
+#
+# La destination `ghcr` est l'hôte ghcr.io/sncfdevelopers (préfixe de chemin), déclaré
+# dans KNOCK_REGISTRIES par le workflow, jamais ici.
+apiVersion: knock.io/v1alpha1
+kind: MirrorPolicy
+metadata:
+  name: base-python-3
+  labels:
+    admission-track: standard          # → playbooks/version/playbook.yaml
+    major: "3"
+    cao: oci-maintainers
+spec:
+  artifactType: image
+  source:
+    registry: docker.io
+    repository: library/python
+  imports:
+    - name: v3.14
+      owners:
+        - group:default/oci-maintainers
+      tags:
+        includeRegex: "^3\\.14\\.\\d+-alpine3\\.24$"
+        semverOnly: false              # « -alpine3.24 » se lit comme une pré-version
+        aliases:
+          - "3.14-alpine"
+      transform:
+        - rewritePackageSources: { mirror: alpine }
+        - upgradePackages: { epoch: "2026-10-16" }
+      destinations:
+        - registry: ghcr
+          project: base
+          repository: python
+    - name: v3.13
+      owners:
+        - group:default/oci-maintainers
+      tags:
+        includeRegex: "^3\\.13\\.\\d+-alpine3\\.24$"
+        semverOnly: false
+        aliases:
+          - "3.13-alpine"
+      transform:
+        - rewritePackageSources: { mirror: alpine }
+        - upgradePackages: { epoch: "2026-10-16" }
+      destinations:
+        - registry: ghcr
+          project: base
+          repository: python
