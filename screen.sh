@@ -67,16 +67,19 @@ evaluate() {
   fi
   echo "::group::regis $target"
   regis analyze "$target" --playbook "$playbook" \
-    -D "/work/reports/$key" -o "report.{format}" --html || rc=$?  # inconclusive, pas perdu (D-23)
+    -D "/work/reports/$key" -o "report.{format}" --html --markdown || rc=$?  # inconclusive, pas perdu (D-23)
   echo "::endgroup::"
   # Le rapport survit au criblage, à côté du journal, avant que la ligne qui le cite soit écrite.
-  if [ -f "$W/reports/$key/report.html" ]; then
-    mkdir -p "$RESULTS/reports/$name"
-    cp "$W/reports/$key/report.html" "$RESULTS/reports/$name/$digest.html"
-  fi
+  # Le Markdown se lit sur GitHub, et c'est lui que le journal cite ; le HTML garde le détail.
+  mkdir -p "$RESULTS/reports/$name"
+  for ext in md html; do
+    if [ -f "$W/reports/$key/report.$ext" ]; then
+      cp "$W/reports/$key/report.$ext" "$RESULTS/reports/$name/$digest.$ext"
+    fi
+  done
   uske classify --playbook "$playbook" --ref "$ref" --digest "$digest" \
     --report "/work/reports/$key/report.json" \
-    --report-link "/results/reports/$name/$digest.html" \
+    --report-link "results/reports/$name/$digest.md" \
     --regis-exit "$rc" --source-ref "$source_ref" --source-digest "$source_digest" \
     | tee "$W/$lines/$name/$key.json"
 }
