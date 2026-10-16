@@ -26,6 +26,6 @@
     // regis publie -full et une variante slim sans suffixe : rester sur -full.
     { matchPackageNames: ["ghcr.io/*/regis"], versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-full$" },
     // Une montée de la porte se relit : jamais de fusion automatique.
-    { matchManagers: ["custom.regex"], automerge: false, groupName: "outils de la porte" },
+    { matchManagers: ["custom.regex"], matchFileNames: [".github/workflows/screening.yml"], automerge: false, groupName: "outils de la porte" },
   ],
 }
