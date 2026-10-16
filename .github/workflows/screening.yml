@@ -73,6 +73,10 @@ jobs:
           KNOCK_TRANSFORM_PACKAGE_MIRRORS: '{"alpine": {"apk": "https://dl-cdn.alpinelinux.org"}}'
           KNOCK_SBOM_FORMATS: '["spdx-json","cyclonedx-json"]'
           KNOCK_ATTEST_SIGNER: keyless
+          # promote revérifie la signature avant d'écrire le tag : sans identité attendue,
+          # cosign verify-attestation échoue et rien n'est placé.
+          KNOCK_ATTEST_VERIFY_IDENTITY: ^${{ github.server_url }}/${{ github.repository }}/\.github/workflows/screening\.yml@refs/heads/main$
+          KNOCK_ATTEST_VERIFY_OIDC_ISSUER: https://token.actions.githubusercontent.com
         run: |
           # Destination et transit sur le même hôte : une identité knock, une session (uske README).
           export KNOCK_REGISTRIES="$(jq -nc --arg o "$OWNER" --arg u "$GITHUB_ACTOR" --arg p "$TOKEN" '{
