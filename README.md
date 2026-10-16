@@ -1,17 +1,19 @@
 # base-images
 
-Les images de base, Python et Alpine, de [`regis`](https://github.com/trivoallan/regis),
+Les images de base, Python, Alpine et Redis, de [`regis`](https://github.com/trivoallan/regis),
 [`knock`](https://github.com/trivoallan/knock) et [`uske`](https://github.com/trivoallan/uske),
 passées par la porte que ces trois outils forment. Sans ce dépôt, ils tireraient leur base de Docker
 Hub sans aucun jugement : la porte ne protégerait pas ses propres images.
 
 Un criblage `uske` place `python:3.14-alpine3.24` dans `ghcr.io/sncfdevelopers/base/python` et
-`alpine:3.24` dans `ghcr.io/sncfdevelopers/base/alpine`, seulement après un verdict `regis`, et
-consigne chaque décision dans le journal de sa policy.
+`alpine:3.24` dans `ghcr.io/sncfdevelopers/base/alpine`, et `redis:7.2-alpine3.21` dans
+`ghcr.io/sncfdevelopers/base/redis`, seulement après un verdict `regis`, et consigne chaque
+décision dans le journal de sa policy.
 
 ```
 policies/base/python.yaml        la policy knock de Python 3 (régime standard)
 policies/base/alpine.yaml        la policy knock d'Alpine 3 (régime standard)
+policies/base/redis.yaml         la policy knock de Redis 7 (régime standard)
 playbooks/version/playbook.yaml  le playbook regis de ce régime, là où uske le cherche
 ```
 
