@@ -173,6 +173,10 @@ while read -r policy; do
     --out "/work/staged/$name.approved.json" | jq .approved)
   if [ "$promoted" -gt 0 ]; then
     knock promote "/work/policies/$name" --staged "/work/staged/$name.approved.json"
+    # Le lien source → digest promu, une fois tout placé (le digest tenu est le digest promu).
+    uske record --policy "$path" --results /results --promoted "/work/staged/$name.approved.json" --run "$RUN"
+    compose_reports "$name"
+    commit_journal "journal($name): promotions du criblage"
   fi
 done < <(jq -c '.[]' "$W/list.json")
 
