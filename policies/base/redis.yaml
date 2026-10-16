@@ -1,0 +1,52 @@
+# Politique OFFICIELLE « Redis 7 sur Alpine ».
+#
+# Une politique porte une majeure (D-01) : Redis 7. Une seule mineure est servie, 7.2.
+# Alpine est fixée à 3.21, la plus récente sous laquelle Docker Hub publie Redis 7.2 : une seule
+# variante par version de Redis, sinon chaque criblage jugerait deux images pour la même version.
+#
+# Voie reconstruction : les paquets apk sont mis à jour depuis le CDN Alpine, que la
+# configuration knock du workflow nomme `alpine` :
+#   KNOCK_TRANSFORM_PACKAGE_MIRRORS='{"alpine": {"apk": "https://dl-cdn.alpinelinux.org"}}'
+# Le CDN est public : ici, c'est la source amont elle-même, pas un miroir interne.
+# `epoch` déclenche la réparation : le changer reconstruit chaque tag sélectionné.
+#
+# La destination `ghcr` est un hôte avec préfixe de chemin (ghcr.io/<propriétaire>), déclaré
+# dans KNOCK_REGISTRIES par le workflow, jamais ici.
+apiVersion: knock.io/v1alpha1
+kind: MirrorPolicy
+metadata:
+  name: base-redis-7
+  labels:
+    admission-track: standard          # → playbooks/version/playbook.yaml
+    major: "7"
+    cao: oci-maintainers
+spec:
+  artifactType: image
+  # Un tag sorti de la sélection est marqué (referrer pending-deletion), jamais supprimé :
+  # GHCR refuse la suppression par l'API de registre, et une erreur de policy ne doit pas
+  # pouvoir effacer une image que des déploiements tirent.
+  deletionMode: mark
+  source:
+    registry: docker.io
+    repository: library/redis
+  imports:
+    # Une seule import par dépôt de destination : deux imports vers le même dépôt prennent
+    # chacune les tags de l'autre pour des restes, et les planifient en suppression.
+    - name: alpine
+      owners:
+        - group:default/oci-maintainers
+      tags:
+        includeRegex: "^7\\.2\\.\\d+-alpine3\\.21$"
+        semverOnly: false              # « -alpine3.21 » se lit comme une pré-version
+        aliases:
+          - "{major}.{minor}-alpine"   # 7.2-alpine : la plus haute
+      # Comme les autres bases : amd64 et arm64. Un tag source auquel il manque une de ces
+      # plateformes est refusé au plan (knock 0.15.0).
+      platforms: [linux/amd64, linux/arm64]
+      transform:
+        - rewritePackageSources: { mirror: alpine }
+        - upgradePackages: { epoch: "2026-10-16" }
+      destinations:
+        - registry: ghcr
+          project: base
+          repository: redis
