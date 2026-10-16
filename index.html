@@ -7,64 +7,89 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
 <title>Journal des décisions</title>
 <style>
-  :root { color-scheme: light dark; --muted: GrayText; --line: color-mix(in srgb, CanvasText 15%, transparent); }
-  body { margin: 0 auto; max-width: 72rem; padding: 1rem; font: 15px/1.45 system-ui, sans-serif; background: Canvas; color: CanvasText; }
-  h1 { font-size: 1.3rem; margin: 0 0 .25rem; }
-  p { margin: .25rem 0 1rem; color: var(--muted); }
-  .filter { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
-  .filter button { font: inherit; padding: .35rem .75rem; border: 1px solid var(--line); border-radius: 1rem; background: none; color: inherit; cursor: pointer; }
-  .filter button[aria-pressed="true"] { background: CanvasText; color: Canvas; }
-  .filter input { font: inherit; flex: 1 1 14rem; min-width: 0; padding: .35rem .75rem; border: 1px solid var(--line); border-radius: 1rem; background: none; color: inherit; }
-  .wrap { overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { text-align: left; vertical-align: top; padding: .4rem .5rem; border-bottom: 1px solid var(--line); }
-  th { font-weight: 600; white-space: nowrap; }
-  td.ref { overflow-wrap: anywhere; min-width: 12rem; }
-  code { font-size: .85em; }
-  .state { white-space: nowrap; font-weight: 600; }
-  .state-quarantine { color: #c62828; } .state-inconclusive { color: #b26a00; }
-  .state-direct-placement, .state-transformation-required { color: #2e7d32; }
-  .arb { display: block; margin-top: .25rem; color: var(--muted); }
-  .none { color: var(--muted); }
-  /* Sur téléphone, une carte par décision : le lien du rapport reste à l'écran sans défiler. */
-  @media (max-width: 40rem) {
-    thead { display: none; }
-    table, tbody, tr, td { display: block; }
-    tr { padding: .5rem 0; border-bottom: 1px solid var(--line); }
-    td { border: 0; padding: .1rem 0; min-width: 0; }
-    td[data-label]::before { content: attr(data-label) " : "; color: var(--muted); }
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfbfa; --fg: #1b1b1a; --muted: #6b6a66; --line: #e3e2de; --surface: #ffffff;
+    --refus: #b42318; --refus-bg: #fdecea; --doute: #9a5b00; --doute-bg: #fff4e0;
+    --ok: #1e6b37; --ok-bg: #e8f4ec; --autre: #3d3c39; --autre-bg: #ecebe8; --link: #1d4ed8;
   }
   @media (prefers-color-scheme: dark) {
-    .state-quarantine { color: #ef9a9a; } .state-inconclusive { color: #ffcc80; }
-    .state-direct-placement, .state-transformation-required { color: #a5d6a7; }
+    :root {
+      --bg: #161615; --fg: #ecebe8; --muted: #9b9a95; --line: #2e2d2b; --surface: #1d1d1c;
+      --refus: #ff8f84; --refus-bg: #3a1714; --doute: #ffc266; --doute-bg: #352610;
+      --ok: #86d29b; --ok-bg: #14301d; --autre: #d6d4cf; --autre-bg: #2a2928; --link: #8fb3ff;
+    }
   }
+  * { box-sizing: border-box; }
+  body { margin: 0 auto; max-width: 52rem; padding: 1.5rem 1rem 3rem; font: 16px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+  a { color: var(--link); }
+  a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+  h1 { font-size: 1.5rem; margin: 0 0 .25rem; letter-spacing: -.01em; }
+  .lede { margin: 0 0 1.25rem; color: var(--muted); }
+  .filter { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.25rem; padding: .5rem 0; background: var(--bg); }
+  /* Collée en haut seulement quand elle tient sur une ligne : sur téléphone, elle mangerait l'écran. */
+  @media (min-width: 40rem) { .filter { position: sticky; top: 0; z-index: 1; } }
+  .filter button, .filter input { font: inherit; min-height: 44px; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: inherit; }
+  .filter button { cursor: pointer; }
+  .filter button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .filter input { flex: 1 1 14rem; min-width: 0; }
+  #list { display: grid; gap: .75rem; }
+  .image { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--c, var(--line)); border-radius: 6px; padding: 1rem 1rem .75rem; }
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; }
+  .head h2 { margin: 0; font-size: 1.15rem; font-weight: 650; overflow-wrap: anywhere; }
+  .pill { display: inline-block; font-size: .8rem; font-weight: 600; padding: .1rem .55rem; border-radius: 999px; color: var(--c); background: var(--cbg); white-space: nowrap; }
+  .why { margin: .35rem 0 0; font-weight: 500; }
+  .arb { margin: .35rem 0 0; padding-left: .75rem; border-left: 2px solid var(--line); color: var(--muted); }
+  .meta { margin: .35rem 0 0; font-size: .85rem; color: var(--muted); overflow-wrap: anywhere; }
+  .meta code { font-size: .95em; }
+  .actions { margin-top: .75rem; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
+  .report { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1rem; border-radius: 6px; background: var(--fg); color: var(--bg); font-weight: 600; text-decoration: none; }
+  .report.md { background: none; color: var(--link); text-decoration: underline; padding: 0; }
+  .none { color: var(--muted); font-size: .9rem; }
+  details { margin-top: .75rem; border-top: 1px solid var(--line); padding-top: .5rem; }
+  summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--muted); font-size: .9rem; }
+  ol { list-style: none; margin: 0; padding: 0; }
+  li { padding: .6rem 0; border-top: 1px solid var(--line); }
+  li:first-child { border-top: 0; }
+  li .head { gap: .25rem .5rem; }
+  li .when { font-size: .85rem; color: var(--muted); }
+  li .why { font-weight: 400; margin-top: .15rem; }
+  .s-refus { --c: var(--refus); --cbg: var(--refus-bg); }
+  .s-doute { --c: var(--doute); --cbg: var(--doute-bg); }
+  .s-ok { --c: var(--ok); --cbg: var(--ok-bg); }
+  .s-autre { --c: var(--autre); --cbg: var(--autre-bg); }
+  .empty { color: var(--muted); padding: 2rem 0; text-align: center; }
 </style>
 </head>
 <body>
-<h1>Journal des décisions</h1>
-<p>Chaque décision du criblage <code>uske</code> de ce dépôt, la plus récente en premier. Le rapport <code>regis</code> d'une décision dit quelle règle l'a tranchée.</p>
-<div class="filter" role="group" aria-label="Décisions affichées">
+<header>
+  <h1>Journal des décisions</h1>
+  <p class="lede">Ce que la porte a refusé ou placé, image par image. Le rapport <code>regis</code> dit quelle règle a tranché.</p>
+</header>
+<div class="filter" role="group" aria-label="Images affichées">
   <button type="button" data-all="false" aria-pressed="true">Refus et inconclusive</button>
   <button type="button" data-all="true" aria-pressed="false">Tout</button>
   <input type="search" id="q" placeholder="Filtrer par image" aria-label="Filtrer par image" autocomplete="off">
 </div>
-<div class="wrap">
-<table>
-  <thead><tr><th>Date</th><th>Image</th><th>État</th><th>Raison</th><th>Ruleset</th><th>Rapport</th></tr></thead>
-  <tbody id="rows"><tr><td colspan="6" class="none">Chargement…</td></tr></tbody>
-</table>
-</div>
+<main id="list" aria-live="polite"><p class="empty">Chargement…</p></main>
 <script>
-// Les états qu'uske sait produire. Tout autre état (abandoned, placed-by-exception, un état futur)
-// est écrit à la main ou nouveau : il reste visible par défaut, jamais filtré en silence.
-const KNOWN = new Set(["direct-placement", "transformation-required", "quarantine", "inconclusive"]);
+// Les états qu'uske sait produire, avec leur libellé et leur gravité. Tout autre état (abandoned,
+// placed-by-exception, un état futur) est écrit à la main ou nouveau : il reste visible par défaut.
+const STATES = {
+  "quarantine": { label: "Refusée", cls: "s-refus", sev: 4 },
+  "inconclusive": { label: "Inconclusive", cls: "s-doute", sev: 3 },
+  "transformation-required": { label: "Transformation requise", cls: "s-ok", sev: 1 },
+  "direct-placement": { label: "Placement direct", cls: "s-ok", sev: 0 },
+};
 const HIDDEN_BY_DEFAULT = new Set(["direct-placement", "transformation-required"]);
-const rows = document.getElementById("rows");
+const list = document.getElementById("list");
 const buttons = document.querySelectorAll(".filter button");
 const search = document.getElementById("q");
-let lines = [];
+let images = [];
 let rulesets = {};
 let all = false;
+
+const info = s => STATES[s] || { label: s || "?", cls: "s-autre", sev: 2 };
 
 // Tout ce qui vient du journal passe par textContent : jamais interprété comme du HTML.
 function el(tag, text, cls) {
@@ -74,86 +99,109 @@ function el(tag, text, cls) {
   return e;
 }
 
-function message(text) {
-  const td = el("td", text, "none");
-  td.colSpan = 6;
-  const tr = el("tr");
-  tr.append(td);
-  return tr;
-}
-
-async function exists(url) {
-  try { return (await fetch(url, { method: "HEAD" })).ok; } catch { return false; }
-}
-
-function link(text, href) {
-  const a = el("a", text);
+function link(text, href, cls) {
+  const a = el("a", text, cls);
   a.href = href;
   a.target = "_blank";
   a.rel = "noopener";
   return a;
 }
 
+async function exists(url) {
+  try { return (await fetch(url, { method: "HEAD" })).ok; } catch { return false; }
+}
+
 // Le rapport se déduit de la politique et du digest, pas du champ `report`, qui suit trois
 // conventions (.md, chemin du volume uske, absent). Le HTML d'abord, puis le Markdown. Résolu une
-// fois par ligne : la recherche redessine la table sans refaire les requêtes.
-async function resolveReport(line) {
-  if (!line.digest) return null;
-  const base = `results/reports/${encodeURIComponent(line.policy)}/${encodeURIComponent(line.digest)}`;
-  for (const ext of [".html", ".md"]) {
-    if (await exists(base + ext)) return { href: base + ext, text: ext === ".html" ? "rapport" : "rapport (md)" };
-  }
+// fois par décision : la recherche redessine la page sans refaire les requêtes.
+async function resolveReport(d) {
+  if (!d.digest) return null;
+  const base = `results/reports/${encodeURIComponent(d.policy)}/${encodeURIComponent(d.digest)}`;
+  if (await exists(base + ".html")) return { href: base + ".html", md: false };
+  if (await exists(base + ".md")) return { href: base + ".md", md: true };
   return null;
 }
 
-async function fillReport(cell, line) {
-  line.report_link ??= resolveReport(line);
-  const r = await line.report_link;
-  cell.replaceChildren(r ? link(r.text, r.href) : el("span", "pas de report", "none"));
+async function fillReport(slot, d, primary) {
+  d.report_link ??= resolveReport(d);
+  const r = await d.report_link;
+  if (!r) return slot.replaceChildren(el("span", "pas de rapport", "none"));
+  const text = primary && !r.md ? "Ouvrir le rapport" : r.md ? "rapport (md)" : "rapport";
+  slot.replaceChildren(link(text, r.href, primary && !r.md ? "report" : r.md ? "report md" : null));
 }
 
-const LABELS = ["Date", "Image", "État", "Raison", "Ruleset", "Rapport"];
+// Le ruleset est le sha256 du playbook qui a jugé : rulesets.json donne sa source à ce commit.
+function ruleset(d) {
+  const code = el("code", (d.ruleset || "").replace(/^sha256:/, "").slice(0, 12));
+  const src = rulesets[d.ruleset];
+  if (typeof src !== "string" || !src.startsWith("https://")) return code;
+  const a = link("", src);
+  a.title = d.ruleset;
+  a.append(code);
+  return a;
+}
+
+const when = d => (d.ts || "").replace("T", " ").replace(/:\d\dZ$/, "");
+
+function meta(d) {
+  const p = el("p", null, "meta");
+  p.append(when(d));
+  if (d.ruleset) p.append(" · ruleset ", ruleset(d));
+  p.append(" · ", d.ref || d.raw || "");
+  return p;
+}
+
+function why(d) {
+  const out = [];
+  if (d.reason) out.push(el("p", d.reason, "why"));
+  if (d.arbitration) {
+    const a = d.arbitration;
+    out.push(el("p", `Arbitrage ${a.by || "?"}, ${a.date || "?"} : ${a.reason || ""}`, "arb"));
+  }
+  return out;
+}
+
+function card(img) {
+  const d = img.head;
+  const s = info(d.state);
+  const art = el("article", null, "image " + s.cls);
+  const head = el("div", null, "head");
+  head.append(el("h2", img.name), el("span", s.label, "pill"));
+  art.append(head, ...why(d), meta(d));
+  const actions = el("div", null, "actions");
+  const slot = el("span", "…", "none");
+  actions.append(slot);
+  art.append(actions);
+  fillReport(slot, d, true);
+  const rest = img.decisions.slice(1);
+  if (rest.length) {
+    const det = el("details");
+    det.append(el("summary", rest.length === 1 ? "1 décision précédente" : `${rest.length} décisions précédentes`));
+    const ol = el("ol");
+    for (const x of rest) {
+      const xs = info(x.state);
+      const li = el("li", null, xs.cls);
+      const h = el("div", null, "head");
+      const r = el("span", "…", "none");
+      h.append(el("span", xs.label, "pill"), el("span", when(x), "when"), r);
+      li.append(h, ...why(x), meta(x));
+      ol.append(li);
+      fillReport(r, x, false);
+    }
+    det.append(ol);
+    art.append(det);
+  }
+  return art;
+}
 
 function render() {
   const q = search.value.trim().toLowerCase();
-  const found = lines.filter(l => (l.ref || l.raw || "").toLowerCase().includes(q));
-  const kept = found.filter(l => !HIDDEN_BY_DEFAULT.has(l.state));
+  const found = images.filter(i => i.decisions.some(d => (d.ref || d.raw || "").toLowerCase().includes(q)));
+  const kept = found.filter(i => !HIDDEN_BY_DEFAULT.has(i.head.state));
   const shown = all ? found : kept;
   buttons[0].textContent = `Refus et inconclusive (${kept.length})`;
   buttons[1].textContent = `Tout (${found.length})`;
-  rows.replaceChildren();
-  if (!shown.length) rows.append(message("Aucune décision."));
-  for (const l of shown) {
-    const tr = el("tr");
-    tr.append(el("td", (l.ts || "").replace("T", " ").replace(/:\d\dZ$/, "")));
-    tr.append(el("td", l.ref || l.raw || "", "ref"));
-    const state = l.state || "?";
-    tr.append(el("td", state, "state" + (KNOWN.has(state) ? " state-" + state : "")));
-    const why = el("td", l.reason || "");
-    if (l.arbitration) {
-      const a = l.arbitration;
-      why.append(el("span", `Arbitrage ${a.by || "?"}, ${a.date || "?"} : ${a.reason || ""}`, "arb"));
-    }
-    tr.append(why);
-    // Le ruleset est le sha256 du playbook qui a jugé : rulesets.json donne sa source à ce commit.
-    const rs = el("td");
-    if (l.ruleset) {
-      const short = el("code", l.ruleset.replace(/^sha256:/, "").slice(0, 12));
-      const src = rulesets[l.ruleset];
-      if (typeof src === "string" && src.startsWith("https://")) {
-        const a = link("", src);
-        a.append(short);
-        rs.append(a);
-      } else rs.append(short);
-    }
-    rs.title = l.ruleset || "";
-    tr.append(rs);
-    const rep = el("td", "…", "none");
-    tr.append(rep);
-    [...tr.children].forEach((td, i) => td.dataset.label = LABELS[i]);
-    rows.append(tr);
-    fillReport(rep, l);
-  }
+  list.replaceChildren(...(shown.length ? shown.map(card) : [el("p", "Aucune image.", "empty")]));
 }
 
 search.addEventListener("input", render);
@@ -164,10 +212,15 @@ buttons.forEach(b => b.addEventListener("click", () => {
   render();
 }));
 
+// Une image se reconnaît à son nom:tag, quel que soit son registre : la source et sa
+// reconstruction (base-transit) racontent la même histoire sur une seule carte.
+const nameOf = d => (d.ref || d.raw || "?").split("/").pop();
+
 async function load() {
   // Sans correspondance publiée (copie locale, ancien déploiement), les rulesets restent sans lien.
   rulesets = await fetch("results/rulesets.json").then(r => r.ok ? r.json() : {}).catch(() => ({}));
   const policies = await (await fetch("results/index.json")).json();
+  const lines = [];
   for (const policy of policies) {
     const text = await (await fetch(`results/${encodeURIComponent(policy)}.jsonl`)).text();
     for (const raw of text.split("\n")) {
@@ -177,11 +230,20 @@ async function load() {
       catch { lines.push({ policy, raw, state: "illisible" }); }
     }
   }
-  lines.sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
+  // La plus récente d'abord ; à la même seconde, la plus grave : le refus d'une source est écrit
+  // en même temps que le jugement de sa reconstruction, et c'est lui qui tranche.
+  lines.sort((a, b) => (b.ts || "").localeCompare(a.ts || "") || info(b.state).sev - info(a.state).sev);
+  const groups = new Map();
+  for (const d of lines) {
+    const k = nameOf(d);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(d);
+  }
+  images = [...groups].map(([name, decisions]) => ({ name, decisions, head: decisions[0] }));
   render();
 }
 
-load().catch(e => rows.replaceChildren(message("Journal illisible : " + e.message)));
+load().catch(e => list.replaceChildren(el("p", "Journal illisible : " + e.message, "empty")));
 </script>
 </body>
 </html>
