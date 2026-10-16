@@ -47,8 +47,10 @@ journal de toutes les politiques, la décision la plus récente en premier : d'a
 en HTML, qui dit quelle règle l'a tranchée.
 
 Il n'y a pas de build. [`pages`](.github/workflows/pages.yml) publie le dépôt tel quel après chaque
-criblage `apply` réussi sur `main`, et à la demande. Il n'y ajoute que `results/index.json`, la liste
-des journaux, qu'[`index.html`](index.html) lit. Pages s'active une fois avec `make pages`.
+criblage `apply` réussi sur `main`, et à la demande. Il n'y ajoute que trois fichiers, qu'[`index.html`](index.html)
+lit : `results/index.json`, la liste des journaux ; `results/rulesets.json`, la source de chaque
+ruleset ; `results/policies.json`, le fichier de chaque policy et les étapes de reconstruction
+qu'elle déclare. Pages s'active une fois avec `make pages`.
 
 ## Renovate
 
