@@ -12,7 +12,7 @@
 
 **Non-Goals:**
 - Corriger le champ `report` du journal dans `uske` : la page s'adapte au journal.
-- Une vue par image en chronologie (option B du PRD) : c'est le rendu d'`uske decisions`, à revoir si la démo la réclame.
+- Recopier le rendu d'`uske decisions` : la page regroupe par image, mais avec sa propre règle de tête (voir Decisions).
 
 ## Decisions
 
@@ -21,6 +21,9 @@
 - **`results/index.json` généré au moment de la publication** (`ls results/*.jsonl` → tableau JSON de noms de politiques). Une page statique ne sait pas lister un répertoire. *Alternative écartée :* l'API GitHub `contents`, limitée en débit et liée à github.com. Le fichier n'est pas commité.
 - **Lien du report dérivé de la politique et du `digest`**, pas du champ `report` : `results/reports/<policy>/<digest>.html`. Le repli vers le `.md`, puis « pas de report », est vérifié par une requête `HEAD` au chargement. *Alternative écartée :* réécrire le champ `report`, ce qui mélangerait trois conventions.
 - **Rendu par `textContent` et `createElement`**, jamais `innerHTML` avec des données du journal. Une politique CSP en `<meta>` interdit les ressources externes (`default-src 'self'`, script et style inline autorisés pour le seul fichier).
+- **Une carte par image, clé `nom:tag`** (dernier segment du `ref`) : la source `docker.io/…/redis:7.2.9…` et sa reconstruction `ghcr.io/…/base-transit/…/redis:7.2.9…` racontent une seule histoire (transformation requise, reconstruction, refus). Choix de l'option B du PRD, revenu sur l'option A après la mise en ligne. *Alternative écartée :* une ligne par décision, où les refus se perdaient parmi des lignes de même poids.
+- **Décision de tête = la plus récente, puis la plus grave à égalité de date.** `uske` écrit le refus d'une source (`uske/rebuild-refused`) à la même seconde que le jugement de sa reconstruction (`transformation-required`). Avec la seule date, aucune image n'était en tête en refus le 2026-10-16 (0 sur 19) ; avec la gravité, 11 le sont, ce qui couvre les 12 refus.
+- **Pas de Pretext ni de framework** : une liste de données s'enroule en CSS. Le fichier reste unique, sous la même CSP.
 - **Chemins relatifs uniquement**, sans `baseUrl` : la page reste servable hors de Pages (copie vers le cluster SNCF, plus tard).
 
 ## Risks / Trade-offs

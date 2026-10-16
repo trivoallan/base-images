@@ -20,6 +20,10 @@
 - [x] 3.2 Ajouter le champ de recherche sur l'image, combiné au filtre par état, avec des décomptes qui en tiennent compte. Vérification : en local, `redis` ne garde que des lignes Redis, et vider le champ rend toutes les lignes.
 - [x] 3.3 Rendre le `ruleset` cliquable quand `rulesets.json` le connaît, sans lien sinon. Vérification : en local, les 57 lignes dont le `ruleset` est un hash ont un lien vers `playbooks/version/playbook.yaml` (la ligne `uske/reopened` porte `none`), et un `ruleset` inventé reste sans lien.
 
-## 4. Vérification publiée
+## 4. Regroupement par image
 
-- [ ] 4.1 Après publication, sur `https://trivoallan.github.io/base-images/` : ouvrir la page sans session GitHub, cliquer sur chacun des 12 refus (12/12 `report.html` rendus, aucune 404), et vérifier que le criblage suivant sur `main` republie la page sans action humaine. Vérification : la note est ajoutée sur la PR avant le 2026-10-22.
+- [x] 4.1 Réécrire la page en une carte par image (`nom:tag`) : décision de tête (la plus récente, puis la plus grave), pastille d'état, raison, métadonnées discrètes, bouton « Ouvrir le rapport » de 44 px, et historique repliable. Vérification : en local, 12 images par défaut (11 refus plus une ligne piège), 20 en « tout », 59 décisions rendues, `redis:7.2.9` en tête « Refusée », sans défilement horizontal à 375 px, en thème clair comme sombre.
+
+## 5. Vérification publiée
+
+- [ ] 5.1 Après publication, sur `https://trivoallan.github.io/base-images/` : ouvrir la page sans session GitHub, cliquer sur chacun des 12 refus (12/12 `report.html` rendus, aucune 404), et vérifier que le criblage suivant sur `main` republie la page sans action humaine. Vérification : la note est ajoutée sur la PR avant le 2026-10-22.
