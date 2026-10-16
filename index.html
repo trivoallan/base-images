@@ -29,8 +29,9 @@
   .filter { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.25rem; padding: .5rem 0; background: var(--bg); }
   /* Collée en haut seulement quand elle tient sur une ligne : sur téléphone, elle mangerait l'écran. */
   @media (min-width: 40rem) { .filter { position: sticky; top: 0; z-index: 1; } }
-  .filter button, .filter input { font: inherit; min-height: 44px; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: inherit; }
-  .filter button { cursor: pointer; }
+  .filter button, .filter input, .empty button { font: inherit; min-height: 44px; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: inherit; }
+  .filter button, .empty button { cursor: pointer; }
+  .empty button { margin-top: .5rem; color: var(--fg); }
   .filter button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
   .filter input { flex: 1 1 14rem; min-width: 0; }
   #list { display: grid; gap: .75rem; }
@@ -39,12 +40,14 @@
   .head h2 { margin: 0; font-size: 1.15rem; font-weight: 650; overflow-wrap: anywhere; }
   .pill { display: inline-block; font-size: .8rem; font-weight: 600; padding: .1rem .55rem; border-radius: 999px; color: var(--c); background: var(--cbg); white-space: nowrap; }
   .why { margin: .35rem 0 0; font-weight: 500; }
+  .why code, .rule .msg { font-size: .85rem; font-weight: 400; color: var(--muted); }
+  .rule { margin: .35rem 0 0; }
+  .rule .msg { display: block; }
   .arb { margin: .35rem 0 0; padding-left: .75rem; border-left: 2px solid var(--line); color: var(--muted); }
   .meta { margin: .35rem 0 0; font-size: .85rem; color: var(--muted); overflow-wrap: anywhere; }
   .meta code { font-size: .95em; }
   .actions { margin-top: .75rem; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
   .report { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1rem; border-radius: 6px; background: var(--fg); color: var(--bg); font-weight: 600; text-decoration: none; }
-  .report.md { background: none; color: var(--link); text-decoration: underline; padding: 0; }
   .none { color: var(--muted); font-size: .9rem; }
   details { margin-top: .75rem; border-top: 1px solid var(--line); padding-top: .5rem; }
   summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--muted); font-size: .9rem; }
@@ -59,6 +62,8 @@
   .s-ok { --c: var(--ok); --cbg: var(--ok-bg); }
   .s-autre { --c: var(--autre); --cbg: var(--autre-bg); }
   .empty { color: var(--muted); padding: 2rem 0; text-align: center; }
+  .filter input::placeholder { color: var(--muted); opacity: 1; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -71,7 +76,8 @@
   <button type="button" data-all="true" aria-pressed="false">Tout</button>
   <input type="search" id="q" placeholder="Filtrer par image" aria-label="Filtrer par image" autocomplete="off">
 </div>
-<main id="list" aria-live="polite"><p class="empty">Chargement…</p></main>
+<p id="status" class="sr-only" role="status"></p>
+<main id="list"><p class="empty">Chargement…</p></main>
 <script>
 // Les états qu'uske sait produire, avec leur libellé et leur gravité. Tout autre état (abandoned,
 // placed-by-exception, un état futur) est écrit à la main ou nouveau : il reste visible par défaut.
@@ -82,9 +88,17 @@ const STATES = {
   "direct-placement": { label: "Placement direct", cls: "s-ok", sev: 0 },
 };
 const HIDDEN_BY_DEFAULT = new Set(["direct-placement", "transformation-required"]);
+// Les raisons qu'uske écrit, dites pour qui ne connaît pas uske. Le code brut reste affiché à côté ;
+// une raison inconnue s'affiche telle quelle.
+const REASONS = {
+  "uske/rebuild-refused": "Même reconstruite pour corriger ses failles, l'image ne passe toujours pas les règles.",
+  "cve/cve-count": "Trop de vulnérabilités connues : l'image doit être reconstruite avant d'être placée.",
+};
+const LEVELS = { critical: "critique", warning: "avertissement" };
 const list = document.getElementById("list");
 const buttons = document.querySelectorAll(".filter button");
 const search = document.getElementById("q");
+const announce = document.getElementById("status");
 let images = [];
 let rulesets = {};
 let all = false;
@@ -102,8 +116,6 @@ function el(tag, text, cls) {
 function link(text, href, cls) {
   const a = el("a", text, cls);
   a.href = href;
-  a.target = "_blank";
-  a.rel = "noopener";
   return a;
 }
 
@@ -114,20 +126,42 @@ async function exists(url) {
 // Le rapport se déduit de la politique et du digest, pas du champ `report`, qui suit trois
 // conventions (.md, chemin du volume uske, absent). Le HTML d'abord, puis le Markdown. Résolu une
 // fois par décision : la recherche redessine la page sans refaire les requêtes.
-async function resolveReport(d) {
-  if (!d.digest) return null;
-  const base = `results/reports/${encodeURIComponent(d.policy)}/${encodeURIComponent(d.digest)}`;
-  if (await exists(base + ".html")) return { href: base + ".html", md: false };
-  if (await exists(base + ".md")) return { href: base + ".md", md: true };
-  return null;
+const reports = new Map();
+function resolveReport(policy, digest) {
+  if (!digest) return Promise.resolve(null);
+  const base = `results/reports/${encodeURIComponent(policy)}/${encodeURIComponent(digest)}`;
+  if (!reports.has(base)) reports.set(base, (async () => {
+    if (await exists(base + ".html")) return { href: base + ".html", md: false };
+    if (await exists(base + ".md")) return { href: base + ".md", md: true };
+    return null;
+  })());
+  return reports.get(base);
 }
 
-async function fillReport(slot, d, primary) {
-  d.report_link ??= resolveReport(d);
-  const r = await d.report_link;
+// Le bouton principal d'une carte (`primary`), ou un simple lien.
+async function fillReport(slot, policy, digest, text, primary) {
+  const r = await resolveReport(policy, digest);
   if (!r) return slot.replaceChildren(el("span", "pas de rapport", "none"));
-  const text = primary && !r.md ? "Ouvrir le rapport" : r.md ? "rapport (md)" : "rapport";
-  slot.replaceChildren(link(text, r.href, primary && !r.md ? "report" : r.md ? "report md" : null));
+  slot.replaceChildren(link(r.md ? text + " (md)" : text, r.href, primary ? "report" : null));
+}
+
+// Un refus après reconstruction tient au rapport de l'image reconstruite : sa première règle en
+// échec, la plus grave, est ce qui bloque encore. Lue dans le .md, qui la donne en tableau.
+// ponytail: dépend du tableau Markdown de regis ; en cas d'échec, la carte se passe de la ligne.
+async function fillRule(slot, policy, digest) {
+  try {
+    const r = await fetch(`results/reports/${encodeURIComponent(policy)}/${encodeURIComponent(digest)}.md`);
+    if (!r.ok) return;
+    const text = (await r.text()).split("<!-- regis -->")[1] || "";
+    const m = text.match(/^\| ✗ \| ([^|]+?) \| ([^|]+?) \| (.+?) \|$/m);
+    if (!m) return;
+    const p = el("p", null, "rule");
+    p.append("Ce qui bloque encore : ", el("strong", m[1]), ` (${LEVELS[m[2]] || m[2]})`);
+    const msg = el("span", m[3], "msg");
+    msg.lang = "en";
+    p.append(msg);
+    slot.replaceWith(p);
+  } catch {}
 }
 
 // Le ruleset est le sha256 du playbook qui a jugé : rulesets.json donne sa source à ce commit.
@@ -137,11 +171,12 @@ function ruleset(d) {
   if (typeof src !== "string" || !src.startsWith("https://")) return code;
   const a = link("", src);
   a.title = d.ruleset;
+  a.setAttribute("aria-label", `source du ruleset ${code.textContent}`);
   a.append(code);
   return a;
 }
 
-const when = d => (d.ts || "").replace("T", " ").replace(/:\d\dZ$/, "");
+const when = d => (d.ts || "").replace("T", " ").replace(/:\d\dZ$/, " UTC");
 
 function meta(d) {
   const p = el("p", null, "meta");
@@ -153,7 +188,11 @@ function meta(d) {
 
 function why(d) {
   const out = [];
-  if (d.reason) out.push(el("p", d.reason, "why"));
+  if (d.reason && REASONS[d.reason]) {
+    const p = el("p", REASONS[d.reason] + " ", "why");
+    p.append(el("code", d.reason));
+    out.push(p);
+  } else if (d.reason) out.push(el("p", d.reason, "why"));
   if (d.arbitration) {
     const a = d.arbitration;
     out.push(el("p", `Arbitrage ${a.by || "?"}, ${a.date || "?"} : ${a.reason || ""}`, "arb"));
@@ -161,18 +200,37 @@ function why(d) {
   return out;
 }
 
+// « Statut : » pour les lecteurs d'écran, que la couleur et la place de la pastille ne renseignent pas.
+function pill(label) {
+  const p = el("span", null, "pill");
+  p.append(el("span", "Statut : ", "sr-only"), label);
+  return p;
+}
+
 function card(img) {
   const d = img.head;
   const s = info(d.state);
   const art = el("article", null, "image " + s.cls);
   const head = el("div", null, "head");
-  head.append(el("h2", img.name), el("span", s.label, "pill"));
-  art.append(head, ...why(d), meta(d));
+  head.append(el("h2", img.name), pill(s.label));
+  art.append(head, ...why(d));
+  if (d.rebuilt) {
+    const rule = el("span");
+    art.append(rule);
+    fillRule(rule, d.policy, d.rebuilt);
+  }
+  art.append(meta(d));
   const actions = el("div", null, "actions");
   const slot = el("span", "…", "none");
   actions.append(slot);
   art.append(actions);
-  fillReport(slot, d, true);
+  if (d.rebuilt) {
+    // Le verdict qui a fait refuser est celui de la reconstruction ; la source reste consultable.
+    const src = el("span");
+    actions.append(src);
+    fillReport(slot, d.policy, d.rebuilt, "Rapport de l'image reconstruite", true);
+    fillReport(src, d.policy, d.digest, "rapport de la source", false);
+  } else fillReport(slot, d.policy, d.digest, "Ouvrir le rapport", true);
   const rest = img.decisions.slice(1);
   if (rest.length) {
     const det = el("details");
@@ -183,10 +241,10 @@ function card(img) {
       const li = el("li", null, xs.cls);
       const h = el("div", null, "head");
       const r = el("span", "…", "none");
-      h.append(el("span", xs.label, "pill"), el("span", when(x), "when"), r);
+      h.append(pill(xs.label), el("span", when(x), "when"), r);
       li.append(h, ...why(x), meta(x));
       ol.append(li);
-      fillReport(r, x, false);
+      fillReport(r, x.policy, x.digest, "rapport", false);
     }
     det.append(ol);
     art.append(det);
@@ -194,23 +252,67 @@ function card(img) {
   return art;
 }
 
+// La recherche et la bascule vivent dans l'URL : `?q=redis:7.2.9-alpine3.21` se partage et ouvre
+// directement la carte de cette image, historique déplié.
+function syncUrl() {
+  const u = new URL(location.href);
+  const q = search.value.trim();
+  if (q) u.searchParams.set("q", q); else u.searchParams.delete("q");
+  if (all) u.searchParams.set("tout", "1"); else u.searchParams.delete("tout");
+  history.replaceState(null, "", u);
+}
+
+function setAll(value) {
+  all = value;
+  buttons.forEach(o => o.setAttribute("aria-pressed", String((o.dataset.all === "true") === all)));
+  render();
+}
+
+function action(text, onclick) {
+  const b = el("button", text);
+  b.type = "button";
+  b.addEventListener("click", onclick);
+  return b;
+}
+
+// Un état vide dit pourquoi il est vide : le filtre par défaut cache des images, ou rien ne
+// correspond à la recherche.
+function empty(q, found) {
+  const p = el("p", null, "empty");
+  const term = q ? ` pour « ${q} »` : "";
+  if (!all && found) p.append(`Aucun refus ni inconclusive${term}. `, action(`Tout afficher (${found})`, () => setAll(true)));
+  else if (q) p.append(`Aucune image ne correspond à « ${q} ». `, action("Effacer la recherche", () => { search.value = ""; render(); search.focus(); }));
+  else p.append("Aucune image dans le journal.");
+  return p;
+}
+
 function render() {
-  const q = search.value.trim().toLowerCase();
+  const raw = search.value.trim();
+  const q = raw.toLowerCase();
   const found = images.filter(i => i.decisions.some(d => (d.ref || d.raw || "").toLowerCase().includes(q)));
   const kept = found.filter(i => !HIDDEN_BY_DEFAULT.has(i.head.state));
   const shown = all ? found : kept;
   buttons[0].textContent = `Refus et inconclusive (${kept.length})`;
   buttons[1].textContent = `Tout (${found.length})`;
-  list.replaceChildren(...(shown.length ? shown.map(card) : [el("p", "Aucune image.", "empty")]));
+  syncUrl();
+  announce.textContent = shown.length === 1 ? "1 image affichée" : `${shown.length} images affichées`;
+  if (!shown.length) return list.replaceChildren(empty(raw, found.length));
+  const cards = shown.map(card);
+  // Une seule image retenue : c'est celle qu'on est venu voir, son historique s'ouvre.
+  if (q && cards.length === 1) cards[0].querySelector("details")?.setAttribute("open", "");
+  list.replaceChildren(...cards);
 }
 
 search.addEventListener("input", render);
 
-buttons.forEach(b => b.addEventListener("click", () => {
-  all = b.dataset.all === "true";
-  buttons.forEach(o => o.setAttribute("aria-pressed", String(o === b)));
-  render();
-}));
+buttons.forEach(b => b.addEventListener("click", () => setAll(b.dataset.all === "true")));
+
+{
+  const params = new URLSearchParams(location.search);
+  search.value = params.get("q") || "";
+  all = params.has("tout");
+  buttons.forEach(o => o.setAttribute("aria-pressed", String((o.dataset.all === "true") === all)));
+}
 
 // Une image se reconnaît à son nom:tag, quel que soit son registre : la source et sa
 // reconstruction (base-transit) racontent la même histoire sur une seule carte.
