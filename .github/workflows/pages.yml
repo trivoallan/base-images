@@ -60,6 +60,19 @@ jobs:
           done | jq -sc 'reverse | add // {}' > results/rulesets.json
           cat results/rulesets.json
 
+      - name: Map each policy to its source and steps
+        # Le journal porte le nom de la policy (metadata.name). La page relie chaque image à son
+        # fichier à ce commit, et montre les étapes qu'elle déclare pour une reconstruction.
+        env:
+          BLOB: ${{ github.server_url }}/${{ github.repository }}/blob
+        run: |
+          sha="$(git rev-parse HEAD)"
+          find policies -name '*.yaml' | sort | while read -r file; do
+            yq -o=json -I0 '{(.metadata.name): {"transform": [.spec.imports[].transform[]?], "remediate": [.spec.imports[].remediate[]?]}}' "$file" \
+              | jq -c --arg u "$BLOB/$sha/$file" 'map_values(. + {url: $u})'
+          done | jq -sc 'add // {}' > results/policies.json
+          cat results/policies.json
+
       - uses: actions/upload-pages-artifact@v4
         with:
           path: .
