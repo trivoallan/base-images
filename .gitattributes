@@ -1,0 +1,5 @@
+# Le journal ne fait qu'ajouter : quand une ligne ajoutée par PR (uske/reopened) arrive sur main
+# pendant un screening, le `pull --rebase` de screen.sh garde les deux ajouts au lieu d'échouer.
+# Les lignes de main viennent d'abord, celles du screening ensuite : l'ordre du fichier reste
+# l'ordre d'arrivée sur main, celui qui fait foi (uske, « L'ordre est celui du journal »).
+results/*.jsonl merge=union
