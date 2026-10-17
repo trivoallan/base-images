@@ -295,11 +295,11 @@ Valeurs relevées le 2026-10-17. La mineure servie est la plus haute publiée ce
   `Change 'policies-outillage' is valid`.
 - [x] 7.2 Pousser et ouvrir la PR : `git push -u origin feat/policies-outillage`, puis `gh pr create`.
   Le titre est le premier commit.
-- [ ] 7.3 Lire le screening `judge` de la PR : `gh run watch` sur le run `screening`. Attendu : 20
+- [x] 7.3 Lire le screening `judge` de la PR : `gh run watch` sur le run `screening`. Attendu : 20
   policies planifiées, un verdict par digest, aucune erreur technique (code 0). Une
   `quarantine` est un résultat, pas une faute. Un `inconclusive` en série sur Docker Hub signale
   que 5.2 n'a pas pris.
-- [ ] 7.4 Vérifier que les trois outils passent `signed-by` : dans les rapports regis de la PR, la
+- [x] 7.4 Vérifier que les trois outils passent `signed-by` : dans les rapports regis de la PR, la
   règle `signed-by` de `regis-0`, `knock-0` et `uske-0` est `passed`. Sinon, corriger l'identité
   en 3.3 et relancer.
 
