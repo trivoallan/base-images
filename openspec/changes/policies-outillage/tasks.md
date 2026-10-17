@@ -36,7 +36,7 @@ en suivi (S8).
 
 ## 1. Prérequis hors de ce dépôt
 
-- [ ] 1.1 Attendre la release de regis qui suit 0.42.0 et contient fd58e1a1 (`provenance/signed-by`).
+- [x] 1.1 Attendre la release de regis qui suit 0.42.0 et contient fd58e1a1 (`provenance/signed-by`).
   Vérifier : `crane ls ghcr.io/trivoallan/regis | grep -E '^0\.4[3-9]\.[0-9]+-full$'` imprime au
   moins une ligne. Noter la version `<R>` et son digest :
   `crane digest ghcr.io/trivoallan/regis:<R>-full`.
