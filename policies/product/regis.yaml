@@ -1,7 +1,8 @@
 # regis, le juge de la porte. Deux variantes, deux destinations.
 #
-# Régime product (ADR 0015) : outil maison, signé par sa CI de release. Sert sa majeure entière :
-# une mineure sort presque chaque semaine.
+# Régime product (ADR 0015) : outil maison, signé par sa CI de release. Sert sa majeure entière, à partir de
+# la version courante au 2026-10-17 : une mineure sort presque chaque semaine, et l'historique
+# antérieur n'est pas rejugé.
 #
 # La destination `ghcr` est un hôte avec préfixe de chemin (ghcr.io/<propriétaire>), déclaré
 # dans KNOCK_REGISTRIES par le workflow, jamais ici.
@@ -25,7 +26,7 @@ spec:
     - name: slim
       owners: [group:default/oci-maintainers]
       tags:
-        includeRegex: "^0\\.\\d+\\.\\d+$"
+        includeRegex: "^0\\.(4[2-9]|[5-9]\\d|\\d{3,})\\.\\d+$"
         aliases: ["{major}.{minor}"]
       platforms: [linux/amd64, linux/arm64]
       destinations:
@@ -35,7 +36,7 @@ spec:
     - name: full
       owners: [group:default/oci-maintainers]
       tags:
-        includeRegex: "^0\\.\\d+\\.\\d+-full$"
+        includeRegex: "^0\\.(4[2-9]|[5-9]\\d|\\d{3,})\\.\\d+-full$"
         semverOnly: false              # un suffixe (-alpine…, -rootless, -full) se lit comme une pré-version
         aliases: ["{major}.{minor}-full"]
       platforms: [linux/amd64, linux/arm64]
