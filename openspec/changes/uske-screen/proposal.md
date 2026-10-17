@@ -29,7 +29,6 @@ Aucune. Le screening garde son comportement : mêmes étapes, mêmes décisions,
 - Fichiers ajoutés : `after-record.sh`.
 - Fichiers modifiés : `.github/workflows/screening.yml`, `.github/renovate.json5`, `README.md`.
 - Dépendances en amont :
-  - **bloquant** : une version publiée d'`uske` qui contient `uske screen`. Ce sera la 0.9.0, aujourd'hui en PR de release (uske #43). Ce dépôt ne tourne que sur des versions publiées ;
-  - souhaitable : `USKE_STEP` dans l'environnement du hook, pour garder un message de commit par porte ;
-  - souhaitable : un nom de rapport court et unique par tentative.
+  - **bloquant** : une version publiée d'`uske` qui contient `uske screen`, au moins la 0.9.1. Ce dépôt ne tourne que sur des versions publiées ;
+  - livré par la 0.9.1 (uske #56) : `USKE_STEP` dans l'environnement du hook, pour garder un message de commit par porte, et un rapport nommé d'après l'epoch, jamais réécrit (`<epoch>.md`, puis `<epoch>-2.md`…).
 - Risque : une erreur de montage, quand un chemin n'est pas vu à l'identique dans un conteneur, donne `inconclusive` côté `regis` et un échec côté `knock`, jamais un placement (README d'`uske`). La PR de ce change le montre en mode `--judge-only` avant tout `apply`.
