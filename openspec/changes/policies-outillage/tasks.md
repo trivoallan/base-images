@@ -51,16 +51,16 @@ en suivi (S8).
 
 ## 2. Remise à zéro
 
-- [ ] 2.1 Créer la branche : `git switch -c feat/policies-outillage`.
-- [ ] 2.2 Retirer l'ancien jeu :
+- [x] 2.1 Créer la branche : `git switch -c feat/policies-outillage`.
+- [x] 2.2 Retirer l'ancien jeu :
   `git rm -r policies/base playbooks/version results/base-alpine-3.jsonl results/base-python-3.jsonl results/base-redis-7.jsonl results/reports`.
   Vérifier : `ls policies playbooks results 2>&1` n'affiche plus aucun de ces chemins.
-- [ ] 2.3 Commit : `git commit -m "feat: repartir de zéro sur les policies de la porte"`, avec en
+- [x] 2.3 Commit : `git commit -m "feat: repartir de zéro sur les policies de la porte"`, avec en
   pied `BREAKING CHANGE: journaux, policies base-* et playbook version/ retirés`.
 
 ## 3. Les trois playbooks
 
-- [ ] 3.1 Écrire `playbooks/rebuild.yaml` :
+- [x] 3.1 Écrire `playbooks/rebuild.yaml` :
 
 ```yaml
 # yaml-language-server: $schema=https://trivoallan.github.io/regis/schemas/playbook/v1alpha1/playbook.schema.json
@@ -138,12 +138,12 @@ spec:
       options: { level: high, max_count: 10 }
 ```
 
-- [ ] 3.2 Écrire `playbooks/copy.yaml`. Il reprend `rebuild.yaml` avec trois écarts : `name: copy`,
+- [x] 3.2 Écrire `playbooks/copy.yaml`. Il reprend `rebuild.yaml` avec trois écarts : `name: copy`,
   `title: Image copiée`, et le commentaire d'en-tête « Régime `copy` : une image sans gestionnaire
   de paquets, copiée telle quelle. Rien n'y est réparable. ». Il supprime aussi le tier
   `transformation-required` et la règle `cve-fixable`, et passe `cve-critical` à `tags: [redhibitoire]`.
   Le tier `quarantine` garde `condition: true`.
-- [ ] 3.3 Écrire `playbooks/product.yaml`. Il reprend `copy.yaml` avec ces écarts : `name: product`,
+- [x] 3.3 Écrire `playbooks/product.yaml`. Il reprend `copy.yaml` avec ces écarts : `name: product`,
   `title: Outil maison`, et le commentaire d'en-tête « Régime `product` : regis, knock et uske. Seuil
   plus dur, signature de la CI de release exigée. ». `no-root` et `freshness` passent à
   `level: critical` (`freshness` : `max_days: 30`, le rythme des releases). Le tier
@@ -166,11 +166,11 @@ spec:
             issuer: https://token.actions.githubusercontent.com
 ```
 
-- [ ] 3.4 Valider chaque playbook avec regis à la version `<R>` de 1.1 :
+- [x] 3.4 Valider chaque playbook avec regis à la version `<R>` de 1.1 :
   `for p in rebuild copy product; do uv run --project ../regis regis playbook validate playbooks/$p.yaml; done`
   Attendu : trois validations sans erreur, code de sortie 0. Si `../regis` n'est pas sur `<R>`,
   faire d'abord `git -C ../regis checkout v<R>`.
-- [ ] 3.5 Commit : `git add playbooks && git commit -m "feat: trois playbooks, rebuild, copy et product"`.
+- [x] 3.5 Commit : `git add playbooks && git commit -m "feat: trois playbooks, rebuild, copy et product"`.
 
 ## 4. Les policies
 
@@ -237,19 +237,19 @@ Valeurs relevées le 2026-10-17. La mineure servie est la plus haute publiée ce
 | `product/knock.yaml` | `knock-0` | `ghcr.io` / `trivoallan/knock` | `^0\.\d+\.\d+$` | true | `{major}.{minor}` | `knock` |
 | `product/uske.yaml` | `uske-0` | `ghcr.io` / `trivoallan/uske` | `^0\.\d+\.\d+$` | true | `{major}.{minor}` | `uske` |
 
-- [ ] 4.1 Vérifier qu'aucune source ne manque de plateforme. Pour chaque ligne :
+- [x] 4.1 Vérifier qu'aucune source ne manque de plateforme. Pour chaque ligne :
   `crane manifest <registry>/<repository>:<tag le plus haut> | jq -r '[.manifests[].platform | "\(.os)/\(.architecture)"] | map(select(. == "linux/amd64" or . == "linux/arm64")) | unique | length'`
   doit imprimer `2`. Une source qui imprime moins quitte le tableau, et le README la nomme (tâche 6.2).
-- [ ] 4.2 Écrire les sept fichiers de `policies/rebuild/`, d'après le modèle et le tableau.
-- [ ] 4.3 Écrire les dix fichiers de `policies/copy/`, sans `transform` ni `remediate`.
-- [ ] 4.4 Écrire les trois fichiers de `policies/product/`, sans `transform` ni `remediate`.
+- [x] 4.2 Écrire les sept fichiers de `policies/rebuild/`, d'après le modèle et le tableau.
+- [x] 4.3 Écrire les dix fichiers de `policies/copy/`, sans `transform` ni `remediate`.
+- [x] 4.4 Écrire les trois fichiers de `policies/product/`, sans `transform` ni `remediate`.
   `regis.yaml` porte deux entrées sous `imports` (`slim`, `full`), chacune vers sa destination.
-- [ ] 4.5 Vérifier qu'uske lit et route chaque policy :
+- [x] 4.5 Vérifier qu'uske lit et route chaque policy :
   `uv run --project ../uske uske list --policies policies`. Attendu : 20 policies listées, sans
   erreur. Vérifier aussi l'accord entre répertoire et label :
   `for f in policies/*/*.yaml; do d=$(basename $(dirname $f)); grep -q "admission-track: $d" $f || echo "ÉCART $f"; done`
   n'imprime rien.
-- [ ] 4.6 Commit : `git add policies && git commit -m "feat: une policy par image de l'outillage, rangée par régime"`.
+- [x] 4.6 Commit : `git add policies && git commit -m "feat: une policy par image de l'outillage, rangée par régime"`.
 
 ## 5. Le screening
 
@@ -277,17 +277,17 @@ Valeurs relevées le 2026-10-17. La mineure servie est la plus haute publiée ce
 
 ## 6. Le README
 
-- [ ] 6.1 Réécrire l'introduction et le bloc d'arborescence de `README.md` : `playbooks/{rebuild,copy,product}.yaml`,
+- [x] 6.1 Réécrire l'introduction et le bloc d'arborescence de `README.md` : `playbooks/{rebuild,copy,product}.yaml`,
   `policies/<régime>/*.yaml`, la destination `ghcr.io/<propriétaire>/oci/<nom>`, et le renvoi à
   l'ADR 0015 pour la règle de régime.
-- [ ] 6.2 Ajouter une section « Ce que la porte ne voit pas » : les binaires que le Dockerfile de
+- [x] 6.2 Ajouter une section « Ce que la porte ne voit pas » : les binaires que le Dockerfile de
   regis télécharge en release GitHub (grype, syft, trufflehog, hadolint, dockle, regctl), et toute
   source retirée par la tâche 4.1.
-- [ ] 6.3 Ajouter une phrase sur les dépôts `ghcr.io/<propriétaire>/base/*` : abandonnés, passés en
+- [x] 6.3 Ajouter une phrase sur les dépôts `ghcr.io/<propriétaire>/base/*` : abandonnés, passés en
   privé, plus jugés.
-- [ ] 6.4 Mettre à jour le bloc « Vérifier en local » :
+- [x] 6.4 Mettre à jour le bloc « Vérifier en local » :
   `uv run --project ../uske uske list --policies policies` et la boucle `regis playbook validate` de 3.4.
-- [ ] 6.5 Commit : `git add README.md && git commit -m "docs: dire ce que la porte juge, par régime, et ce qui lui échappe"`.
+- [x] 6.5 Commit : `git add README.md && git commit -m "docs: dire ce que la porte juge, par régime, et ce qui lui échappe"`.
 
 ## 7. Validation par le screening de PR
 
