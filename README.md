@@ -60,6 +60,13 @@ cette PR qui la valide. Renovate passe par l'app CI, et non par `GITHUB_TOKEN`, 
 ouverte avec `GITHUB_TOKEN` ne déclencherait aucun workflow. Le dépôt a donc besoin des secrets
 `CI_APP_CLIENT_ID` et `CI_APP_PRIVATE_KEY`, et l'app doit y être installée.
 
+## Méthode
+
+Les changes d'`openspec/` suivent le schéma `surdesrails`, ou `spec-driven` pour ceux d'avant sa
+pose. `npm install` attend un clone de `surdesrails` à `../../surdesrails` ; sans lui, le lien
+`openspec/schemas/surdesrails` pend et seuls les changes `spec-driven` restent utilisables. La
+découverte du produit vit dans le dépôt privé `oci-pm`, et `.nanopm` n'en est qu'un lien.
+
 ## Licence
 
 Apache-2.0.
