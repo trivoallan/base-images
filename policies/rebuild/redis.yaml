@@ -1,0 +1,38 @@
+# Redis 7 sur Alpine, file d'attente du scan-pipeline de knock.
+#
+# Régime rebuild (ADR 0015) : apk, reconstruit depuis le miroir `alpine` que déclare
+# KNOCK_TRANSFORM_PACKAGE_MIRRORS dans screening.yml.
+#
+# La destination `ghcr` est un hôte avec préfixe de chemin (ghcr.io/<propriétaire>), déclaré
+# dans KNOCK_REGISTRIES par le workflow, jamais ici.
+apiVersion: knock.io/v1alpha1
+kind: MirrorPolicy
+metadata:
+  name: redis-7
+  labels:
+    admission-track: rebuild            # → playbooks/rebuild.yaml
+    major: "7"
+    cao: oci-maintainers
+spec:
+  artifactType: image
+  # GHCR refuse la suppression par l'API : un tag sorti de la sélection est marqué, jamais effacé.
+  deletionMode: mark
+  source:
+    registry: docker.io
+    repository: library/redis
+  imports:
+    - name: main
+      owners: [group:default/oci-maintainers]
+      tags:
+        includeRegex: "^7\\.4\\.\\d+-alpine3\\.21$"
+        semverOnly: false              # un suffixe (-alpine…, -rootless, -full) se lit comme une pré-version
+        aliases: ["{major}.{minor}-alpine"]
+      platforms: [linux/amd64, linux/arm64]
+      transform:
+        - rewritePackageSources: { mirror: alpine }
+      remediate:
+        - upgradePackages: {}  # sur ordre d'uske seulement ; l'epoch vient avec l'ordre
+      destinations:
+        - registry: ghcr
+          project: oci
+          repository: redis

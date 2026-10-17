@@ -1,0 +1,33 @@
+# syft, copié dans l'image de knock.
+#
+# Régime copy (ADR 0015) : pas de gestionnaire de paquets (ou pas de miroir déclaré), copiée
+# telle quelle. Rien n'y est réparable.
+#
+# La destination `ghcr` est un hôte avec préfixe de chemin (ghcr.io/<propriétaire>), déclaré
+# dans KNOCK_REGISTRIES par le workflow, jamais ici.
+apiVersion: knock.io/v1alpha1
+kind: MirrorPolicy
+metadata:
+  name: syft-1
+  labels:
+    admission-track: copy               # → playbooks/copy.yaml
+    major: "1"
+    cao: oci-maintainers
+spec:
+  artifactType: image
+  # GHCR refuse la suppression par l'API : un tag sorti de la sélection est marqué, jamais effacé.
+  deletionMode: mark
+  source:
+    registry: docker.io
+    repository: anchore/syft
+  imports:
+    - name: main
+      owners: [group:default/oci-maintainers]
+      tags:
+        includeRegex: "^v1\\.54\\.\\d+$"
+        aliases: ["v{major}.{minor}"]
+      platforms: [linux/amd64, linux/arm64]
+      destinations:
+        - registry: ghcr
+          project: oci
+          repository: syft
