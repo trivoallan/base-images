@@ -22,5 +22,5 @@
 
 ## 2. Fermer le change
 
-- [ ] 2.1 `openspec validate verdicts --type change --strict` ; la sortie attendue est `Change 'verdicts' is valid`.
-- [ ] 2.2 `openspec archive verdicts --yes`, puis `git add openspec && git commit -m "chore: archiver le change verdicts"`, dans la même branche `chore/surdesrails`.
+- [x] 2.1 `openspec validate verdicts --type change --strict` ; la sortie attendue est `Change 'verdicts' is valid`.
+- [x] 2.2 `openspec archive verdicts --yes`, puis `git add openspec && git commit -m "chore: archiver le change verdicts"`, dans la même branche `chore/surdesrails`.
