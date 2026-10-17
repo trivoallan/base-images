@@ -291,7 +291,7 @@ Valeurs relevées le 2026-10-17. La mineure servie est la plus haute publiée ce
 
 ## 7. Validation par le screening de PR
 
-- [ ] 7.1 `openspec validate policies-outillage --type change --strict` imprime
+- [x] 7.1 `openspec validate policies-outillage --type change --strict` imprime
   `Change 'policies-outillage' is valid`.
 - [ ] 7.2 Pousser et ouvrir la PR : `git push -u origin feat/policies-outillage`, puis `gh pr create`.
   Le titre est le premier commit.
