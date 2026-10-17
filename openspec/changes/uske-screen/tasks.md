@@ -2,15 +2,15 @@
 
 ## 1. Prérequis en amont
 
-- [ ] 1.1 Attendre la publication d'`uske` 0.9.0 (uske #43), puis relever le SHA du commit du tag `v0.9.0`. Vérification : `uvx --from "git+https://github.com/trivoallan/uske@<sha>" uske screen --help` affiche l'aide de `screen`, et `USKE_AFTER_RECORD` y figure.
-- [ ] 1.2 Ouvrir dans `uske` deux demandes, l'une pour `USKE_STEP` dans l'environnement du hook, l'autre pour un nom de rapport court qui distingue chaque tentative (D4, Risks). Elles ne bloquent pas ce change. Vérification : chaque issue a son lien dans la PR de ce change.
+- [ ] 1.1 Relever le SHA du commit du tag `v0.9.1` d'`uske`, la première version qui passe `USKE_STEP` et ne réécrit aucun rapport (uske #56). Vérification : `uvx --from "git+https://github.com/trivoallan/uske@<sha>" uske screen --help` affiche l'aide de `screen`, et `USKE_AFTER_RECORD` y figure.
+- [x] 1.2 Obtenir d'`uske` `USKE_STEP` dans l'environnement du hook et un nom de rapport qui distingue chaque tentative (D4, Risks). Fait sans issue : le change `report-per-judgment` d'`uske` (uske #54, #56), publié en 0.9.1.
 
 ## 2. Le hook
 
 - [ ] 2.1 Écrire `after-record.sh`. Il reprend `compose_reports` et `commit_journal` de `screen.sh` (D3), avec ces différences :
-  - il lit `USKE_POLICY` et `USKE_RESULTS` ;
+  - il lit `USKE_POLICY`, `USKE_RESULTS` et `USKE_STEP` ;
   - il appelle `uske decisions` par la même commande `uvx` que le workflow ;
-  - il écrit le message `journal(<policy>): screening <run>` (D4).
+  - il écrit le message `journal(<policy>): <USKE_STEP> <run>` (D4).
 
   Vérification : sur une copie du dépôt, avec `USKE_POLICY=base-alpine-3`, deux exécutions de suite donnent les mêmes rapports (idempotence), et `git status` ne montre que les rapports de cette policy.
 - [ ] 2.2 Vérifier que le hook sort en non-zéro quand `git push` échoue, pour que la policy s'arrête avant tout placement. Vérification : avec un remote injoignable, le hook sort en code non nul.

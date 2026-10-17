@@ -15,13 +15,13 @@ Deux traitements de `screen.sh` n'ont pas d'équivalent dans `uske screen` : `co
 **Non-Goals:**
 - Changer ce que décide le screening, ou l'ordre des portes.
 - Faire tourner ce dépôt sur Argo : il reste sur GitHub Actions.
-- Faire les ajouts souhaitables en amont (`USKE_STEP`, nom des rapports). Ils sont demandés à `uske`, et ce change s'en passe s'il le faut.
+- Faire des ajouts en amont. Ceux que ce change souhaitait, `USKE_STEP` et un nom de rapport qui ne réécrit rien, sont livrés par `uske` 0.9.1 (uske #56).
 
 ## Decisions
 
 ### D1. `uske` s'installe sur le runner, depuis le tag de sa release, épinglé par commit
 
-`uvx --from "git+https://github.com/trivoallan/uske@<sha>" uske screen …`, avec `astral-sh/setup-uv`. Le commentaire `# v0.9.0` sert à Renovate.
+`uvx --from "git+https://github.com/trivoallan/uske@<sha>" uske screen …`, avec `astral-sh/setup-uv`. Le commentaire `# v0.9.1` sert à Renovate.
 
 Il faut que le processus `uske` ait sous la main `docker`, pour ses préfixes, et `git`, pour le hook. L'image d'`uske` n'a ni l'un ni l'autre, et c'est voulu : elle est faite pour Argo, où chaque outil a son pod.
 
@@ -57,20 +57,20 @@ Le moment d'appel ne change pas : après l'écriture du journal, avant le placem
 
 En `--judge-only`, `uske` n'écrit pas le journal et n'appelle donc pas le hook. Le workflow ne définit `USKE_AFTER_RECORD` qu'en mode `apply`, pour qu'aucun push ne puisse partir d'une PR.
 
-### D4. Le message de commit est `journal(<policy>): screening <run>`, jusqu'à `USKE_STEP`
+### D4. Le message de commit est `journal(<policy>): <étape> <run>`
 
-Le hook ne sait pas quelle porte l'appelle. On perd donc la distinction « première porte / placements / seconde porte / promotions » dans `git log`. La donnée elle-même reste dans le journal (état, `source`, `run`). Le jour où `uske` exportera l'étape, le hook l'ajoutera au message.
+`uske` passe au hook l'étape qui vient d'écrire le journal, dans `USKE_STEP` : `record`, `record-approve`, `record-applied`, `record-held` ou `record-promoted` (uske 0.9.1). Le message garde donc dans `git log` la distinction « première porte / placements / seconde porte / promotions ». Le hook n'est appelé qu'après une étape qui a écrit au moins une ligne : un screening en montre deux ou trois, rarement les cinq.
 
 ## Risks / Trade-offs
 
 - [Un chemin mal monté] → `regis` rend `inconclusive` et `knock` échoue (exit 1), jamais de placement. La PR de ce change tourne en `--judge-only` sur les trois policies, et ses verdicts doivent être les mêmes que ceux du dernier screening.
-- [Les noms de rapports changent] → Les nouveaux rapports s'appellent `_file_name(<url du run>).md` et ne portent pas la tentative : une deuxième tentative réécrit le rapport de la première pour un digest qui n'avait pas été consigné. Les lignes existantes citent leur fichier par chemin et ne sont pas touchées. Le nom court est demandé à `uske`.
+- [Les noms de rapports changent] → Les nouveaux rapports s'appellent `<epoch>.md`, et non plus `<run_id>-<tentative>.md`. Quand une deuxième tentative rejuge un digest sous le même epoch, `uske` prend `<epoch>-2.md` : un rapport cité n'est jamais réécrit. Le run reste dans la ligne, en `run`. Les lignes existantes citent leur fichier par chemin et ne sont pas touchées.
 - [Le code de sortie] → `uske screen` sort en 1 si une seule policy échoue, quelle qu'en soit la raison (hook, `--apply-plan`, `promote`), après avoir traité les autres. `screen.sh` ne sortait en erreur que sur `--apply-plan`. Le workflow `pages`, qui part d'un screening réussi, part donc moins souvent après une panne partielle. C'est voulu.
 - [`uvx` récupère `uske` à chaque run] → Il clone une petite dépendance pure Python et installe `pyyaml`, en quelques secondes. Pas de cache.
 
 ## Migration Plan
 
-1. Attendre la publication d'`uske` 0.9.0 (uske #43).
+1. Attendre la publication d'`uske` 0.9.1 (uske #56) : c'est fait.
 2. Ouvrir la PR : `screen.sh` supprimé, `after-record.sh` ajouté, workflow et Renovate modifiés. Son screening `--judge-only` sert de recette.
 3. Après fusion, lancer un screening `apply` par `workflow_dispatch`. Vérifier les commits du journal, les rapports composés et la page.
 4. Retour arrière : revert de la PR. Le journal et les rapports écrits par `uske screen` restent lisibles par `screen.sh`, parce que leur format et leurs chemins (`<digest>/<nom>.md`) sont ceux qu'il sait déjà composer.
