@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=https://trivoallan.github.io/regis/schemas/playbook/v1alpha1/playbook.schema.json
+#
+# Régime `rebuild` : une image à paquets, que knock sait reconstruire depuis un miroir déclaré
+# (ADR 0015). Une faille critique corrigeable mène à la transformation : `cve-critical` est
+# `curable`, et uske n'ordonne de réparation que sur une règle ainsi taguée.
+apiVersion: regis.io/v1alpha1
+kind: Playbook
+metadata:
+  name: rebuild
+  title: Image reconstructible
+  labels:
+    app.kubernetes.io/version: "1.0.0"
+
+spec:
+  # Premier tier vrai l'emporte. `cve-fixable` se lit à l'envers de son nom : la règle
+  # `fix-available` PASSE quand aucune faille n'a de correctif, ÉCHOUE quand il en existe.
+  tiers:
+    - id: direct-placement
+      name: Placement direct
+      condition:
+        and:
+          - { var: rules.no-secret.passed }
+          - { var: rules.no-licence-toxique.passed }
+          - { var: rules.cve-critical.passed }
+
+    - id: transformation-required
+      name: Transformation requise puis placement
+      condition:
+        and:
+          - { var: rules.no-secret.passed }
+          - { var: rules.no-licence-toxique.passed }
+          # La faille critique est acceptable ICI si un correctif existe : « un correctif
+          # existe », c'est `cve-fixable` en ÉCHEC.
+          - { "!": [{ var: rules.cve-fixable.passed }] }
+
+    - id: quarantine
+      name: Quarantaine
+      condition: true
+
+  rules:
+    # ===== RÉDHIBITOIRE : rien ne les répare =====
+    # Un secret présent dans une couche d'origine survit à la reconstruction.
+    - provider: secrets
+      criterion: verified-secrets
+      slug: no-secret
+      level: critical
+      tags: [redhibitoire]
+
+    - provider: sbom
+      criterion: license-blocklist
+      slug: no-licence-toxique
+      level: critical
+      tags: [redhibitoire]
+      options:
+        # Les licences qui visent le service rendu, pas la distribution. La famille GPL n'y est
+        # pas : elle mettrait en quarantaine toute base dont Syft lit les paquets (DEBT-13).
+        blocklist:
+          - AGPL-3.0-only
+          - AGPL-3.0-or-later
+          - SSPL-1.0
+
+    # ===== LE COUPLE QUI DÉCIDE =====
+    # Limite : `regis` compte les correctifs de toutes sévérités, pas ceux des seules failles
+    # critiques. C'est le jugement de l'image reconstruite qui dira si la réparation a suffi.
+    - provider: cve
+      criterion: cve-count
+      slug: cve-critical
+      level: critical
+      tags: [curable]
+      options: { level: critical, max_count: 0 }
+
+    - provider: cve
+      criterion: fix-available
+      slug: cve-fixable
+      level: warning
+      tags: [discriminant]
+
+    # ===== INFORMATIF =====
+    - provider: oci
+      criterion: user-blacklist
+      slug: no-root
+      level: warning
+      tags: [informatif]
+
+    - provider: freshness
+      criterion: age
+      slug: freshness
+      level: warning
+      tags: [informatif]
+      options: { max_days: 90 }
+
+    - provider: cve
+      criterion: cve-count
+      slug: cve-high
+      level: warning
+      tags: [informatif]
+      options: { level: high, max_count: 10 }

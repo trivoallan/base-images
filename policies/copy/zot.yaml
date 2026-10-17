@@ -1,0 +1,33 @@
+# zot, le registre des bancs locaux de knock et d'uske (index multi-arch).
+#
+# Régime copy (ADR 0015) : pas de gestionnaire de paquets (ou pas de miroir déclaré), copiée
+# telle quelle. Rien n'y est réparable.
+#
+# La destination `ghcr` est un hôte avec préfixe de chemin (ghcr.io/<propriétaire>), déclaré
+# dans KNOCK_REGISTRIES par le workflow, jamais ici.
+apiVersion: knock.io/v1alpha1
+kind: MirrorPolicy
+metadata:
+  name: zot-2
+  labels:
+    admission-track: copy               # → playbooks/copy.yaml
+    major: "2"
+    cao: oci-maintainers
+spec:
+  artifactType: image
+  # GHCR refuse la suppression par l'API : un tag sorti de la sélection est marqué, jamais effacé.
+  deletionMode: mark
+  source:
+    registry: ghcr.io
+    repository: project-zot/zot
+  imports:
+    - name: main
+      owners: [group:default/oci-maintainers]
+      tags:
+        includeRegex: "^v2\\.1\\.\\d+$"
+        aliases: ["v{major}.{minor}"]
+      platforms: [linux/amd64, linux/arm64]
+      destinations:
+        - registry: ghcr
+          project: oci
+          repository: zot

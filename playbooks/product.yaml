@@ -1,0 +1,95 @@
+# yaml-language-server: $schema=https://trivoallan.github.io/regis/schemas/playbook/v1alpha1/playbook.schema.json
+#
+# Régime `product` : regis, knock et uske (ADR 0015). Seuil plus dur que `copy` : c'est nous qui
+# corrigeons, en amont, dans leur dépôt. Les reconstruire casserait leur signature : rien n'y est
+# réparable. Une signature keyless de la CI de release de l'outil est exigée.
+apiVersion: regis.io/v1alpha1
+kind: Playbook
+metadata:
+  name: product
+  title: Outil maison
+  labels:
+    app.kubernetes.io/version: "1.0.0"
+
+spec:
+  tiers:
+    - id: direct-placement
+      name: Placement direct
+      condition:
+        and:
+          - { var: rules.no-secret.passed }
+          - { var: rules.no-licence-toxique.passed }
+          - { var: rules.cve-critical.passed }
+          - { var: rules.no-root.passed }
+          - { var: rules.freshness.passed }
+          - { var: rules.signed-by.passed }
+
+    - id: quarantine
+      name: Quarantaine
+      condition: true
+
+  rules:
+    # ===== RÉDHIBITOIRE =====
+    - provider: secrets
+      criterion: verified-secrets
+      slug: no-secret
+      level: critical
+      tags: [redhibitoire]
+
+    - provider: sbom
+      criterion: license-blocklist
+      slug: no-licence-toxique
+      level: critical
+      tags: [redhibitoire]
+      options:
+        # Les licences qui visent le service rendu, pas la distribution (DEBT-13).
+        blocklist:
+          - AGPL-3.0-only
+          - AGPL-3.0-or-later
+          - SSPL-1.0
+
+    - provider: cve
+      criterion: cve-count
+      slug: cve-critical
+      level: critical
+      tags: [redhibitoire]
+      options: { level: critical, max_count: 0 }
+
+    - provider: oci
+      criterion: user-blacklist
+      slug: no-root
+      level: critical
+      tags: [redhibitoire]
+
+    # Les trois outils sortent une version presque chaque semaine : 30 jours, c'est une release
+    # qu'on a laissée vieillir, pas une épingle Renovate en attente.
+    - provider: freshness
+      criterion: age
+      slug: freshness
+      level: critical
+      tags: [redhibitoire]
+      options: { max_days: 30 }
+
+    # La signature prouve le dépôt source : aucun critère regis ne lit les labels OCI. Le playbook
+    # est commun aux trois outils, donc une image signée par la CI d'un autre outil maison passe.
+    - provider: provenance
+      criterion: signed-by
+      slug: signed-by
+      level: critical
+      tags: [redhibitoire]
+      options:
+        signers:
+          - identity: https://github.com/trivoallan/regis/.github/workflows/release.yml@refs/heads/main
+            issuer: https://token.actions.githubusercontent.com
+          - identity: https://github.com/trivoallan/knock/.github/workflows/release.yml@refs/heads/main
+            issuer: https://token.actions.githubusercontent.com
+          - identity: https://github.com/trivoallan/uske/.github/workflows/release.yml@refs/heads/main
+            issuer: https://token.actions.githubusercontent.com
+
+    # ===== INFORMATIF =====
+    - provider: cve
+      criterion: cve-count
+      slug: cve-high
+      level: warning
+      tags: [informatif]
+      options: { level: high, max_count: 10 }

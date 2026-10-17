@@ -1,0 +1,74 @@
+# yaml-language-server: $schema=https://trivoallan.github.io/regis/schemas/playbook/v1alpha1/playbook.schema.json
+#
+# Régime `copy` : une image sans gestionnaire de paquets (ou sans miroir déclaré), copiée telle
+# quelle (ADR 0015). Rien n'y est réparable : aucune règle `curable`, pas de tier de transformation.
+apiVersion: regis.io/v1alpha1
+kind: Playbook
+metadata:
+  name: copy
+  title: Image copiée
+  labels:
+    app.kubernetes.io/version: "1.0.0"
+
+spec:
+  tiers:
+    - id: direct-placement
+      name: Placement direct
+      condition:
+        and:
+          - { var: rules.no-secret.passed }
+          - { var: rules.no-licence-toxique.passed }
+          - { var: rules.cve-critical.passed }
+
+    - id: quarantine
+      name: Quarantaine
+      condition: true
+
+  rules:
+    # ===== RÉDHIBITOIRE =====
+    - provider: secrets
+      criterion: verified-secrets
+      slug: no-secret
+      level: critical
+      tags: [redhibitoire]
+
+    - provider: sbom
+      criterion: license-blocklist
+      slug: no-licence-toxique
+      level: critical
+      tags: [redhibitoire]
+      options:
+        # Les licences qui visent le service rendu, pas la distribution (DEBT-13).
+        blocklist:
+          - AGPL-3.0-only
+          - AGPL-3.0-or-later
+          - SSPL-1.0
+
+    # Une faille critique, corrigeable ou non : knock ne sait pas reconstruire cette image.
+    - provider: cve
+      criterion: cve-count
+      slug: cve-critical
+      level: critical
+      tags: [redhibitoire]
+      options: { level: critical, max_count: 0 }
+
+    # ===== INFORMATIF =====
+    - provider: oci
+      criterion: user-blacklist
+      slug: no-root
+      level: warning
+      tags: [informatif]
+
+    - provider: freshness
+      criterion: age
+      slug: freshness
+      level: warning
+      tags: [informatif]
+      options: { max_days: 90 }
+
+    - provider: cve
+      criterion: cve-count
+      slug: cve-high
+      level: warning
+      tags: [informatif]
+      options: { level: high, max_count: 10 }

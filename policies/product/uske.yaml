@@ -1,0 +1,34 @@
+# uske, l'orchestrateur de la porte.
+#
+# Régime product (ADR 0015) : outil maison, signé par sa CI de release. Sert sa majeure entière, à partir de
+# la version courante au 2026-10-17 : une mineure sort presque chaque semaine, et l'historique
+# antérieur n'est pas rejugé.
+#
+# La destination `ghcr` est un hôte avec préfixe de chemin (ghcr.io/<propriétaire>), déclaré
+# dans KNOCK_REGISTRIES par le workflow, jamais ici.
+apiVersion: knock.io/v1alpha1
+kind: MirrorPolicy
+metadata:
+  name: uske-0
+  labels:
+    admission-track: product            # → playbooks/product.yaml
+    major: "0"
+    cao: oci-maintainers
+spec:
+  artifactType: image
+  # GHCR refuse la suppression par l'API : un tag sorti de la sélection est marqué, jamais effacé.
+  deletionMode: mark
+  source:
+    registry: ghcr.io
+    repository: trivoallan/uske
+  imports:
+    - name: main
+      owners: [group:default/oci-maintainers]
+      tags:
+        includeRegex: "^0\\.([1-9]\\d|\\d{3,})\\.\\d+$"
+        aliases: ["{major}.{minor}"]
+      platforms: [linux/amd64, linux/arm64]
+      destinations:
+        - registry: ghcr
+          project: oci
+          repository: uske

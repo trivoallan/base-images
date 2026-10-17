@@ -1,0 +1,46 @@
+# regis, le juge de la porte. Deux variantes, deux destinations.
+#
+# Régime product (ADR 0015) : outil maison, signé par sa CI de release. Sert sa majeure entière, à partir de
+# la version courante au 2026-10-17 : une mineure sort presque chaque semaine, et l'historique
+# antérieur n'est pas rejugé.
+#
+# La destination `ghcr` est un hôte avec préfixe de chemin (ghcr.io/<propriétaire>), déclaré
+# dans KNOCK_REGISTRIES par le workflow, jamais ici.
+apiVersion: knock.io/v1alpha1
+kind: MirrorPolicy
+metadata:
+  name: regis-0
+  labels:
+    admission-track: product            # → playbooks/product.yaml
+    major: "0"
+    cao: oci-maintainers
+spec:
+  artifactType: image
+  # GHCR refuse la suppression par l'API : un tag sorti de la sélection est marqué, jamais effacé.
+  deletionMode: mark
+  source:
+    registry: ghcr.io
+    repository: trivoallan/regis
+  imports:
+    # Une seule import par dépôt de destination : chaque variante a le sien.
+    - name: slim
+      owners: [group:default/oci-maintainers]
+      tags:
+        includeRegex: "^0\\.(4[2-9]|[5-9]\\d|\\d{3,})\\.\\d+$"
+        aliases: ["{major}.{minor}"]
+      platforms: [linux/amd64, linux/arm64]
+      destinations:
+        - registry: ghcr
+          project: oci
+          repository: regis-slim
+    - name: full
+      owners: [group:default/oci-maintainers]
+      tags:
+        includeRegex: "^0\\.(4[2-9]|[5-9]\\d|\\d{3,})\\.\\d+-full$"
+        semverOnly: false              # un suffixe (-alpine…, -rootless, -full) se lit comme une pré-version
+        aliases: ["{major}.{minor}-full"]
+      platforms: [linux/amd64, linux/arm64]
+      destinations:
+        - registry: ghcr
+          project: oci
+          repository: regis-full

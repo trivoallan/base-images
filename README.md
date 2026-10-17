@@ -1,28 +1,44 @@
 # base-images
 
-Les images de base, Python, Alpine et Redis, de [`regis`](https://github.com/trivoallan/regis),
-[`knock`](https://github.com/trivoallan/knock) et [`uske`](https://github.com/trivoallan/uske),
-passées par la porte que ces trois outils forment. Sans ce dépôt, ils tireraient leur base de Docker
-Hub sans aucun jugement : la porte ne protégerait pas ses propres images.
+Toutes les images que tirent [`regis`](https://github.com/trivoallan/regis),
+[`knock`](https://github.com/trivoallan/knock) et [`uske`](https://github.com/trivoallan/uske) — leurs
+bases, les images d'où ils copient un binaire, ce qu'ils déploient, et les trois outils eux-mêmes —
+passées par la porte que ces trois outils forment. Sans ce dépôt, la porte ne protégerait pas ses
+propres images.
 
-Un screening `uske` place `python:3.14-alpine3.24` dans `ghcr.io/sncfdevelopers/base/python` et
-`alpine:3.24` dans `ghcr.io/sncfdevelopers/base/alpine`, et `redis:7.2-alpine3.21` dans
-`ghcr.io/sncfdevelopers/base/redis`, seulement après un verdict `regis`, et consigne chaque
-décision dans le journal de sa policy.
+Un screening `uske` place chaque image sous `ghcr.io/sncfdevelopers/oci/<nom>` seulement après un
+verdict `regis`, et consigne chaque décision dans le journal de sa policy. Le playbook qui la juge
+dépend de son régime, et une règle écrite range chaque image dans l'un des trois
+([ADR 0015](docs/adr/0015-trois-regimes-admission.md)) :
+
+| Régime | Images | Ce qu'il exige |
+| --- | --- | --- |
+| `rebuild` | python, redis, postgres, golang, curl, buildkit, git | une image à paquets apk ; une faille critique corrigeable mène à une reconstruction |
+| `copy` | uv, regctl, cosign, syft, grype, git-sync, zot, rustfs, Dependency-Track | une image copiée telle quelle ; une faille critique la met en quarantaine |
+| `product` | regis, knock, uske | un seuil plus dur (root, fraîcheur) et une signature keyless de la CI de release de l'outil |
 
 ```
-policies/base/python.yaml        la policy knock de Python 3 (régime standard)
-policies/base/alpine.yaml        la policy knock d'Alpine 3 (régime standard)
-policies/base/redis.yaml         la policy knock de Redis 7 (régime standard)
-playbooks/version/playbook.yaml  le playbook regis de ce régime, là où uske le cherche
+policies/<régime>/<image>.yaml        une policy knock par image, étiquetée admission-track: <régime>
+playbooks/{rebuild,copy,product}.yaml le playbook regis de chaque régime, là où uske le cherche
 ```
+
+Une policy sert une seule mineure de sa source ; une policy `product` sert sa majeure entière, parce
+que ces outils sortent une mineure presque chaque semaine.
 
 Vérifier en local :
 
 ```bash
 uv run --project ../uske uske list --policies policies
-uv run --project ../regis regis playbook validate playbooks/version/playbook.yaml
+for p in rebuild copy product; do uv run --project ../regis regis playbook validate playbooks/$p.yaml; done
 ```
+
+## Ce que la porte ne voit pas
+
+- Les binaires que le Dockerfile de `regis` télécharge depuis les releases GitHub : grype, syft,
+  trufflehog, hadolint, dockle et regctl. Ce ne sont pas des images OCI, et aucune policy ne les
+  juge.
+- Les dépôts `ghcr.io/sncfdevelopers/base/*` (python, alpine, redis), qu'un jeu de policies antérieur
+  remplissait. Plus rien ne les juge ni ne les tire : ils sont abandonnés, et le propriétaire les passe en privé.
 
 ## Screening
 
