@@ -45,7 +45,7 @@ en suivi (S8).
   `cosign verify ghcr.io/trivoallan/$t:<V> --certificate-identity https://github.com/trivoallan/$t/.github/workflows/release.yml@refs/heads/main --certificate-oidc-issuer https://token.actions.githubusercontent.com > /dev/null && echo ok`
   imprime `ok`. Si une commande échoue, relire l'identité réelle avec
   `--certificate-identity-regexp '.*'` et la reporter à la tâche 3.3.
-- [ ] 1.3 Créer un jeton Docker Hub en lecture seule (geste du propriétaire, dans Docker Hub), puis
+- [x] 1.3 Créer un jeton Docker Hub en lecture seule (geste du propriétaire, dans Docker Hub), puis
   `gh secret set DOCKERHUB_USERNAME` et `gh secret set DOCKERHUB_TOKEN`.
   Vérifier : `gh secret list` liste les deux noms.
 
@@ -293,7 +293,7 @@ Valeurs relevées le 2026-10-17. La mineure servie est la plus haute publiée ce
 
 - [x] 7.1 `openspec validate policies-outillage --type change --strict` imprime
   `Change 'policies-outillage' is valid`.
-- [ ] 7.2 Pousser et ouvrir la PR : `git push -u origin feat/policies-outillage`, puis `gh pr create`.
+- [x] 7.2 Pousser et ouvrir la PR : `git push -u origin feat/policies-outillage`, puis `gh pr create`.
   Le titre est le premier commit.
 - [ ] 7.3 Lire le screening `judge` de la PR : `gh run watch` sur le run `screening`. Attendu : 20
   policies planifiées, un verdict par digest, aucune erreur technique (code 0). Une
