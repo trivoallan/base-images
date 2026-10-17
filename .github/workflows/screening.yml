@@ -18,16 +18,16 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  REGIS_IMAGE: ghcr.io/trivoallan/regis:0.40.0-full@sha256:1d5a6b4f59f1400179e2a5b3f92f2afcbe48963bcb29f3393e35e22172ae99a1
+  REGIS_IMAGE: ghcr.io/trivoallan/regis:0.43.0-full@sha256:1f644593976cd45694d41cc16676c20a9e92e35c2da7183e027db279879d8ad4
   KNOCK_IMAGE: ghcr.io/trivoallan/knock:0.16.0@sha256:57e6dca82e3a05756a688d7b5396a24999b762b8d75414a350c641d6f610020c
-  USKE_IMAGE: ghcr.io/trivoallan/uske:0.8.0@sha256:f1edf8e0996a6f1af88013d3eca2147fd14cea95f2c8c02c037ad4e456b14eaa
+  USKE_IMAGE: ghcr.io/trivoallan/uske:0.11.0@sha256:b05255b15e6d2e7032685cbed403b3e71791fee7a0574162e4c7b1eae79f509b
 
 jobs:
   screening:
     runs-on: ubuntu-latest
     permissions:
       contents: write   # le journal, commité sur main
-      packages: write   # base/ et base-transit/
+      packages: write   # oci/ et base-transit/
       id-token: write   # la signature keyless de knock
     env:
       SCREEN_MODE: ${{ github.event_name == 'pull_request' && 'judge' || 'apply' }}
@@ -40,6 +40,14 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        # Les runners partagent leurs IP : en anonyme, la limite de Docker Hub rend des
+        # `inconclusive` en série. knock lit ce login dans ~/.docker ; regis reçoit --auth.
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Set up QEMU
         # Le rebuild produit amd64 et arm64 dans un seul index (knock 0.15.0) : buildkitd
@@ -77,6 +85,8 @@ jobs:
           REGISTRY_HOST: ghcr.io
           REGISTRY_USER: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           BUILDKIT_HOST: tcp://127.0.0.1:1234
           KNOCK_TRANSFORM_PACKAGE_MIRRORS: '{"alpine": {"apk": "https://dl-cdn.alpinelinux.org"}}'
           KNOCK_SBOM_FORMATS: '["spdx-json","cyclonedx-json"]'

@@ -253,10 +253,10 @@ Valeurs relevées le 2026-10-17. La mineure servie est la plus haute publiée ce
 
 ## 5. Le screening
 
-- [ ] 5.1 Dans `.github/workflows/screening.yml`, épingler `USKE_IMAGE` sur la dernière version
+- [x] 5.1 Dans `.github/workflows/screening.yml`, épingler `USKE_IMAGE` sur la dernière version
   ≥ 0.10.0 et `REGIS_IMAGE` sur `<R>-full`, chacune avec son digest :
   `crane digest ghcr.io/trivoallan/uske:<U>` et `crane digest ghcr.io/trivoallan/regis:<R>-full`.
-- [ ] 5.2 Ajouter, avant l'étape `Screen`, la connexion à Docker Hub :
+- [x] 5.2 Ajouter, avant l'étape `Screen`, la connexion à Docker Hub :
 
 ```yaml
       - name: Log in to Docker Hub
@@ -271,9 +271,9 @@ Valeurs relevées le 2026-10-17. La mineure servie est la plus haute publiée ce
   Vérifier que `screen.sh` transmet bien ces identifiants à knock et regis :
   `grep -n 'docker/config.json\|DOCKER_CONFIG' screen.sh`. Si rien ne s'imprime, monter
   `$HOME/.docker/config.json` en lecture seule dans chaque `docker run` de `screen.sh`.
-- [ ] 5.3 Remplacer, dans le commentaire de `permissions.packages`, `base/ et base-transit/` par
+- [x] 5.3 Remplacer, dans le commentaire de `permissions.packages`, `base/ et base-transit/` par
   `oci/ et base-transit/`. Le dépôt de transit garde son nom.
-- [ ] 5.4 Commit : `git add .github/workflows/screening.yml screen.sh && git commit -m "build: screener avec uske ≥ 0.10.0, regis <R> et Docker Hub authentifié"`.
+- [x] 5.4 Commit : `git add .github/workflows/screening.yml screen.sh && git commit -m "build: screener avec uske ≥ 0.10.0, regis <R> et Docker Hub authentifié"`.
 
 ## 6. Le README
 

@@ -51,6 +51,8 @@ knock() {
 regis() {
   local auth=()
   [ -n "${REGISTRY_USER:-}" ] && auth=(--auth "$REGISTRY_HOST=$REGISTRY_USER:$REGISTRY_PASSWORD")
+  # Docker Hub en anonyme rend des `inconclusive` en série sur les runners GitHub (IP partagées).
+  [ -n "${DOCKERHUB_USERNAME:-}" ] && auth+=(--auth "docker.io=$DOCKERHUB_USERNAME:$DOCKERHUB_TOKEN")
   docker run --rm "${mounts[@]}" -v "$GRYPE_CACHE:/cache/grype" -e GRYPE_DB_CACHE_DIR=/cache/grype \
     "$REGIS_IMAGE" "$@" "${auth[@]}"
 }
