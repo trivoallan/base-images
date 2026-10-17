@@ -2,15 +2,15 @@
 adr: SDR-0005
 slug: validation
 title: Validation
-status: proposed
+status: accepted
 revision: 1
-date:
-authors: []
+date: 2026-10-17
+authors: [Tristan Rivoallan]
 supersedes: []
 traits:
   validation:
-    boundary:
-    data_files:
+    boundary: aucune
+    data_files: json-schema
 ---
 
 # Validation
@@ -62,46 +62,11 @@ traits:
 
 **`json-schema` ne contredit pas le choix de `pydantic`, et il faut le dire parce que ça en a l'air.** La méthode écarte les schémas JSON **pour typer du Python**, au motif que le schéma et les types deviendraient deux sources qui divergent. Ce motif tient quand un type décrit déjà la donnée. Un fichier de données que ne lit aucun type n'a pas de seconde source : il n'y a rien avec quoi diverger. Là où les deux coexistent — un fichier lu par un modèle — **c'est le modèle qui fait foi**, et le schéma s'en dérive ou s'aligne à la main dans la même merge request.
 
-**Tout ce qui suit disparaît quand vous statuez** — de cette phrase-ci **jusqu'au titre** **Consequences**, ce titre non compris.
-
-**Comment statuer : cinq gestes, tous dans ce fichier.** Lisez-les tous avant d'en faire un seul — le dernier efface les quatre autres —, et faites-les en **un seul acte, dans une seule merge request**.
-
-1. **Écrire la valeur de chaque clé** dans le `traits:` du frontmatter — ou, si vous statuez `rejected`, **retirer le bloc `traits:` en entier**.
-2. **Passer `status:`** de `proposed` à `accepted`, ou à `rejected`.
-3. **Renseigner `date:` et `authors:`** — `date:` au format `AAAA-MM-JJ`, le jour où vous statuez ; `authors:`, les noms des personnes qui ont décidé, sans adresse courriel.
-4. **Écrire deux ou trois lignes sous le titre Consequences**, à la place du commentaire qui s'y trouve : ce que votre décision facilite, et ce qu'elle coûte.
-5. **En dernier seulement, supprimer ce bloc**, de sa première phrase jusqu'au titre Consequences non compris. À sa place : le motif de ce que vous avez décidé, partout où vous vous écartez de la proposition ; ou, si vous l'adoptez telle quelle, une ligne qui le dit.
-
-**Le premier geste est celui qu'on oublie** : une décision écrite seulement en prose laisse un agent deviner. **Le titre Consequences n'est pas écrit en code, et c'est voulu** : la chaîne qui borne la coupe ne doit apparaître qu'une fois dans ce fichier, sinon qui la cherche coupe au premier faux positif.
-
-**Ce qui reste**, et rien de tout cela ne s'efface : la proposition de la méthode et ses motifs, en tête de cette section ; le titre **Consequences** et ce que vous y écrivez au geste 4 ; et `## More Information`, qui décrit les clés et sert encore après.
-
-**Cette proposition survit à la coupe** : la perdre appauvrirait cet ADR. Si vous décidez autrement, remplacez-la par votre décision et son motif.
-
-**Voici à quoi ressemble ce frontmatter une fois rempli.** C'est la seule part de ce fichier qu'un agent lit sans l'interpréter :
-
-```yaml
----
-adr: SDR-0005
-slug: validation
-title: Validation
-status: accepted
-revision: 1
-date: 2026-03-14
-authors: []
-supersedes: []
-traits:
-  validation:
-    boundary: pydantic
-    data_files: json-schema
----
-```
-
-**`## Considered Options` ci-dessus est une proposition de l'amont, pas votre délibération.** La méthode a pesé ces options sans connaître votre contexte. La confrontation au vôtre reste à faire, et c'est elle qui distingue une décision d'un défaut accepté.
+**`data_files` suit la proposition ; `boundary` s'en écarte** (répondue le 2026-10-17). `json-schema` est constaté : `playbooks/version/playbook.yaml` déclare le schéma JSON de `regis` par `yaml-language-server`. `boundary: aucune` parce que le dépôt n'a pas de code applicatif qui reçoive des entrées : `regis`, `knock` et `uske` valident les leurs.
 
 ### Consequences
 
-<!-- Ce que votre décision facilite, et ce qu'elle coûte. Deux ou trois lignes suffisent — par exemple sur la dépendance qu'ajoute la bibliothèque retenue, ou sur le schéma de plus à tenir à jour quand le fichier bouge. -->
+Une policy ou un playbook invalide se voit dans l'éditeur, puis au screening `judge` de la PR. Les policies `knock` n'ont pas encore de schéma déclaré dans leur fichier.
 
 ## More Information
 

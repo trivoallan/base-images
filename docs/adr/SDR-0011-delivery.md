@@ -2,20 +2,11 @@
 adr: SDR-0011
 slug: delivery
 title: Delivery
-status: proposed
+status: rejected
 revision: 1
-date:
-authors: []
+date: 2026-10-17
+authors: [Tristan Rivoallan]
 supersedes: []
-traits:
-  hosting:
-    offer:
-  delivery:
-    environments:
-    release_tool:
-    registry:
-  deployment:
-    manifests:
 ---
 
 # Delivery
@@ -127,55 +118,11 @@ La vraie ligne porte une date en chiffres ; le modèle ci-dessus n'en est pas un
 
 **Ce que ce fichier décide depuis le retrait de l'ADR du déploiement.** Il décidait **quand et où** l'on déploie — les environnements et leur déclencheur. Il décide désormais aussi **sur quoi**, par `hosting.offer`. Les règles de la chaîne elle-même, elles, vivent dans [`SDR-0010`](SDR-0010-forge-and-ci.md) avec la forge dont elles dépendent.
 
-**Tout ce qui suit disparaît quand vous statuez** — de cette phrase-ci **jusqu'au titre** **Consequences**, ce titre non compris.
-
-**Comment statuer : cinq gestes, tous dans ce fichier.** Lisez-les tous avant d'en faire un seul — le dernier efface les quatre autres —, et faites-les en **un seul acte, dans une seule merge request**.
-
-1. **Écrire la valeur de chaque clé** dans le `traits:` du frontmatter — ou, si vous statuez `rejected`, **retirer le bloc `traits:` en entier**.
-2. **Passer `status:`** de `proposed` à `accepted`, ou à `rejected`.
-3. **Renseigner `date:` et `authors:`** — `date:` au format `AAAA-MM-JJ`, le jour où vous statuez ; `authors:`, les noms des personnes qui ont décidé, sans adresse courriel.
-4. **Écrire deux ou trois lignes sous le titre Consequences**, à la place du commentaire qui s'y trouve : ce que votre décision facilite, et ce qu'elle coûte.
-5. **En dernier seulement, supprimer ce bloc**, de sa première phrase jusqu'au titre Consequences non compris. À sa place : le motif de ce que vous avez décidé, partout où vous vous écartez de la proposition ; ou, si vous l'adoptez telle quelle, une ligne qui le dit.
-
-**Le premier geste est celui qu'on oublie** : une décision écrite seulement en prose laisse un agent deviner. **Le titre Consequences n'est pas écrit en code, et c'est voulu** : la chaîne qui borne la coupe ne doit apparaître qu'une fois dans ce fichier, sinon qui la cherche coupe au premier faux positif.
-
-**Ce qui reste**, et rien de tout cela ne s'efface : la proposition de la méthode et ses motifs, en tête de cette section ; le titre **Consequences** et ce que vous y écrivez au geste 4 ; et `## More Information`, qui décrit les clés et sert encore après.
-
-**Cette proposition survit à la coupe** : la perdre appauvrirait cet ADR. Si vous décidez autrement, remplacez-la par votre décision et son motif.
-
-**Voici à quoi ressemble ce frontmatter une fois rempli.** C'est la seule part de ce fichier qu'un agent lit sans l'interpréter :
-
-```yaml
----
-adr: SDR-0011
-slug: delivery
-title: Delivery
-status: accepted
-revision: 1
-date: 2026-03-14
-authors: []
-supersedes: []
-traits:
-  hosting:
-    offer: caas
-  delivery:
-    environments:
-      - name: staging
-        trigger: merge
-      - name: production
-        trigger: tag
-    release_tool: manuel
-    registry: registry.exemple.test/mon-equipe
-  deployment:
-    manifests: https://forge.exemple.test/mon-equipe/mon-appli-manifests
----
-```
-
-**`## Considered Options` ci-dessus est une proposition de l'amont, pas votre délibération.** La méthode a pesé ces options sans connaître votre contexte. La confrontation au vôtre reste à faire, et c'est elle qui distingue une décision d'un défaut accepté.
+**Statué `rejected`** (répondue le 2026-10-17). Rien ne se déploie : le workflow `pages` publie le dépôt tel quel, `knock` place les images dans GHCR, et il n'y a pas de release. `hosting.offer` n'admet que `caas` ou `paas`, et aucun ne décrit GitHub Pages.
 
 ### Consequences
 
-<!-- Ce que votre décision facilite, et ce qu'elle coûte. Deux ou trois lignes suffisent — par exemple sur ce qu'un déploiement sur tag ajoute comme geste, ou sur ce qu'un déploiement manuel suppose de disponibilité. -->
+Aucune chaîne de livraison ne se déduit de ce fichier. La publication reste celle des workflows `screening` et `pages`.
 
 ## More Information
 
