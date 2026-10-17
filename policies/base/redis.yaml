@@ -2,7 +2,7 @@
 #
 # Une politique porte une majeure (D-01) : Redis 7. Une seule mineure est servie, 7.2.
 # Alpine est fixée à 3.21, la plus récente sous laquelle Docker Hub publie Redis 7.2 : une seule
-# variante par version de Redis, sinon chaque criblage jugerait deux images pour la même version.
+# variante par version de Redis, sinon chaque screening jugerait deux images pour la même version.
 #
 # Voie reconstruction : les paquets apk sont mis à jour depuis le CDN Alpine, que la
 # configuration knock du workflow nomme `alpine` :

@@ -5,7 +5,7 @@ Les images de base, Python, Alpine et Redis, de [`regis`](https://github.com/tri
 passées par la porte que ces trois outils forment. Sans ce dépôt, ils tireraient leur base de Docker
 Hub sans aucun jugement : la porte ne protégerait pas ses propres images.
 
-Un criblage `uske` place `python:3.14-alpine3.24` dans `ghcr.io/sncfdevelopers/base/python` et
+Un screening `uske` place `python:3.14-alpine3.24` dans `ghcr.io/sncfdevelopers/base/python` et
 `alpine:3.24` dans `ghcr.io/sncfdevelopers/base/alpine`, et `redis:7.2-alpine3.21` dans
 `ghcr.io/sncfdevelopers/base/redis`, seulement après un verdict `regis`, et consigne chaque
 décision dans le journal de sa policy.
@@ -24,7 +24,7 @@ uv run --project ../uske uske list --policies policies
 uv run --project ../regis regis playbook validate playbooks/version/playbook.yaml
 ```
 
-## Criblage
+## Screening
 
 [`screen.sh`](screen.sh) enchaîne les étapes du `WorkflowTemplate` Argo de `uske`, dans le même
 ordre, chacune dans le conteneur publié de son outil. [`screening`](.github/workflows/screening.yml)
@@ -47,7 +47,7 @@ journal de toutes les politiques, la décision la plus récente en premier : d'a
 en HTML, qui dit quelle règle l'a tranchée.
 
 Il n'y a pas de build. [`pages`](.github/workflows/pages.yml) publie le dépôt tel quel après chaque
-criblage `apply` réussi sur `main`, et à la demande. Il n'y ajoute que trois fichiers, qu'[`index.html`](index.html)
+screening `apply` réussi sur `main`, et à la demande. Il n'y ajoute que trois fichiers, qu'[`index.html`](index.html)
 lit : `results/index.json`, la liste des journaux ; `results/rulesets.json`, la source de chaque
 ruleset ; `results/policies.json`, le fichier de chaque policy et les étapes de reconstruction
 qu'elle déclare. Pages s'active une fois avec `make pages`.
@@ -55,7 +55,7 @@ qu'elle déclare. Pages s'active une fois avec `make pages`.
 ## Renovate
 
 [`renovate`](.github/workflows/renovate.yml) suit les digests de `regis`, `knock` et `uske` épinglés
-dans `screening.yml`. Une montée de version ouvre une PR, et c'est le criblage en mode `judge` de
+dans `screening.yml`. Une montée de version ouvre une PR, et c'est le screening en mode `judge` de
 cette PR qui la valide. Renovate passe par l'app CI, et non par `GITHUB_TOKEN`, parce qu'une PR
 ouverte avec `GITHUB_TOKEN` ne déclencherait aucun workflow. Le dépôt a donc besoin des secrets
 `CI_APP_CLIENT_ID` et `CI_APP_PRIVATE_KEY`, et l'app doit y être installée.

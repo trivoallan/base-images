@@ -2,18 +2,18 @@
 
 ## Purpose
 
-Rendre lisibles, depuis une URL publique et sans le mainteneur, les décisions du journal de criblage et les reports `regis` qui les fondent.
+Rendre lisibles, depuis une URL publique et sans le mainteneur, les décisions du journal de screening et les reports `regis` qui les fondent.
 
 ## ADDED Requirements
 
-### Requirement: Publication après chaque criblage
+### Requirement: Publication après chaque screening
 Le dépôt MUST être publié sur GitHub Pages après chaque run `screening` réussi sur `main` qui n'a pas été déclenché par une pull request, et à la demande. La publication SHALL inclure le journal, les reports, une liste des journaux publiés et la correspondance entre chaque `ruleset` et sa source, sans autre transformation du contenu du dépôt.
 
-#### Scenario: Criblage réussi sur main
+#### Scenario: Screening réussi sur main
 - **WHEN** un run `screening` déclenché par le planning ou à la demande se termine avec succès sur `main`
 - **THEN** la page publiée montre les lignes de journal que ce run a commitées, sans action humaine
 
-#### Scenario: Criblage d'une pull request
+#### Scenario: Screening d'une pull request
 - **WHEN** un run `screening` se termine sur une pull request (mode `judge`)
 - **THEN** rien n'est publié
 

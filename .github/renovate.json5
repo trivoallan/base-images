@@ -9,8 +9,8 @@
   platformCommit: "enabled",
   customManagers: [
     {
-      // Les trois outils de la porte, épinglés dans l'env du criblage (image:tag@sha256:…).
-      // Une montée de version ouvre une PR, et le criblage en mode judge de cette PR la valide :
+      // Les trois outils de la porte, épinglés dans l'env du screening (image:tag@sha256:…).
+      // Une montée de version ouvre une PR, et le screening en mode judge de cette PR la valide :
       // la porte ne tourne jamais sur une version qu'elle n'a pas essayée.
       customType: "regex",
       managerFilePatterns: ["/^\\.github/workflows/screening\\.yml$/"],

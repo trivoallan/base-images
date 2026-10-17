@@ -16,7 +16,7 @@
 
 ## Decisions
 
-- **Déclenchement par `workflow_run` sur `screening`**, filtré sur `main`, la conclusion `success` et un événement autre que `pull_request`, plus `workflow_dispatch`. *Alternative écartée :* `on: push`, qui ne se déclenche pas sur les commits de `GITHUB_TOKEN`. *Écartée aussi :* publier depuis le job `screening`, qui mélangerait criblage et publication et élargirait ses permissions (`pages: write`).
+- **Déclenchement par `workflow_run` sur `screening`**, filtré sur `main`, la conclusion `success` et un événement autre que `pull_request`, plus `workflow_dispatch`. *Alternative écartée :* `on: push`, qui ne se déclenche pas sur les commits de `GITHUB_TOKEN`. *Écartée aussi :* publier depuis le job `screening`, qui mélangerait screening et publication et élargirait ses permissions (`pages: write`).
 - **Publication par artefact** (`actions/upload-pages-artifact` puis `actions/deploy-pages`), pas « deploy from branch ». Le mode branche passe par Jekyll, qui transformerait les `.md` et pourrait ignorer des fichiers. L'artefact publie le dépôt tel quel, sans `.git` ni `.github`.
 - **`results/index.json` généré au moment de la publication** (`ls results/*.jsonl` → tableau JSON de noms de politiques). Une page statique ne sait pas lister un répertoire. *Alternative écartée :* l'API GitHub `contents`, limitée en débit et liée à github.com. Le fichier n'est pas commité.
 - **Lien du report dérivé de la politique et du `digest`**, pas du champ `report` : `results/reports/<policy>/<digest>.html`. Le repli vers le `.md`, puis « pas de report », est vérifié par une requête `HEAD` au chargement. *Alternative écartée :* réécrire le champ `report`, ce qui mélangerait trois conventions.
