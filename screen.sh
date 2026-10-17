@@ -69,10 +69,10 @@ commit_journal() {
   git -C "$REPO" push -q
 }
 
-# evaluate POLICY PLAYBOOK LINES ITEM_JSON [TRACK] : un digest, jugé par regis, classé par uske.
-# TRACK, le régime, marque un refus réparable à la première porte.
+# evaluate POLICY PLAYBOOK LINES ITEM_JSON : un digest, jugé par regis, classé par uske. Ce qui est
+# réparable se lit dans le playbook (règles `curable`, uske ≥ 0.10.0).
 evaluate() {
-  local name=$1 playbook=$2 lines=$3 item=$4 track=${5:-}
+  local name=$1 playbook=$2 lines=$3 item=$4
   local ref digest target key source_ref source_digest epoch rc=0
   ref=$(jq -r .ref <<<"$item"); digest=$(jq -r .digest <<<"$item")
   target=$(jq -r .target <<<"$item"); key=$(jq -r .key <<<"$item")
@@ -100,7 +100,7 @@ evaluate() {
     --report "/work/reports/$key/report.json" \
     --report-link "results/reports/$name/$digest/$SCREENING.md" \
     --regis-exit "$rc" --source-ref "$source_ref" --source-digest "$source_digest" \
-    --track "$track" --epoch "$epoch" --run "$RUN" \
+    --epoch "$epoch" --run "$RUN" \
     | tee "$W/$lines/$name/$key.json"
 }
 
@@ -138,11 +138,11 @@ while read -r policy; do
   knock reconcile "/work/policies/$name" --plan-out "/work/plans/$name.json"
   uske pending --policy "$path" --plan "/work/plans/$name.json" --results /results >"$W/pending.json"
   resolved=$(uske resolve --policy "$path" --playbooks /repo/playbooks)
-  playbook=$(jq -r .playbook <<<"$resolved"); track=$(jq -r '.track // ""' <<<"$resolved")
+  playbook=$(jq -r .playbook <<<"$resolved")
   echo "::endgroup::"
   echo "$name : $(jq length "$W/pending.json") digest(s) en attente de décision"
 
-  while read -r item; do evaluate "$name" "$playbook" lines "$item" "$track"; done < <(jq -c '.[]' "$W/pending.json")
+  while read -r item; do evaluate "$name" "$playbook" lines "$item"; done < <(jq -c '.[]' "$W/pending.json")
   [ "$MODE" = apply ] || continue
 
   uske record --policy "$path" --results /results --lines "/work/lines/$name"
