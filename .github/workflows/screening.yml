@@ -1,6 +1,6 @@
 name: screening
 
-# Un criblage par semaine, et à la demande. Sur une PR, le même criblage en mode `judge` : plan et
+# Un screening par semaine, et à la demande. Sur une PR, le même screening en mode `judge` : plan et
 # verdicts, sans journal ni placement. C'est ce qui valide une montée de version d'un des trois
 # outils avant qu'elle serve (bootstrap par versions publiées : jamais le code d'une branche).
 
@@ -95,8 +95,8 @@ jobs:
           ./screen.sh
 
       - name: Look for a grype database
-        # Un criblage qui n'a rien jugé n'a rien téléchargé : sauvegarder ce dossier vide le
-        # ferait restaurer à la place de la vraie base au criblage suivant (restore-keys: grype-).
+        # Un screening qui n'a rien jugé n'a rien téléchargé : sauvegarder ce dossier vide le
+        # ferait restaurer à la place de la vraie base au screening suivant (restore-keys: grype-).
         # hashFiles ne lit que l'espace de travail, d'où ce test.
         id: grype
         if: always()

@@ -3,7 +3,7 @@
 # Une politique porte une majeure (D-01) : Python 3. Une seule mineure est servie, 3.14 :
 # knock et uske, encore en 3.13, monteront en 3.14 en passant leur FROM sur la porte.
 # Alpine est fixée à 3.24 : une seule variante par version de Python, sinon chaque
-# criblage jugerait deux images pour la même version.
+# screening jugerait deux images pour la même version.
 #
 # Voie reconstruction : les paquets apk sont mis à jour depuis le CDN Alpine, que la
 # configuration knock du workflow nomme `alpine` :

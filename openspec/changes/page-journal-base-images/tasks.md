@@ -26,4 +26,4 @@
 
 ## 5. Vérification publiée
 
-- [ ] 5.1 Après publication, sur `https://trivoallan.github.io/base-images/` : ouvrir la page sans session GitHub, cliquer sur chacun des 12 refus (12/12 `report.html` rendus, aucune 404), et vérifier que le criblage suivant sur `main` republie la page sans action humaine. Vérification : la note est ajoutée sur la PR avant le 2026-10-22.
+- [ ] 5.1 Après publication, sur `https://trivoallan.github.io/base-images/` : ouvrir la page sans session GitHub, cliquer sur chacun des 12 refus (12/12 `report.html` rendus, aucune 404), et vérifier que le screening suivant sur `main` republie la page sans action humaine. Vérification : la note est ajoutée sur la PR avant le 2026-10-22.

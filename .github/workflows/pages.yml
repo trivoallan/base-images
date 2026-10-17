@@ -2,7 +2,7 @@ name: pages
 
 # Publie le dépôt tel quel sur Pages : le journal, les rapports et index.html qui les lit. Pas
 # `on: push` : le journal est commité par screening avec GITHUB_TOKEN, et un tel push ne déclenche
-# aucun workflow. On suit donc la fin de screening, seulement un criblage apply réussi sur main.
+# aucun workflow. On suit donc la fin de screening, seulement un screening apply réussi sur main.
 
 on:
   workflow_run:

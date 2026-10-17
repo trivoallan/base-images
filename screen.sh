@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Un criblage : les étapes du WorkflowTemplate `uske-screening` (uske/deploy/base), dans le même
+# Un screening : les étapes du WorkflowTemplate `uske-screening` (uske/deploy/base), dans le même
 # ordre, chacune dans le conteneur publié de son outil. Rien ici ne juge ni ne place : uske, regis
 # et knock le font ; ce script ne fait que les enchaîner, comme Argo le fait ailleurs.
 #
 #   SCREEN_MODE=judge   plan et jugement seulement : rien n'est consigné, rien n'est placé (les PR)
-#   SCREEN_MODE=apply   le criblage complet ; le journal est commité AVANT tout placement
+#   SCREEN_MODE=apply   le screening complet ; le journal est commité AVANT tout placement
 #
 # Entrées : REGIS_IMAGE, KNOCK_IMAGE, USKE_IMAGE ; KNOCK_* pour knock ; REGISTRY_HOST,
 # REGISTRY_USER, REGISTRY_PASSWORD pour que regis lise le transit ; TRANSIT, le nom de
@@ -17,11 +17,11 @@ RESULTS="$REPO/results"
 W="$(mktemp -d)"
 GRYPE_CACHE="${GRYPE_CACHE:-$W/grype}"
 TRANSIT="${TRANSIT:-transit}"
-# Le criblage qui juge, nommé sur chaque ligne du journal (SDR-0018 d'uske) : l'URL du run GitHub
+# Le screening qui juge, nommé sur chaque ligne du journal (SDR-0018 d'uske) : l'URL du run GitHub
 # Actions ; vide en local, et la ligne n'en porte pas.
 RUN="${GITHUB_RUN_ID:+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID}"
-# L'epoch des ordres de réparation : le début du criblage, en UTC. Écrit dans le RUN de la
-# réparation, il empêche un criblage de réutiliser la couche d'une mise à jour antérieure.
+# L'epoch des ordres de réparation : le début du screening, en UTC. Écrit dans le RUN de la
+# réparation, il empêche un screening de réutiliser la couche d'une mise à jour antérieure.
 EPOCH="$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$RESULTS" "$GRYPE_CACHE"
 # Les trois images ne tournent pas sous l'utilisateur du runner.
@@ -56,7 +56,7 @@ commit_journal() {
   git -C "$REPO" add results
   git -C "$REPO" diff --cached --quiet && return 0
   git -C "$REPO" commit -q -m "$1"
-  # main a pu avancer pendant le criblage (une PR fusionnée) : seul ce script écrit results/.
+  # main a pu avancer pendant le screening (une PR fusionnée) : seul ce script écrit results/.
   git -C "$REPO" pull -q --rebase
   git -C "$REPO" push -q
 }
@@ -80,7 +80,7 @@ evaluate() {
   regis analyze "$target" --playbook "$playbook" \
     -D "/work/reports/$key" -o "report.{format}" --html --markdown || rc=$?  # inconclusive, pas perdu (D-23)
   echo "::endgroup::"
-  # Le rapport survit au criblage, à côté du journal, avant que la ligne qui le cite soit écrite.
+  # Le rapport survit au screening, à côté du journal, avant que la ligne qui le cite soit écrite.
   # Le Markdown se lit sur GitHub, et c'est lui que le journal cite ; le HTML garde le détail.
   mkdir -p "$RESULTS/reports/$name"
   for ext in md html; do
@@ -137,7 +137,7 @@ while read -r policy; do
 
   uske record --policy "$path" --results /results --lines "/work/lines/$name"
   compose_reports "$name"
-  commit_journal "journal($name): décisions du criblage, première porte"
+  commit_journal "journal($name): décisions du screening, première porte"
 
   # Une source à réparer revient avec un ordre ; sans transit, elle est consignée inconclusive.
   mkdir -p "$W/approve-lines" && chmod a+rwX "$W/approve-lines"
@@ -158,7 +158,7 @@ while read -r policy; do
   uske record --policy "$path" --results /results --applied "/work/applied/$name.json" --run "$RUN"
   if [ "$ordered" -eq 0 ]; then
     compose_reports "$name"
-    commit_journal "journal($name): placements du criblage"
+    commit_journal "journal($name): placements du screening"
     continue
   fi
 
@@ -167,7 +167,7 @@ while read -r policy; do
   while read -r item; do evaluate "$name" "$playbook" staged-lines "$item"; done < <(jq -c '.[]' "$W/staged.json")
   uske record --policy "$path" --results /results --lines "/work/staged-lines/$name"
   compose_reports "$name"
-  commit_journal "journal($name): décisions du criblage, seconde porte"
+  commit_journal "journal($name): décisions du screening, seconde porte"
 
   promoted=$(uske approve --policy "$path" --results /results --staged "/work/staged/$name.json" \
     --out "/work/staged/$name.approved.json" | jq .approved)
@@ -176,7 +176,7 @@ while read -r policy; do
     # Le lien source → digest promu, une fois tout placé (le digest tenu est le digest promu).
     uske record --policy "$path" --results /results --promoted "/work/staged/$name.approved.json" --run "$RUN"
     compose_reports "$name"
-    commit_journal "journal($name): promotions du criblage"
+    commit_journal "journal($name): promotions du screening"
   fi
 done < <(jq -c '.[]' "$W/list.json")
 
