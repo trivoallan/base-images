@@ -23,6 +23,11 @@ RUN="${GITHUB_RUN_ID:+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB
 # L'epoch des ordres de réparation : le début du screening, en UTC. Écrit dans le RUN de la
 # réparation, il empêche un screening de réutiliser la couche d'une mise à jour antérieure.
 EPOCH="$(date -u +%Y%m%dT%H%M%SZ)"
+# Le nom du rapport d'un digest dans ce screening : le run et sa tentative, l'epoch en local. Un
+# digest jugé à nouveau a un nouveau rapport, et la ligne d'un screening antérieur cite toujours le
+# sien (comme `<digest>/<workflow.name>` dans le WorkflowTemplate d'uske).
+SCREENING="${GITHUB_RUN_ID:+$GITHUB_RUN_ID-${GITHUB_RUN_ATTEMPT:-1}}"
+SCREENING="${SCREENING:-$EPOCH}"
 mkdir -p "$RESULTS" "$GRYPE_CACHE"
 # Les trois images ne tournent pas sous l'utilisateur du runner.
 chmod -R a+rwX "$W" "$RESULTS" "$GRYPE_CACHE"
@@ -82,15 +87,15 @@ evaluate() {
   echo "::endgroup::"
   # Le rapport survit au screening, à côté du journal, avant que la ligne qui le cite soit écrite.
   # Le Markdown se lit sur GitHub, et c'est lui que le journal cite ; le HTML garde le détail.
-  mkdir -p "$RESULTS/reports/$name"
+  mkdir -p "$RESULTS/reports/$name/$digest"
   for ext in md html; do
     if [ -f "$W/reports/$key/report.$ext" ]; then
-      cp "$W/reports/$key/report.$ext" "$RESULTS/reports/$name/$digest.$ext"
+      cp "$W/reports/$key/report.$ext" "$RESULTS/reports/$name/$digest/$SCREENING.$ext"
     fi
   done
   uske classify --playbook "$playbook" --ref "$ref" --digest "$digest" \
     --report "/work/reports/$key/report.json" \
-    --report-link "results/reports/$name/$digest.md" \
+    --report-link "results/reports/$name/$digest/$SCREENING.md" \
     --regis-exit "$rc" --source-ref "$source_ref" --source-digest "$source_digest" \
     --track "$track" --epoch "$epoch" --run "$RUN" \
     | tee "$W/$lines/$name/$key.json"
@@ -99,14 +104,16 @@ evaluate() {
 # compose_reports POLICY : chaque rapport Markdown de la policy devient les décisions de toute sa
 # famille (`uske decisions` : la source, ses reconstructions, les deux portes) puis le détail de
 # regis. Tous sont recomposés à chaque porte : une reconstruction change aussi le rapport de sa
-# source et de ses sœurs. La partie regis se retrouve après le marqueur ; un rapport qui vient
-# d'être copié n'en a pas encore et se prend en entier.
+# source et de ses sœurs. Un rapport est `<digest>/<screening>.md`, ou `<digest>.md` s'il date
+# d'avant un rapport par screening (aucun n'a été déplacé). La partie regis se retrouve après le
+# marqueur ; un rapport qui vient d'être copié n'en a pas encore et se prend en entier.
 REGIS_MARK='<!-- regis -->'
 compose_reports() {
   local name=$1 f digest end
-  for f in "$RESULTS/reports/$name"/*.md; do
+  for f in "$RESULTS/reports/$name"/*.md "$RESULTS/reports/$name"/*/*.md; do
     [ -f "$f" ] || continue
     digest=$(basename "$f" .md)
+    [ "${f%/*}" = "$RESULTS/reports/$name" ] || digest=$(basename "${f%/*}")
     {
       uske decisions "$digest" --results /results --policy-name "$name" --format md
       printf '\n---\n\n%s\n' "$REGIS_MARK"

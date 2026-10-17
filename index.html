@@ -147,9 +147,6 @@ async function exists(url) {
   try { return (await fetch(url, { method: "HEAD" })).ok; } catch { return false; }
 }
 
-// Le rapport se déduit de la politique et du digest, pas du champ `report`, qui suit trois
-// conventions (.md, chemin du volume uske, absent). Le HTML d'abord, puis le Markdown. Résolu une
-// fois par décision : la recherche redessine la page sans refaire les requêtes.
 let tips = 0;
 function tip(...content) {
   const w = el("span", null, "tip");
@@ -165,21 +162,34 @@ function tip(...content) {
   return w;
 }
 
+// Le rapport d'une ligne est celui que cite son champ `report` : `<digest>/<screening>.md`, un par
+// screening, ou `<digest>.md` avant cela. Un digest sans ligne qui le cite (une reconstruction vue
+// depuis sa source) prend le dernier rapport cité pour lui. À défaut, ou si le champ suit une autre
+// convention (chemin du volume uske, absent), le rapport se déduit de la politique et du digest. Le
+// HTML d'abord, puis le Markdown. Résolu une fois par rapport : la recherche redessine la page sans
+// refaire les requêtes.
 const reports = new Map();
-function resolveReport(policy, digest) {
+const cited = new Map();
+const citeKey = (policy, digest) => `${policy}\n${digest}`;
+function resolveReport(policy, digest, report) {
   if (!digest) return Promise.resolve(null);
-  const base = `results/reports/${encodeURIComponent(policy)}/${encodeURIComponent(digest)}`;
-  if (!reports.has(base)) reports.set(base, (async () => {
-    if (await exists(base + ".html")) return { href: base + ".html", md: false };
-    if (await exists(base + ".md")) return { href: base + ".md", md: true };
+  report = report || cited.get(citeKey(policy, digest));
+  const bases = [];
+  if (/^results\/reports\/[^?#]+\.md$/.test(report || "")) bases.push(report.slice(0, -3).split("/").map(encodeURIComponent).join("/"));
+  bases.push(`results/reports/${encodeURIComponent(policy)}/${encodeURIComponent(digest)}`);
+  if (!reports.has(bases[0])) reports.set(bases[0], (async () => {
+    for (const base of bases) {
+      if (await exists(base + ".html")) return { href: base + ".html", md: false, mdHref: base + ".md" };
+      if (await exists(base + ".md")) return { href: base + ".md", md: true, mdHref: base + ".md" };
+    }
     return null;
   })());
-  return reports.get(base);
+  return reports.get(bases[0]);
 }
 
 // Le bouton principal d'une carte (`primary`), ou un simple lien.
-async function fillReport(slot, policy, digest, text, primary) {
-  const r = await resolveReport(policy, digest);
+async function fillReport(slot, policy, digest, text, primary, report) {
+  const r = await resolveReport(policy, digest, report);
   if (!r) return slot.replaceChildren(el("span", "pas de rapport", "none"));
   slot.replaceChildren(link(r.md ? text + " (md)" : text, r.href, primary ? "report" : null));
 }
@@ -190,8 +200,9 @@ async function fillReport(slot, policy, digest, text, primary) {
 async function fillRule(slot, policy, digest, fallback) {
   let p = null;
   try {
-    const r = await fetch(`results/reports/${encodeURIComponent(policy)}/${encodeURIComponent(digest)}.md`);
-    const text = r.ok ? (await r.text()).split("<!-- regis -->")[1] || "" : "";
+    const found = await resolveReport(policy, digest);
+    const r = found && await fetch(found.mdHref);
+    const text = r?.ok ? (await r.text()).split("<!-- regis -->")[1] || "" : "";
     const m = text.match(/^\| ✗ \| ([^|]+?) \| ([^|]+?) \| (.+?) \|$/m);
     if (m) {
       p = el("p", "Bloqué par : ", "rule");
@@ -330,7 +341,7 @@ function rail(img) {
     if (x.reason) what.append(el("code", x.reason), " · ");
     const r = el("span", "…", "none");
     what.append(x.ref || x.raw || "", " · ", r);
-    fillReport(r, x.policy, x.digest, "rapport", false);
+    fillReport(r, x.policy, x.digest, "rapport", false, x.report);
     li.append(what);
     ol.append(li);
   }
@@ -361,7 +372,7 @@ function card(img) {
   art.append(actions);
   // Le verdict qui a fait refuser est celui de la reconstruction ; celui de la source est dans le fil.
   if (d.rebuilt) fillReport(slot, d.policy, d.rebuilt, "Rapport de l'image reconstruite", true);
-  else fillReport(slot, d.policy, d.digest, "Ouvrir le rapport", true);
+  else fillReport(slot, d.policy, d.digest, "Ouvrir le rapport", true, d.report);
   const det = el("details");
   det.append(el("summary", "Détails et historique"), rail(img), ...more);
   art.append(det);
@@ -452,6 +463,9 @@ async function load() {
   // La plus récente d'abord ; à la même seconde, la plus grave : le refus d'une source est écrit
   // en même temps que le jugement de sa reconstruction, et c'est lui qui tranche.
   lines.sort((a, b) => (b.ts || "").localeCompare(a.ts || "") || info(b.state).sev - info(a.state).sev);
+  for (const d of lines) {
+    if (d.digest && d.report && !cited.has(citeKey(d.policy, d.digest))) cited.set(citeKey(d.policy, d.digest), d.report);
+  }
   const groups = new Map();
   for (const d of lines) {
     const k = nameOf(d);
