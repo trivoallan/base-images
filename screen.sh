@@ -61,7 +61,8 @@ commit_journal() {
   git -C "$REPO" add results
   git -C "$REPO" diff --cached --quiet && return 0
   git -C "$REPO" commit -q -m "$1"
-  # main a pu avancer pendant le screening (une PR fusionnée) : seul ce script écrit results/.
+  # main a pu avancer pendant le screening (une PR fusionnée, une ligne uske/reopened) : le
+  # journal se fusionne par union (.gitattributes), les lignes de main d'abord.
   git -C "$REPO" pull -q --rebase
   git -C "$REPO" push -q
 }
