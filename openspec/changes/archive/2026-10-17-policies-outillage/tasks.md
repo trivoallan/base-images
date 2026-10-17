@@ -305,7 +305,7 @@ Valeurs relevées le 2026-10-17. La mineure servie est la plus haute publiée ce
 
 ## 8. Clôture
 
-- [ ] 8.1 `openspec archive policies-outillage --yes`, dans la branche de la PR, avant sa fusion.
+- [x] 8.1 `openspec archive policies-outillage --yes`, dans la branche de la PR, avant sa fusion.
   Puis `git add openspec && git commit -m "chore: archiver le change policies-outillage"`.
 
 ## Suivi après la fusion (hors des cases : l'archivage les précède)
