@@ -1,1 +1,6 @@
 .impeccable/
+node_modules/
+
+# Les données nanopm vivent dans le dépôt privé oci-pm ; .nanopm est un lien vers lui.
+# Sans barre finale : pour git, un lien est un fichier, et `.nanopm/` ne l'ignorerait pas.
+.nanopm
