@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>docker.io/anchore/syft:sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa — regis report</title>
+  <style>
+    :root {
+      --bg:#fff; --fg:#18181b; --muted:#71717a; --line:#e4e4e7; --panel:#fafafa;
+      --crit:#991b1b; --crit-bg:#fef2f2; --high:#c2410c; --high-bg:#fff7ed;
+      --med:#a16207; --low:#166534; --low-bg:#f0fdf4; --accent:#18181b;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:system-ui,-apple-system,sans-serif; font-size:14px; line-height:1.5; color:var(--fg); background:var(--bg); }
+    .mono { font-family:ui-monospace,"SF Mono",Menlo,monospace; }
+    .muted { color:var(--muted); }
+    a { color:inherit; }
+    .layout { display:grid; grid-template-columns:200px 1fr; max-width:1200px; margin:0 auto; min-height:100vh; }
+    .sidebar { position:sticky; top:0; align-self:start; max-height:100vh; overflow:auto; background:var(--panel); border-right:1px solid var(--line); padding:1.25rem 1rem; }
+    .brand { font-weight:800; letter-spacing:.05em; margin-bottom:1rem; }
+    .toc a { display:flex; justify-content:space-between; gap:.5rem; text-decoration:none; color:var(--muted); padding:.2rem 0; font-size:13px; }
+    .toc a:hover { color:var(--fg); }
+    .st-fail { color:var(--crit); font-weight:700; }
+    .st-pass { color:var(--low); }
+    main { padding:1.5rem 2rem; min-width:0; }
+    header.rep { border-bottom:1px solid var(--line); padding-bottom:1rem; margin-bottom:1.25rem; }
+    header.rep h1 { font-size:1.3rem; word-break:break-all; }
+    header.rep .meta { display:grid; grid-template-columns:max-content 1fr; gap:.1rem .75rem; font-size:13px; margin-top:.5rem; }
+    header.rep .meta dt { font-weight:600; color:var(--muted); }
+    header.rep .meta dd { color:var(--fg); word-break:break-all; }
+    .verdict { margin:1rem 0 1.25rem; }
+    .hero { display:flex; align-items:center; gap:1rem; }
+    .ring { width:64px; height:64px; border-radius:50%; border:5px solid var(--accent); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.3rem; flex:0 0 auto; }
+    .verdict-headline { font-size:1.2rem; margin:0; }
+    .counts { color:var(--muted); font-size:13px; margin-top:.15rem; }
+    .verdict-badges { margin-top:.5rem; }
+    .pill, .badge { display:inline-block; padding:.12rem .5rem; border-radius:999px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+    .badge { border-radius:3px; }
+    .badge-critical { background:var(--crit-bg); color:var(--crit); }
+    .badge-high { background:var(--high-bg); color:var(--high); }
+    .badge-medium { background:#fefce8; color:var(--med); }
+    .badge-low { background:var(--low-bg); color:var(--low); }
+    .badge-pass, .badge-passed { background:var(--low-bg); color:var(--low); }
+    .badge-fail, .badge-failed { background:var(--crit-bg); color:var(--crit); }
+    .badge-warn, .badge-warning, .badge-incomplete { background:var(--high-bg); color:var(--high); }
+    .badge-none { background:var(--panel); color:var(--muted); }
+    .triage { border:1px solid var(--line); border-left:3px solid var(--high); border-radius:6px; background:var(--panel); padding:.75rem 1rem; margin:1rem 0; }
+    .triage.clear { border-left-color:var(--low); }
+    .triage h2 { font-size:.95rem; margin-bottom:.4rem; }
+    .triage table { width:100%; border-collapse:collapse; font-size:13px; margin:0; }
+    .triage td { padding:.25rem .4rem; border:none; border-top:1px solid var(--line); vertical-align:top; background:transparent; }
+    .triage-source { font-size:12px; margin:0 0 .4rem; }
+    .triage th { padding:.25rem .4rem; border:none; border-bottom:1px solid var(--line); text-align:left; font-size:11px; text-transform:uppercase; color:var(--muted); background:transparent; }
+    .sev { display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; margin:1rem 0; }
+    .sev .cell { border:1px solid var(--line); border-radius:6px; text-align:center; padding:.5rem; }
+    .sev .n { display:block; font-size:1.4rem; font-weight:800; line-height:1; }
+    .sev .l { font-size:11px; text-transform:uppercase; color:var(--muted); }
+    .sev .critical .n { color:var(--crit); } .sev .high .n { color:var(--high); }
+    .sev .medium .n { color:var(--med); } .sev .low .n { color:var(--low); }
+    h2.section-title { font-size:1rem; margin:1.5rem 0 .5rem; }
+    details.an { border:1px solid var(--line); border-radius:6px; margin:.75rem 0; }
+    details.an > summary { cursor:pointer; padding:.5rem .75rem; font-weight:700; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+    details.an > summary::-webkit-details-marker { display:none; }
+    details.an > summary::before { content:"▸"; margin-right:.5rem; color:var(--muted); }
+    details.an[open] > summary::before { content:"▾"; }
+    details.an .an-body { padding:.25rem .75rem .75rem; }
+    details.an:target { border-color:var(--accent); }
+    table { border-collapse:collapse; width:100%; margin:.5rem 0; font-size:13px; }
+    th { background:var(--panel); text-align:left; padding:.4rem .75rem; border:1px solid var(--line); font-weight:600; color:#52525b; }
+    td { padding:.35rem .75rem; border:1px solid var(--line); vertical-align:top; }
+    ul { padding-left:1.2rem; } li { margin:.1rem 0; }
+    dl.scalars { display:grid; grid-template-columns:max-content 1fr; gap:.15rem .75rem; font-size:13px; }
+    dl.scalars dt { font-weight:600; color:var(--muted); }
+    em { color:var(--muted); font-style:normal; }
+    footer { margin-top:2rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+    @media (max-width:720px) {
+      .layout { grid-template-columns:1fr; }
+      .sidebar { position:sticky; top:0; max-height:none; height:auto; border-right:none; border-bottom:1px solid var(--line); padding:.6rem .75rem; z-index:5; }
+      .brand { display:inline-block; margin:0 .5rem 0 0; }
+      .toc { display:flex; gap:.4rem; overflow-x:auto; white-space:nowrap; }
+      .toc a { flex:0 0 auto; border:1px solid var(--line); border-radius:999px; padding:.2rem .6rem; }
+      .sev { grid-template-columns:repeat(2,1fr); }
+      main { padding:1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">regis</div>
+    <nav class="toc">
+      <a href="#verdict"><span>Verdict</span></a>
+      <a href="#triage"><span>Triage</span></a>
+      
+      <a href="#endoflife"><span>endoflife</span><span class="st-pass">✓</span></a>
+      
+      <a href="#hadolint"><span>hadolint</span><span class="st-pass">✓</span></a>
+      
+      <a href="#freshness"><span>freshness</span><span class="st-pass">✓</span></a>
+      
+      <a href="#dockle"><span>dockle</span><span class="st-pass">✓</span></a>
+      
+      <a href="#popularity"><span>popularity</span><span class="st-pass">✓</span></a>
+      
+      <a href="#cve"><span>cve</span><span class="st-fail">✗</span></a>
+      
+      <a href="#sbom"><span>sbom</span><span class="st-pass">✓</span></a>
+      
+      <a href="#scorecarddev"><span>scorecarddev</span><span class="st-pass">✓</span></a>
+      
+      <a href="#size"><span>size</span><span class="st-pass">✓</span></a>
+      
+      <a href="#versioning"><span>versioning</span><span class="st-pass">✓</span></a>
+      
+      <a href="#provenance"><span>provenance</span><span class="st-pass">✓</span></a>
+      
+      <a href="#oci"><span>oci</span><span class="st-pass">✓</span></a>
+      
+      <a href="#secrets"><span>secrets</span><span class="st-pass">✓</span></a>
+      
+      <a href="#metadata"><span>metadata</span><span class="st-pass">✓</span></a>
+      
+    </nav>
+  </aside>
+
+  <main>
+    <header class="rep" id="top">
+      <h1>docker.io/anchore/syft:sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</h1>
+      <dl class="meta">
+        <dt>Registry</dt><dd>docker.io</dd>
+        <dt>Repository</dt><dd>anchore/syft</dd>
+        <dt>Tag</dt><dd class="mono">sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</dd>
+        
+        <dt>Digest</dt><dd class="mono">sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</dd>
+        
+        
+        <dt>Analysis date</dt><dd>2026-10-19T11:01:11.436067+00:00</dd>
+        
+      </dl>
+    </header>
+
+    
+    <section id="verdict" class="verdict">
+      <div class="hero">
+        <div class="ring" aria-label="Score 67 out of 100">67</div>
+        <div>
+          <h2 class="verdict-headline">🏷️ Quarantaine · 67/100</h2>
+          <p class="counts">4/6 rules · 2 failed · worst: 🟥 critical</p>
+        </div>
+      </div>
+      
+    </section>
+    
+
+    
+    
+    <section id="triage" class="triage ">
+      <h2>⚠ Attention required</h2>
+      
+      
+      <p class="triage-source">
+        Playbook <strong>Image copiée</strong> <span class="muted">1.0.0</span>
+        · ruleset <span class="mono">sha256:599d6d2e63b30654999e1849167a80b631ba1303dcd461958f8ee67a1933618e</span>
+      </p>
+      <table>
+        <thead><tr><th></th><th>Rule</th><th>Severity</th><th>Observed</th><th>Threshold</th><th>Detail</th></tr></thead>
+        <tbody>
+          
+          <tr class="rule-failed">
+            <td>✗</td>
+            <td><span class="mono">cve-critical</span><br><span class="muted">Max allowed violations for a given severity level.</span></td>
+            <td>critical</td>
+            <td><span class="mono">results.cve.critical_count</span> = <strong>5</strong></td>
+            <td><span class="mono">level</span> = <strong>critical</strong><br><span class="mono">max_count</span> = <strong>0</strong></td>
+            <td>Image has 5 critical CVEs (max allowed: 0).</td>
+          </tr>
+          
+          <tr class="rule-failed">
+            <td>✗</td>
+            <td><span class="mono">cve-high</span><br><span class="muted">Max allowed violations for a given severity level.</span></td>
+            <td>warning</td>
+            <td><span class="mono">results.cve.high_count</span> = <strong>24</strong></td>
+            <td><span class="mono">level</span> = <strong>high</strong><br><span class="mono">max_count</span> = <strong>10</strong></td>
+            <td>Image has 24 high CVEs (max allowed: 10).</td>
+          </tr>
+          
+          
+        </tbody>
+      </table>
+      
+    </section>
+    
+
+    
+    <section class="sev">
+      
+      <div class="cell critical"><span class="n">5</span><span class="l">critical</span></div>
+      
+      <div class="cell high"><span class="n">24</span><span class="l">high</span></div>
+      
+      <div class="cell medium"><span class="n">4</span><span class="l">medium</span></div>
+      
+      <div class="cell low"><span class="n">0</span><span class="l">low</span></div>
+      
+    </section>
+    
+
+    
+    <section id="playbooks">
+      <h2 class="section-title">Playbook results</h2>
+      <table>
+        <thead>
+          <tr><th>Playbook</th><th>Tier</th><th>Score</th><th>Failing rules</th></tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            <td>Image copiée <span class="muted">1.0.0</span></td>
+            <td>None Quarantaine</td>
+            <td>67%</td>
+            <td>2</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </section>
+    
+
+    
+    
+    <details class="an" id="endoflife">
+      <summary>
+        <span>endoflife</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>endoflife</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>product</th><td>syft</td></tr>
+        
+        <tr><th>product_found</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>tag</th><td>sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</td></tr>
+        
+        <tr><th>matched_cycle</th><td><em>—</em></td></tr>
+        
+        <tr><th>is_eol</th><td><em>—</em></td></tr>
+        
+        <tr><th>active_cycles_count</th><td><em>—</em></td></tr>
+        
+        <tr><th>eol_cycles_count</th><td><em>—</em></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="hadolint">
+      <summary>
+        <span>hadolint</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>hadolint</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>tag</th><td>sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</td></tr>
+        
+        <tr><th>passed</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>issues_count</th><td>4</td></tr>
+        
+        <tr><th>issues_by_level</th><td><table>
+      <tbody>
+        
+        <tr><th>error</th><td>0</td></tr>
+        
+        <tr><th>warning</th><td>0</td></tr>
+        
+        <tr><th>info</th><td>4</td></tr>
+        
+        <tr><th>style</th><td>0</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>issues</th><td><table>
+    <thead><tr><th>code</th><th>level</th><th>message</th><th>line</th></tr></thead>
+    <tbody>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>3</td></tr>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>4</td></tr>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>5</td></tr>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>6</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>dockerfile</th><td>FROM scratch
+RUN COPY /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt # buildkit
+RUN WORKDIR /tmp
+RUN ARG TARGETPLATFORM=linux/amd64
+RUN COPY linux/amd64/syft / # buildkit
+RUN ENTRYPOINT [&#34;/syft&#34;]</td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="freshness">
+      <summary>
+        <span>freshness</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>freshness</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>tag</th><td>sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</td></tr>
+        
+        <tr><th>tag_created</th><td>2026-10-06T15:34:16.483430315Z</td></tr>
+        
+        <tr><th>latest_created</th><td>2026-10-06T15:34:16.483430315Z</td></tr>
+        
+        <tr><th>age_days</th><td>12</td></tr>
+        
+        <tr><th>behind_latest_days</th><td>0</td></tr>
+        
+        <tr><th>reproducible_build</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>is_latest</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="dockle">
+      <summary>
+        <span>dockle</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>dockle</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>tag</th><td>sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</td></tr>
+        
+        <tr><th>passed</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>issues_count</th><td>3</td></tr>
+        
+        <tr><th>issues_by_level</th><td><table>
+      <tbody>
+        
+        <tr><th>FATAL</th><td>0</td></tr>
+        
+        <tr><th>WARN</th><td>1</td></tr>
+        
+        <tr><th>INFO</th><td>2</td></tr>
+        
+        <tr><th>SKIP</th><td>2</td></tr>
+        
+        <tr><th>PASS</th><td>0</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>issues</th><td><table>
+    <thead><tr><th>code</th><th>level</th><th>title</th><th>alerts</th></tr></thead>
+    <tbody>
+      
+      <tr><td>DKL-LI-0001</td><td>SKIP</td><td>Avoid empty password</td><td>[&#39;failed to detect etc/shadow,etc/master.passwd&#39;]</td></tr>
+      
+      <tr><td>DKL-LI-0002</td><td>SKIP</td><td>Be unique UID/GROUP</td><td>[&#39;failed to detect etc/passwd&#39;, &#39;failed to detect etc/group&#39;]</td></tr>
+      
+      <tr><td>CIS-DI-0001</td><td>WARN</td><td>Create a user for the container</td><td>[&#39;Last user should not be root&#39;]</td></tr>
+      
+      <tr><td>CIS-DI-0005</td><td>INFO</td><td>Enable Content trust for Docker</td><td>[&#39;export DOCKER_CONTENT_TRUST=1 before docker pull/build&#39;]</td></tr>
+      
+      <tr><td>CIS-DI-0006</td><td>INFO</td><td>Add HEALTHCHECK instruction to the container image</td><td>[&#39;not found HEALTHCHECK statement&#39;]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="popularity">
+      <summary>
+        <span>popularity</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>popularity</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>available</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>pull_count</th><td>12254149</td></tr>
+        
+        <tr><th>star_count</th><td>26</td></tr>
+        
+        <tr><th>description</th><td></td></tr>
+        
+        <tr><th>date_registered</th><td>2020-12-11T18:44:52.517019Z</td></tr>
+        
+        <tr><th>is_official</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>source</th><td><table>
+      <tbody>
+        
+        <tr><th>fetched_at</th><td>2026-10-19T11:01:06.511906+00:00</td></tr>
+        
+        <tr><th>built_at</th><td>2026-10-06T15:34:42.001417Z</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="cve" open>
+      <summary>
+        <span>cve</span>
+        <span class="st-fail">✗</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>cve</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>tag</th><td>sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</td></tr>
+        
+        <tr><th>scanner_version</th><td>0.112.0</td></tr>
+        
+        <tr><th>vulnerability_count</th><td>34</td></tr>
+        
+        <tr><th>critical_count</th><td>5</td></tr>
+        
+        <tr><th>high_count</th><td>24</td></tr>
+        
+        <tr><th>medium_count</th><td>4</td></tr>
+        
+        <tr><th>low_count</th><td>0</td></tr>
+        
+        <tr><th>negligible_count</th><td>0</td></tr>
+        
+        <tr><th>unknown_count</th><td>1</td></tr>
+        
+        <tr><th>fixed_count</th><td>33</td></tr>
+        
+        <tr><th>targets</th><td><table>
+    <thead><tr><th>Target</th><th>Vulnerabilities</th></tr></thead>
+    <tbody>
+      
+      <tr><td>go-module</td><td>[{&#39;VulnerabilityID&#39;: &#39;GO-2026-6612&#39;, &#39;PkgName&#39;: &#39;golang.org/x/net&#39;, &#39;InstalledVersion&#39;: &#39;v0.59.0&#39;, &#39;FixedVersion&#39;: &#39;0.60.0&#39;, &#39;Severity&#39;: &#39;CRITICAL&#39;, &#39;Title&#39;: &#39;GO-2026-6612&#39;, &#39;Description&#39;: &#39;The HTTP/2 server can refund connection-level flow control twice for the same data: Once when a client resets a stream (refunding data for any sent-but-unread portion of the stream), and again when a request handler reads the buffered data. A malicious client can exploit this to bypass the configured connection-level flow control limit (MaxReceiveBufferPerConnection). Total buffered data is still limited by the concurrent stream limit and stream-level flow control.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-78663&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;CRITICAL&#39;, &#39;Title&#39;: &#39;CVE-2026-78663&#39;, &#39;Description&#39;: &#39;The HTTP/2 server can refund connection-level flow control twice for the same data: Once when a client resets a stream (refunding data for any sent-but-unread portion of the stream), and again when a request handler reads the buffered data. A malicious client can exploit this to bypass the configured connection-level flow control limit (MaxReceiveBufferPerConnection). Total buffered data is still limited by the concurrent stream limit and stream-level flow control.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6612&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;CRITICAL&#39;, &#39;Title&#39;: &#39;GO-2026-6612&#39;, &#39;Description&#39;: &#39;The HTTP/2 server can refund connection-level flow control twice for the same data: Once when a client resets a stream (refunding data for any sent-but-unread portion of the stream), and again when a request handler reads the buffered data. A malicious client can exploit this to bypass the configured connection-level flow control limit (MaxReceiveBufferPerConnection). Total buffered data is still limited by the concurrent stream limit and stream-level flow control.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-56857&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;CRITICAL&#39;, &#39;Title&#39;: &#39;CVE-2026-56857&#39;, &#39;Description&#39;: &#39;On Windows, when the target of Root.Mkdir or Root.MkdirAll is a junction pointing to an empty location, the operation can create a directory at the junction target even when that target is located outside the root. This only applies to operations where the last path component is a junction (path/to/junction, but not path/junction/target).&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6604&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;CRITICAL&#39;, &#39;Title&#39;: &#39;GO-2026-6604&#39;, &#39;Description&#39;: &#39;On Windows, when the target of Root.Mkdir or Root.MkdirAll is a junction pointing to an empty location, the operation can create a directory at the junction target even when that target is located outside the root. This only applies to operations where the last path component is a junction (path/to/junction, but not path/junction/target).&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6603&#39;, &#39;PkgName&#39;: &#39;golang.org/x/net&#39;, &#39;InstalledVersion&#39;: &#39;v0.59.0&#39;, &#39;FixedVersion&#39;: &#39;0.60.0&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6603&#39;, &#39;Description&#39;: &#39;When &#34;Trailer&#34; headers are sent by a client, the HTTP server internally uses the header values to populate the Request.Trailer map passed to the server handler. Because Request.Trailer is a map, each entry incurs memory overhead. For HTTP/2 servers, a malicious client can exploit this by sending a &#34;Trailer&#34; header that declares a large number of fields, causing the server to allocate a disproportionate amount of memory while bypassing Server.MaxHeaderValueCount and Server.MaxHeaderBytes limits. This exploit is not applicable for HTTP/1 servers, which do not support multiplexing a large number of requests over one TCP connection, and whose Server.MaxHeaderBytes are calculated differently.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-78659&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-78659&#39;, &#39;Description&#39;: &#39;When &#34;Trailer&#34; headers are sent by a client, the HTTP server internally uses the header values to populate the Request.Trailer map passed to the server handler. Because Request.Trailer is a map, each entry incurs memory overhead. For HTTP/2 servers, a malicious client can exploit this by sending a &#34;Trailer&#34; header that declares a large number of fields, causing the server to allocate a disproportionate amount of memory while bypassing Server.MaxHeaderValueCount and Server.MaxHeaderBytes limits. This exploit is not applicable for HTTP/1 servers, which do not support multiplexing a large number of requests over one TCP connection, and whose Server.MaxHeaderBytes are calculated differently.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6603&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6603&#39;, &#39;Description&#39;: &#39;When &#34;Trailer&#34; headers are sent by a client, the HTTP server internally uses the header values to populate the Request.Trailer map passed to the server handler. Because Request.Trailer is a map, each entry incurs memory overhead. For HTTP/2 servers, a malicious client can exploit this by sending a &#34;Trailer&#34; header that declares a large number of fields, causing the server to allocate a disproportionate amount of memory while bypassing Server.MaxHeaderValueCount and Server.MaxHeaderBytes limits. This exploit is not applicable for HTTP/1 servers, which do not support multiplexing a large number of requests over one TCP connection, and whose Server.MaxHeaderBytes are calculated differently.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6611&#39;, &#39;PkgName&#39;: &#39;golang.org/x/net&#39;, &#39;InstalledVersion&#39;: &#39;v0.59.0&#39;, &#39;FixedVersion&#39;: &#39;0.60.0&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6611&#39;, &#39;Description&#39;: &#39;A malicious HTTP/2 peer can cause excessive CPU consumption in the client or server by opening a large number of streams and then sending many small SETTINGS frames containing SETTINGS_INITIAL_WINDOW_SIZE values.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-78669&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-78669&#39;, &#39;Description&#39;: &#39;A malicious HTTP/2 peer can cause excessive CPU consumption in the client or server by opening a large number of streams and then sending many small SETTINGS frames containing SETTINGS_INITIAL_WINDOW_SIZE values.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6611&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6611&#39;, &#39;Description&#39;: &#39;A malicious HTTP/2 peer can cause excessive CPU consumption in the client or server by opening a large number of streams and then sending many small SETTINGS frames containing SETTINGS_INITIAL_WINDOW_SIZE values.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6617&#39;, &#39;PkgName&#39;: &#39;golang.org/x/net&#39;, &#39;InstalledVersion&#39;: &#39;v0.59.0&#39;, &#39;FixedVersion&#39;: &#39;0.60.0&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6617&#39;, &#39;Description&#39;: &#34;HTTP/2 servers could end up crashing due to inadvertently modifying its HPACK encoder concurrently. This happens because the server modifies the HPACK encoder from two goroutines without synchronization: one uses the encoder to encode a HEADERS frame as part of a response sent to a client and the other modifies the encoder&#39;s table size when handling a SETTINGS frame containing SETTINGS_HEADER_TABLE_SIZE that a client sends. A malicious client can repeatedly send a request while changing the header table size to crash the server.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-97032&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-97032&#39;, &#39;Description&#39;: &#34;HTTP/2 servers could end up crashing due to inadvertently modifying its HPACK encoder concurrently. This happens because the server modifies the HPACK encoder from two goroutines without synchronization: one uses the encoder to encode a HEADERS frame as part of a response sent to a client and the other modifies the encoder&#39;s table size when handling a SETTINGS frame containing SETTINGS_HEADER_TABLE_SIZE that a client sends. A malicious client can repeatedly send a request while changing the header table size to crash the server.&#34;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6617&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6617&#39;, &#39;Description&#39;: &#34;HTTP/2 servers could end up crashing due to inadvertently modifying its HPACK encoder concurrently. This happens because the server modifies the HPACK encoder from two goroutines without synchronization: one uses the encoder to encode a HEADERS frame as part of a response sent to a client and the other modifies the encoder&#39;s table size when handling a SETTINGS frame containing SETTINGS_HEADER_TABLE_SIZE that a client sends. A malicious client can repeatedly send a request while changing the header table size to crash the server.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-94440&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-94440&#39;, &#39;Description&#39;: &#39;Parsing a multipart form can bypass memory limits and read an arbitrarily long line into memory when the remaining limit at the start of a part is less than 400 bytes.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6608&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6608&#39;, &#39;Description&#39;: &#39;Parsing a multipart form can bypass memory limits and read an arbitrarily long line into memory when the remaining limit at the start of a part is less than 400 bytes.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-97031&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-97031&#39;, &#39;Description&#39;: &#39;Multiple ECH outer extension references are not permitted under RFC 9849; previously, a client could send a well-crafted packet that could trigger memory exhaustion in the server process by specifying multiple references. We now reject these as malformed and curb the memory amplification vector as a result.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6607&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6607&#39;, &#39;Description&#39;: &#39;Multiple ECH outer extension references are not permitted under RFC 9849; previously, a client could send a well-crafted packet that could trigger memory exhaustion in the server process by specifying multiple references.\n\nWe now reject these as malformed and curb the memory amplification vector as a result.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-78667&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-78667&#39;, &#39;Description&#39;: &#39;When parsing a Range header containing a large number of small ranges, FileServer(FS), ServeContent, and ServeFile(FS) can consume an excessive amount of CPU.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6609&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6609&#39;, &#39;Description&#39;: &#39;When parsing a Range header containing a large number of small ranges, FileServer(FS), ServeContent, and ServeFile(FS) can consume an excessive amount of CPU.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-94439&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-94439&#39;, &#39;Description&#39;: &#39;When an HTTP server handler sends a 2xx response to an HTTP/1 CONNECT request and returns without hijacking the connection, the server improperly continues to read and serve requests from the connection. Since a 2xx response to an HTTP/1 CONNECT converts the connection into a tunnel, the server should not treat the connection as continuing to contain HTTP. The impact of this misbehavior is mostly limited to potential request smuggling, where an intermediate proxy considers the data on the connection to be tunneled and the server considers it to be HTTP.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6613&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6613&#39;, &#39;Description&#39;: &#39;When an HTTP server handler sends a 2xx response to an HTTP/1 CONNECT request and returns without hijacking the connection, the server improperly continues to read and serve requests from the connection. Since a 2xx response to an HTTP/1 CONNECT converts the connection into a tunnel, the server should not treat the connection as continuing to contain HTTP.\n\nThe impact of this misbehavior is mostly limited to potential request smuggling, where an intermediate proxy considers the data on the connection to be tunneled and the server considers it to be HTTP.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-56866&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-56866&#39;, &#39;Description&#39;: &#39;When http.Transport sends an HTTP/1 CONNECT request with a non-empty Request.Body, it writes the body directly to the connection without framing after the request headers. If the server rejects the CONNECT request with a non-2xx keep-alive response, Transport returns the connection to the idle pool. Because CONNECT requests do not have a request body, the server may interpret the trailing body bytes as a subsequent pipelined HTTP/1.1 request on the connection, leaving the pooled connection desynchronized and causing the next caller that reuses it to read the response to the injected request. In reverse proxies (including httputil.ReverseProxy) that forward CONNECT requests through a shared Transport, this can lead to cross-user response poisoning.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6605&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6605&#39;, &#39;Description&#39;: &#39;When http.Transport sends an HTTP/1 CONNECT request with a non-empty Request.Body, it writes the body directly to the connection without framing after the request headers. If the server rejects the CONNECT request with a non-2xx keep-alive response, Transport returns the connection to the idle pool. Because CONNECT requests do not have a request body, the server may interpret the trailing body bytes as a subsequent pipelined HTTP/1.1 request on the connection, leaving the pooled connection desynchronized and causing the next caller that reuses it to read the response to the injected request. In reverse proxies (including httputil.ReverseProxy) that forward CONNECT requests through a shared Transport, this can lead to cross-user response poisoning.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6610&#39;, &#39;PkgName&#39;: &#39;golang.org/x/net&#39;, &#39;InstalledVersion&#39;: &#39;v0.59.0&#39;, &#39;FixedVersion&#39;: &#39;0.60.0&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6610&#39;, &#39;Description&#39;: &#39;Historically, we have been rather lax about malformed framing-related headers in our HTTP/2 implementation, as they cannot interfere with HTTP/2 framing. However, this makes it possible for our HTTP/2 implementation to forward responses containing such headers to an HTTP/1 client when acting as a reverse proxy. If the HTTP/1 client also does not behave strictly enough, this can result in response smuggling.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-78660&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-78660&#39;, &#39;Description&#39;: &#39;Historically, we have been rather lax about malformed framing-related headers in our HTTP/2 implementation, as they cannot interfere with HTTP/2 framing. However, this makes it possible for our HTTP/2 implementation to forward responses containing such headers to an HTTP/1 client when acting as a reverse proxy. If the HTTP/1 client also does not behave strictly enough, this can result in response smuggling.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6610&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;GO-2026-6610&#39;, &#39;Description&#39;: &#39;Historically, we have been rather lax about malformed framing-related headers in our HTTP/2 implementation, as they cannot interfere with HTTP/2 framing. However, this makes it possible for our HTTP/2 implementation to forward responses containing such headers to an HTTP/1 client when acting as a reverse proxy. If the HTTP/1 client also does not behave strictly enough, this can result in response smuggling.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-94448&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-94448&#39;, &#39;Description&#39;: &#39;When a JavaScript template literal contains consecutive expressions, the context tracking state was not properly reset upon entering a new expression. We now ensure that template-literal expression entries correctly reset context variables so all subsequent regular expression literals are accurately recognized and escaped.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-97030&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-97030&#39;, &#39;Description&#39;: &#34;A trusted template author may have previously written a valid template wherein the use of the &#39;yield&#39; keyword would not be correctly escaped. We now ensure that valid keyword uses are escaped and non-keyword uses are not escaped.&#34;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6599&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;GO-2026-6599&#39;, &#39;Description&#39;: &#39;When a JavaScript template literal contains consecutive expressions, the context tracking state was not properly reset upon entering a new expression.\n\nWe now ensure that template-literal expression entries correctly reset context variables so all subsequent regular expression literals are accurately recognized and escaped.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-6600&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;GO-2026-6600&#39;, &#39;Description&#39;: &#34;A trusted template author may have previously written a valid template wherein the use of the &#39;yield&#39; keyword would not be correctly escaped.\n\nWe now ensure that valid keyword uses are escaped and non-keyword uses are not escaped.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-94447&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-94447&#39;, &#39;Description&#39;: &#39;Previously, a user operating inside of a malicious Go project that defines a bogus golang.org/toolchain go.sum entry and operates a malicious GOMODPROXY the user chooses to use can bypass the intended checksum. We now ensure that golang.org/toolchain always goes to the network for the canonical checksum.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-94444&#39;, &#39;PkgName&#39;: &#39;stdlib&#39;, &#39;InstalledVersion&#39;: &#39;go1.26.8&#39;, &#39;FixedVersion&#39;: &#39;1.26.9&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-94444&#39;, &#39;Description&#39;: &#39;Previously, a user operating inside of a malicious Go project that defines a bogus golang.org/fips140 and operates a malicious GOMODPROXY the user chooses to connect to can serve an arbitrary module in its place. We now unpack the trusted ziphash for the bundled golang.org/fips140 module and construct its entry in the GOMODCACHE such that it can be verified by the toolchain.&#39;}, {&#39;VulnerabilityID&#39;: &#39;GO-2026-5932&#39;, &#39;PkgName&#39;: &#39;golang.org/x/crypto&#39;, &#39;InstalledVersion&#39;: &#39;v0.57.0&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;UNKNOWN&#39;, &#39;Title&#39;: &#39;GO-2026-5932&#39;, &#39;Description&#39;: &#39;The golang.org/x/crypto/openpgp package is unsafe by design, has numerous known security issues, is not maintained, and should not be used.\n\nIf you are required to interoperate with OpenPGP systems and need a maintained package, consider github.com/ProtonMail/go-crypto/openpgp which is a maintained fork that aims to be a drop-in replacement for this package.&#39;}]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>source</th><td><table>
+      <tbody>
+        
+        <tr><th>fetched_at</th><td>2026-10-19T11:01:07.647134+00:00</td></tr>
+        
+        <tr><th>built_at</th><td>2026-10-19T06:39:15Z</td></tr>
+        
+        <tr><th>version</th><td>v6.1.10</td></tr>
+        
+        <tr><th>checksum</th><td>sha256:13a192236b248579678bbf06cefb2a07a5dcbd00da110cfb5c3e26eb68a7ce58</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="sbom">
+      <summary>
+        <span>sbom</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>sbom</td></tr>
+        
+        <tr><th>scanner_version</th><td>1.44.0</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>tag</th><td>sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</td></tr>
+        
+        <tr><th>has_sbom</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>sbom_format</th><td>CycloneDX</td></tr>
+        
+        <tr><th>sbom_version</th><td>1.6</td></tr>
+        
+        <tr><th>total_components</th><td>298</td></tr>
+        
+        <tr><th>component_types</th><td><table>
+      <tbody>
+        
+        <tr><th>library</th><td>297</td></tr>
+        
+        <tr><th>file</th><td>1</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>total_dependencies</th><td>1</td></tr>
+        
+        <tr><th>licenses</th><td><ul><li>BSD-3-Clause</li></ul></td></tr>
+        
+        <tr><th>copyleft_licenses</th><td><em>none</em></td></tr>
+        
+        <tr><th>components</th><td><table>
+    <thead><tr><th>name</th><th>version</th><th>type</th><th>purl</th><th>licenses</th></tr></thead>
+    <tbody>
+      
+      <tr><td>cel.dev/expr</td><td>v0.25.2</td><td>library</td><td>pkg:golang/cel.dev/expr@v0.25.2</td><td>[]</td></tr>
+      
+      <tr><td>cloud.google.com/go</td><td>v0.123.0</td><td>library</td><td>pkg:golang/cloud.google.com/go@v0.123.0</td><td>[]</td></tr>
+      
+      <tr><td>cloud.google.com/go/auth</td><td>v0.23.2</td><td>library</td><td>pkg:golang/cloud.google.com/go/auth@v0.23.2</td><td>[]</td></tr>
+      
+      <tr><td>cloud.google.com/go/auth/oauth2adapt</td><td>v0.2.8</td><td>library</td><td>pkg:golang/cloud.google.com/go/auth/oauth2adapt@v0.2.8</td><td>[]</td></tr>
+      
+      <tr><td>cloud.google.com/go/compute/metadata</td><td>v0.9.0</td><td>library</td><td>pkg:golang/cloud.google.com/go/compute/metadata@v0.9.0</td><td>[]</td></tr>
+      
+      <tr><td>cloud.google.com/go/iam</td><td>v1.12.0</td><td>library</td><td>pkg:golang/cloud.google.com/go/iam@v1.12.0</td><td>[]</td></tr>
+      
+      <tr><td>cloud.google.com/go/monitoring</td><td>v1.30.0</td><td>library</td><td>pkg:golang/cloud.google.com/go/monitoring@v1.30.0</td><td>[]</td></tr>
+      
+      <tr><td>cloud.google.com/go/storage</td><td>v1.65.1</td><td>library</td><td>pkg:golang/cloud.google.com/go/storage@v1.65.1</td><td>[]</td></tr>
+      
+      <tr><td>dario.cat/mergo</td><td>v1.0.2</td><td>library</td><td>pkg:golang/dario.cat/mergo@v1.0.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/BurntSushi/toml</td><td>v1.6.0</td><td>library</td><td>pkg:golang/github.com/BurntSushi/toml@v1.6.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/CycloneDX/cyclonedx-go</td><td>v0.12.0</td><td>library</td><td>pkg:golang/github.com/CycloneDX/cyclonedx-go@v0.12.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp</td><td>v1.33.0</td><td>library</td><td>pkg:golang/github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp@v1.33.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric</td><td>v0.57.0</td><td>library</td><td>pkg:golang/github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric@v0.57.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping</td><td>v0.57.0</td><td>library</td><td>pkg:golang/github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping@v0.57.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/Masterminds/goutils</td><td>v1.1.1</td><td>library</td><td>pkg:golang/github.com/Masterminds/goutils@v1.1.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/Masterminds/semver/v3</td><td>v3.5.0</td><td>library</td><td>pkg:golang/github.com/Masterminds/semver/v3@v3.5.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/Masterminds/sprig/v3</td><td>v3.3.0</td><td>library</td><td>pkg:golang/github.com/Masterminds/sprig/v3@v3.3.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/OneOfOne/xxhash</td><td>v1.2.8</td><td>library</td><td>pkg:golang/github.com/OneOfOne/xxhash@v1.2.8</td><td>[]</td></tr>
+      
+      <tr><td>github.com/ProtonMail/go-crypto</td><td>v1.4.1</td><td>library</td><td>pkg:golang/github.com/ProtonMail/go-crypto@v1.4.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/STARRY-S/zip</td><td>v0.2.3</td><td>library</td><td>pkg:golang/github.com/STARRY-S/zip@v0.2.3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/VividCortex/ewma</td><td>v1.2.0</td><td>library</td><td>pkg:golang/github.com/VividCortex/ewma@v1.2.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/acarl005/stripansi</td><td>v0.0.0-20180116102854-5a71ef0e047d</td><td>library</td><td>pkg:golang/github.com/acarl005/stripansi@v0.0.0-20180116102854-5a71ef0e047d</td><td>[]</td></tr>
+      
+      <tr><td>github.com/acobaugh/osrelease</td><td>v0.1.0</td><td>library</td><td>pkg:golang/github.com/acobaugh/osrelease@v0.1.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/adrg/xdg</td><td>v0.5.3</td><td>library</td><td>pkg:golang/github.com/adrg/xdg@v0.5.3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/agext/levenshtein</td><td>v1.2.1</td><td>library</td><td>pkg:golang/github.com/agext/levenshtein@v1.2.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/bubbly</td><td>v0.2.2</td><td>library</td><td>pkg:golang/github.com/anchore/bubbly@v0.2.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/clio</td><td>v0.1.1</td><td>library</td><td>pkg:golang/github.com/anchore/clio@v0.1.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/fangs</td><td>v0.1.1</td><td>library</td><td>pkg:golang/github.com/anchore/fangs@v0.1.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/go-collections</td><td>v0.1.1</td><td>library</td><td>pkg:golang/github.com/anchore/go-collections@v0.1.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/go-homedir</td><td>v0.1.1</td><td>library</td><td>pkg:golang/github.com/anchore/go-homedir@v0.1.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/go-logger</td><td>v0.2.0</td><td>library</td><td>pkg:golang/github.com/anchore/go-logger@v0.2.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/go-lzo</td><td>v0.1.1</td><td>library</td><td>pkg:golang/github.com/anchore/go-lzo@v0.1.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/go-macholibre</td><td>v0.1.1</td><td>library</td><td>pkg:golang/github.com/anchore/go-macholibre@v0.1.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/go-rpmdb</td><td>v0.2.2</td><td>library</td><td>pkg:golang/github.com/anchore/go-rpmdb@v0.2.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/go-struct-converter</td><td>v0.2.0-rc2</td><td>library</td><td>pkg:golang/github.com/anchore/go-struct-converter@v0.2.0-rc2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/go-sync</td><td>v0.1.2</td><td>library</td><td>pkg:golang/github.com/anchore/go-sync@v0.1.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/go-version</td><td>v1.2.2-0.20200701162849-18adb9c92b9b</td><td>library</td><td>pkg:golang/github.com/anchore/go-version@v1.2.2-0.20200701162849-18adb9c92b9b</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/packageurl-go</td><td>v0.2.0</td><td>library</td><td>pkg:golang/github.com/anchore/packageurl-go@v0.2.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/stereoscope</td><td>v0.3.4</td><td>library</td><td>pkg:golang/github.com/anchore/stereoscope@v0.3.4</td><td>[]</td></tr>
+      
+      <tr><td>github.com/anchore/syft</td><td>v1.54.1</td><td>library</td><td>pkg:golang/github.com/anchore/syft@v1.54.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/andybalholm/brotli</td><td>v1.2.0</td><td>library</td><td>pkg:golang/github.com/andybalholm/brotli@v1.2.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/apparentlymart/go-textseg/v15</td><td>v15.0.0</td><td>library</td><td>pkg:golang/github.com/apparentlymart/go-textseg/v15@v15.0.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aquasecurity/go-pep440-version</td><td>v0.0.1</td><td>library</td><td>pkg:golang/github.com/aquasecurity/go-pep440-version@v0.0.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aquasecurity/go-version</td><td>v0.0.1</td><td>library</td><td>pkg:golang/github.com/aquasecurity/go-version@v0.0.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2</td><td>v1.44.0</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2@v1.44.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream</td><td>v1.7.20</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream@v1.7.20</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/config</td><td>v1.32.40</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/config@v1.32.40</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/credentials</td><td>v1.19.39</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/credentials@v1.19.39</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/feature/ec2/imds</td><td>v1.18.40</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/feature/ec2/imds@v1.18.40</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/internal/configsources</td><td>v1.4.40</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/internal/configsources@v1.4.40</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/internal/endpoints/v2</td><td>v2.7.40</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/internal/endpoints/v2@v2.7.40</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/internal/v4a</td><td>v1.4.41</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/internal/v4a@v1.4.41</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding</td><td>v1.13.19</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding@v1.13.19</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/service/internal/checksum</td><td>v1.10.0</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/service/internal/checksum@v1.10.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/service/internal/presigned-url</td><td>v1.13.40</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/service/internal/presigned-url@v1.13.40</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/service/internal/s3shared</td><td>v1.19.41</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/service/internal/s3shared@v1.19.41</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/service/s3</td><td>v1.108.0</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/service/s3@v1.108.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/service/signin</td><td>v1.6.0</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/service/signin@v1.6.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/service/sso</td><td>v1.34.0</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/service/sso@v1.34.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/service/ssooidc</td><td>v1.39.0</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/service/ssooidc@v1.39.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/aws-sdk-go-v2/service/sts</td><td>v1.46.0</td><td>library</td><td>pkg:golang/github.com/aws/aws-sdk-go-v2/service/sts@v1.46.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aws/smithy-go</td><td>v1.28.1</td><td>library</td><td>pkg:golang/github.com/aws/smithy-go@v1.28.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/aymanbagabas/go-osc52/v2</td><td>v2.0.1</td><td>library</td><td>pkg:golang/github.com/aymanbagabas/go-osc52/v2@v2.0.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/becheran/wildmatch-go</td><td>v1.0.0</td><td>library</td><td>pkg:golang/github.com/becheran/wildmatch-go@v1.0.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/bgentry/go-netrc</td><td>v0.0.0-20140422174119-9fd32a8b3d3d</td><td>library</td><td>pkg:golang/github.com/bgentry/go-netrc@v0.0.0-20140422174119-9fd32a8b3d3d</td><td>[]</td></tr>
+      
+      <tr><td>github.com/bitnami/go-version</td><td>v0.0.0-20250131085805-b1f57a8634ef</td><td>library</td><td>pkg:golang/github.com/bitnami/go-version@v0.0.0-20250131085805-b1f57a8634ef</td><td>[]</td></tr>
+      
+      <tr><td>github.com/blakesmith/ar</td><td>v0.0.0-20190502131153-809d4375e1fb</td><td>library</td><td>pkg:golang/github.com/blakesmith/ar@v0.0.0-20190502131153-809d4375e1fb</td><td>[]</td></tr>
+      
+      <tr><td>github.com/bmatcuk/doublestar/v4</td><td>v4.10.2</td><td>library</td><td>pkg:golang/github.com/bmatcuk/doublestar/v4@v4.10.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/bodgit/plumbing</td><td>v1.3.0</td><td>library</td><td>pkg:golang/github.com/bodgit/plumbing@v1.3.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/bodgit/sevenzip</td><td>v1.6.1</td><td>library</td><td>pkg:golang/github.com/bodgit/sevenzip@v1.6.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/bodgit/windows</td><td>v1.0.1</td><td>library</td><td>pkg:golang/github.com/bodgit/windows@v1.0.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/cespare/xxhash/v2</td><td>v2.3.0</td><td>library</td><td>pkg:golang/github.com/cespare/xxhash/v2@v2.3.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/charmbracelet/bubbles</td><td>v1.0.0</td><td>library</td><td>pkg:golang/github.com/charmbracelet/bubbles@v1.0.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/charmbracelet/bubbletea</td><td>v1.3.10</td><td>library</td><td>pkg:golang/github.com/charmbracelet/bubbletea@v1.3.10</td><td>[]</td></tr>
+      
+      <tr><td>github.com/charmbracelet/colorprofile</td><td>v0.4.3</td><td>library</td><td>pkg:golang/github.com/charmbracelet/colorprofile@v0.4.3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/charmbracelet/harmonica</td><td>v0.2.0</td><td>library</td><td>pkg:golang/github.com/charmbracelet/harmonica@v0.2.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/charmbracelet/lipgloss</td><td>v1.1.0</td><td>library</td><td>pkg:golang/github.com/charmbracelet/lipgloss@v1.1.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/charmbracelet/x/ansi</td><td>v0.11.6</td><td>library</td><td>pkg:golang/github.com/charmbracelet/x/ansi@v0.11.6</td><td>[]</td></tr>
+      
+      <tr><td>github.com/charmbracelet/x/cellbuf</td><td>v0.0.15</td><td>library</td><td>pkg:golang/github.com/charmbracelet/x/cellbuf@v0.0.15</td><td>[]</td></tr>
+      
+      <tr><td>github.com/charmbracelet/x/term</td><td>v0.2.2</td><td>library</td><td>pkg:golang/github.com/charmbracelet/x/term@v0.2.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/clipperhouse/displaywidth</td><td>v0.11.0</td><td>library</td><td>pkg:golang/github.com/clipperhouse/displaywidth@v0.11.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/clipperhouse/uax29/v2</td><td>v2.7.0</td><td>library</td><td>pkg:golang/github.com/clipperhouse/uax29/v2@v2.7.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/cloudflare/circl</td><td>v1.6.3</td><td>library</td><td>pkg:golang/github.com/cloudflare/circl@v1.6.3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/cncf/xds/go</td><td>v0.0.0-20260202195803-dba9d589def2</td><td>library</td><td>pkg:golang/github.com/cncf/xds/go@v0.0.0-20260202195803-dba9d589def2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/containerd/api</td><td>v1.12.0</td><td>library</td><td>pkg:golang/github.com/containerd/containerd/api@v1.12.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/containerd/v2</td><td>v2.4.1</td><td>library</td><td>pkg:golang/github.com/containerd/containerd/v2@v2.4.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/continuity</td><td>v0.5.0</td><td>library</td><td>pkg:golang/github.com/containerd/continuity@v0.5.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/errdefs</td><td>v1.0.0</td><td>library</td><td>pkg:golang/github.com/containerd/errdefs@v1.0.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/errdefs/pkg</td><td>v0.3.0</td><td>library</td><td>pkg:golang/github.com/containerd/errdefs/pkg@v0.3.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/fifo</td><td>v1.1.0</td><td>library</td><td>pkg:golang/github.com/containerd/fifo@v1.1.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/log</td><td>v0.2.0</td><td>library</td><td>pkg:golang/github.com/containerd/log@v0.2.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/log/otel</td><td>v0.1.0</td><td>library</td><td>pkg:golang/github.com/containerd/log/otel@v0.1.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/platforms</td><td>v1.0.0-rc.5</td><td>library</td><td>pkg:golang/github.com/containerd/platforms@v1.0.0-rc.5</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/plugin</td><td>v1.1.0</td><td>library</td><td>pkg:golang/github.com/containerd/plugin@v1.1.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/stargz-snapshotter/estargz</td><td>v0.18.2</td><td>library</td><td>pkg:golang/github.com/containerd/stargz-snapshotter/estargz@v0.18.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/ttrpc</td><td>v1.2.9</td><td>library</td><td>pkg:golang/github.com/containerd/ttrpc@v1.2.9</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containerd/typeurl/v2</td><td>v2.3.0</td><td>library</td><td>pkg:golang/github.com/containerd/typeurl/v2@v2.3.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containers/libtrust</td><td>v0.0.0-20230121012942-c1716e8a8d01</td><td>library</td><td>pkg:golang/github.com/containers/libtrust@v0.0.0-20230121012942-c1716e8a8d01</td><td>[]</td></tr>
+      
+      <tr><td>github.com/containers/ocicrypt</td><td>v1.3.2</td><td>library</td><td>pkg:golang/github.com/containers/ocicrypt@v1.3.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/cyberphone/json-canonicalization</td><td>v0.0.0-20241213102144-19d51d7fe467</td><td>library</td><td>pkg:golang/github.com/cyberphone/json-canonicalization@v0.0.0-20241213102144-19d51d7fe467</td><td>[]</td></tr>
+      
+      <tr><td>github.com/cyphar/filepath-securejoin</td><td>v0.7.0</td><td>library</td><td>pkg:golang/github.com/cyphar/filepath-securejoin@v0.7.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/deitch/magic</td><td>v0.0.0-20230404182410-1ff89d7342da</td><td>library</td><td>pkg:golang/github.com/deitch/magic@v0.0.0-20230404182410-1ff89d7342da</td><td>[]</td></tr>
+      
+      <tr><td>github.com/diskfs/go-diskfs</td><td>v1.9.4</td><td>library</td><td>pkg:golang/github.com/diskfs/go-diskfs@v1.9.4</td><td>[]</td></tr>
+      
+      <tr><td>github.com/distribution/reference</td><td>v0.6.0</td><td>library</td><td>pkg:golang/github.com/distribution/reference@v0.6.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/docker/cli</td><td>v29.8.2+incompatible</td><td>library</td><td>pkg:golang/github.com/docker/cli@v29.8.2%2Bincompatible</td><td>[]</td></tr>
+      
+      <tr><td>github.com/docker/docker-credential-helpers</td><td>v0.9.8</td><td>library</td><td>pkg:golang/github.com/docker/docker-credential-helpers@v0.9.8</td><td>[]</td></tr>
+      
+      <tr><td>github.com/docker/go-connections</td><td>v0.8.1</td><td>library</td><td>pkg:golang/github.com/docker/go-connections@v0.8.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/docker/go-units</td><td>v0.5.0</td><td>library</td><td>pkg:golang/github.com/docker/go-units@v0.5.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/dsnet/compress</td><td>v0.0.2-0.20230904184137-39efe44ab707</td><td>library</td><td>pkg:golang/github.com/dsnet/compress@v0.0.2-0.20230904184137-39efe44ab707</td><td>[]</td></tr>
+      
+      <tr><td>github.com/dustin/go-humanize</td><td>v1.1.0</td><td>library</td><td>pkg:golang/github.com/dustin/go-humanize@v1.1.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/elliotchance/phpserialize</td><td>v1.4.0</td><td>library</td><td>pkg:golang/github.com/elliotchance/phpserialize@v1.4.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/emirpasic/gods</td><td>v1.18.1</td><td>library</td><td>pkg:golang/github.com/emirpasic/gods@v1.18.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/envoyproxy/go-control-plane/envoy</td><td>v1.37.0</td><td>library</td><td>pkg:golang/github.com/envoyproxy/go-control-plane/envoy@v1.37.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/envoyproxy/protoc-gen-validate</td><td>v1.3.3</td><td>library</td><td>pkg:golang/github.com/envoyproxy/protoc-gen-validate@v1.3.3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/facebookincubator/nvdtools</td><td>v0.1.5</td><td>library</td><td>pkg:golang/github.com/facebookincubator/nvdtools@v0.1.5</td><td>[]</td></tr>
+      
+      <tr><td>github.com/fatih/color</td><td>v1.19.0</td><td>library</td><td>pkg:golang/github.com/fatih/color@v1.19.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/felixge/fgprof</td><td>v0.9.5</td><td>library</td><td>pkg:golang/github.com/felixge/fgprof@v0.9.5</td><td>[]</td></tr>
+      
+      <tr><td>github.com/felixge/httpsnoop</td><td>v1.1.0</td><td>library</td><td>pkg:golang/github.com/felixge/httpsnoop@v1.1.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/fsnotify/fsnotify</td><td>v1.10.1</td><td>library</td><td>pkg:golang/github.com/fsnotify/fsnotify@v1.10.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/gabriel-vasile/mimetype</td><td>v1.4.15</td><td>library</td><td>pkg:golang/github.com/gabriel-vasile/mimetype@v1.4.15</td><td>[]</td></tr>
+      
+      <tr><td>github.com/github/go-spdx/v2</td><td>v2.7.0</td><td>library</td><td>pkg:golang/github.com/github/go-spdx/v2@v2.7.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/go-git/gcfg</td><td>v1.5.1-0.20230307220236-3a3c6141e376</td><td>library</td><td>pkg:golang/github.com/go-git/gcfg@v1.5.1-0.20230307220236-3a3c6141e376</td><td>[]</td></tr>
+      
+      <tr><td>github.com/go-git/go-billy/v5</td><td>v5.9.1</td><td>library</td><td>pkg:golang/github.com/go-git/go-billy/v5@v5.9.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/go-git/go-git/v5</td><td>v5.19.2</td><td>library</td><td>pkg:golang/github.com/go-git/go-git/v5@v5.19.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/go-jose/go-jose/v4</td><td>v4.1.5</td><td>library</td><td>pkg:golang/github.com/go-jose/go-jose/v4@v4.1.5</td><td>[]</td></tr>
+      
+      <tr><td>github.com/go-logr/logr</td><td>v1.4.4</td><td>library</td><td>pkg:golang/github.com/go-logr/logr@v1.4.4</td><td>[]</td></tr>
+      
+      <tr><td>github.com/go-logr/stdr</td><td>v1.2.2</td><td>library</td><td>pkg:golang/github.com/go-logr/stdr@v1.2.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/go-restruct/restruct</td><td>v1.2.0-alpha</td><td>library</td><td>pkg:golang/github.com/go-restruct/restruct@v1.2.0-alpha</td><td>[]</td></tr>
+      
+      <tr><td>github.com/go-viper/mapstructure/v2</td><td>v2.5.0</td><td>library</td><td>pkg:golang/github.com/go-viper/mapstructure/v2@v2.5.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/goccy/go-yaml</td><td>v1.19.2</td><td>library</td><td>pkg:golang/github.com/goccy/go-yaml@v1.19.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/gohugoio/hashstructure</td><td>v0.6.0</td><td>library</td><td>pkg:golang/github.com/gohugoio/hashstructure@v0.6.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/golang/groupcache</td><td>v0.0.0-20241129210726-2c02b8208cf8</td><td>library</td><td>pkg:golang/github.com/golang/groupcache@v0.0.0-20241129210726-2c02b8208cf8</td><td>[]</td></tr>
+      
+      <tr><td>github.com/google/go-cmp</td><td>v0.7.0</td><td>library</td><td>pkg:golang/github.com/google/go-cmp@v0.7.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/google/go-containerregistry</td><td>v0.22.1</td><td>library</td><td>pkg:golang/github.com/google/go-containerregistry@v0.22.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/google/go-intervals</td><td>v0.0.2</td><td>library</td><td>pkg:golang/github.com/google/go-intervals@v0.0.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/google/licensecheck</td><td>v0.3.1</td><td>library</td><td>pkg:golang/github.com/google/licensecheck@v0.3.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/google/pprof</td><td>v0.0.0-20260802141513-ef3492d7dac3</td><td>library</td><td>pkg:golang/github.com/google/pprof@v0.0.0-20260802141513-ef3492d7dac3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/google/s2a-go</td><td>v0.1.9</td><td>library</td><td>pkg:golang/github.com/google/s2a-go@v0.1.9</td><td>[]</td></tr>
+      
+      <tr><td>github.com/google/uuid</td><td>v1.6.0</td><td>library</td><td>pkg:golang/github.com/google/uuid@v1.6.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/googleapis/enterprise-certificate-proxy</td><td>v0.3.20</td><td>library</td><td>pkg:golang/github.com/googleapis/enterprise-certificate-proxy@v0.3.20</td><td>[]</td></tr>
+      
+      <tr><td>github.com/googleapis/gax-go/v2</td><td>v2.24.0</td><td>library</td><td>pkg:golang/github.com/googleapis/gax-go/v2@v2.24.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/gookit/color</td><td>v1.6.1</td><td>library</td><td>pkg:golang/github.com/gookit/color@v1.6.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/gpustack/gguf-parser-go</td><td>v0.26.3</td><td>library</td><td>pkg:golang/github.com/gpustack/gguf-parser-go@v0.26.3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/hashicorp/aws-sdk-go-base/v2</td><td>v2.0.0-beta.74</td><td>library</td><td>pkg:golang/github.com/hashicorp/aws-sdk-go-base/v2@v2.0.0-beta.74</td><td>[]</td></tr>
+      
+      <tr><td>github.com/hashicorp/errwrap</td><td>v1.1.0</td><td>library</td><td>pkg:golang/github.com/hashicorp/errwrap@v1.1.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/hashicorp/go-cleanhttp</td><td>v0.5.2</td><td>library</td><td>pkg:golang/github.com/hashicorp/go-cleanhttp@v0.5.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/hashicorp/go-getter</td><td>v1.8.9</td><td>library</td><td>pkg:golang/github.com/hashicorp/go-getter@v1.8.9</td><td>[]</td></tr>
+      
+      <tr><td>github.com/hashicorp/go-multierror</td><td>v1.1.1</td><td>library</td><td>pkg:golang/github.com/hashicorp/go-multierror@v1.1.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/hashicorp/go-version</td><td>v1.9.0</td><td>library</td><td>pkg:golang/github.com/hashicorp/go-version@v1.9.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/hashicorp/golang-lru/v2</td><td>v2.0.7</td><td>library</td><td>pkg:golang/github.com/hashicorp/golang-lru/v2@v2.0.7</td><td>[]</td></tr>
+      
+      <tr><td>github.com/hashicorp/hcl/v2</td><td>v2.25.0</td><td>library</td><td>pkg:golang/github.com/hashicorp/hcl/v2@v2.25.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/henvic/httpretty</td><td>v0.1.4</td><td>library</td><td>pkg:golang/github.com/henvic/httpretty@v0.1.4</td><td>[]</td></tr>
+      
+      <tr><td>github.com/huandu/xstrings</td><td>v1.5.0</td><td>library</td><td>pkg:golang/github.com/huandu/xstrings@v1.5.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/iancoleman/strcase</td><td>v0.3.0</td><td>library</td><td>pkg:golang/github.com/iancoleman/strcase@v0.3.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/jbenet/go-context</td><td>v0.0.0-20150711004518-d14ea06fba99</td><td>library</td><td>pkg:golang/github.com/jbenet/go-context@v0.0.0-20150711004518-d14ea06fba99</td><td>[]</td></tr>
+      
+      <tr><td>github.com/jedib0t/go-pretty/v6</td><td>v6.8.3</td><td>library</td><td>pkg:golang/github.com/jedib0t/go-pretty/v6@v6.8.3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/jinzhu/copier</td><td>v0.4.0</td><td>library</td><td>pkg:golang/github.com/jinzhu/copier@v0.4.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/json-iterator/go</td><td>v1.1.12</td><td>library</td><td>pkg:golang/github.com/json-iterator/go@v1.1.12</td><td>[]</td></tr>
+      
+      <tr><td>github.com/kastenhq/goversion</td><td>v0.0.0-20230811215019-93b2f8823953</td><td>library</td><td>pkg:golang/github.com/kastenhq/goversion@v0.0.0-20230811215019-93b2f8823953</td><td>[]</td></tr>
+      
+      <tr><td>github.com/kevinburke/ssh_config</td><td>v1.2.0</td><td>library</td><td>pkg:golang/github.com/kevinburke/ssh_config@v1.2.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/klauspost/compress</td><td>v1.20.1</td><td>library</td><td>pkg:golang/github.com/klauspost/compress@v1.20.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/klauspost/cpuid/v2</td><td>v2.3.0</td><td>library</td><td>pkg:golang/github.com/klauspost/cpuid/v2@v2.3.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/klauspost/pgzip</td><td>v1.2.6</td><td>library</td><td>pkg:golang/github.com/klauspost/pgzip@v1.2.6</td><td>[]</td></tr>
+      
+      <tr><td>github.com/lucasb-eyer/go-colorful</td><td>v1.3.0</td><td>library</td><td>pkg:golang/github.com/lucasb-eyer/go-colorful@v1.3.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mattn/go-colorable</td><td>v0.1.14</td><td>library</td><td>pkg:golang/github.com/mattn/go-colorable@v0.1.14</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mattn/go-isatty</td><td>v0.0.24</td><td>library</td><td>pkg:golang/github.com/mattn/go-isatty@v0.0.24</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mattn/go-runewidth</td><td>v0.0.27</td><td>library</td><td>pkg:golang/github.com/mattn/go-runewidth@v0.0.27</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mattn/go-sqlite3</td><td>v1.14.48</td><td>library</td><td>pkg:golang/github.com/mattn/go-sqlite3@v1.14.48</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mgutz/ansi</td><td>v0.0.0-20200706080929-d51e80ef957d</td><td>library</td><td>pkg:golang/github.com/mgutz/ansi@v0.0.0-20200706080929-d51e80ef957d</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mholt/archives</td><td>v0.1.5</td><td>library</td><td>pkg:golang/github.com/mholt/archives@v0.1.5</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mikelolasagasti/xz</td><td>v1.0.1</td><td>library</td><td>pkg:golang/github.com/mikelolasagasti/xz@v1.0.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/minio/minlz</td><td>v1.0.1</td><td>library</td><td>pkg:golang/github.com/minio/minlz@v1.0.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mistifyio/go-zfs/v4</td><td>v4.0.0</td><td>library</td><td>pkg:golang/github.com/mistifyio/go-zfs/v4@v4.0.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mitchellh/copystructure</td><td>v1.2.0</td><td>library</td><td>pkg:golang/github.com/mitchellh/copystructure@v1.2.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mitchellh/go-homedir</td><td>v1.1.0</td><td>library</td><td>pkg:golang/github.com/mitchellh/go-homedir@v1.1.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mitchellh/go-wordwrap</td><td>v1.0.1</td><td>library</td><td>pkg:golang/github.com/mitchellh/go-wordwrap@v1.0.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/mitchellh/reflectwalk</td><td>v1.0.2</td><td>library</td><td>pkg:golang/github.com/mitchellh/reflectwalk@v1.0.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/moby/docker-image-spec</td><td>v1.3.1</td><td>library</td><td>pkg:golang/github.com/moby/docker-image-spec@v1.3.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/moby/locker</td><td>v1.0.1</td><td>library</td><td>pkg:golang/github.com/moby/locker@v1.0.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/moby/moby/api</td><td>v1.56.0</td><td>library</td><td>pkg:golang/github.com/moby/moby/api@v1.56.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/moby/moby/client</td><td>v0.6.0</td><td>library</td><td>pkg:golang/github.com/moby/moby/client@v0.6.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/moby/sys/capability</td><td>v0.4.0</td><td>library</td><td>pkg:golang/github.com/moby/sys/capability@v0.4.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/moby/sys/mountinfo</td><td>v0.7.2</td><td>library</td><td>pkg:golang/github.com/moby/sys/mountinfo@v0.7.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/moby/sys/signal</td><td>v0.7.1</td><td>library</td><td>pkg:golang/github.com/moby/sys/signal@v0.7.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/moby/sys/user</td><td>v0.4.1</td><td>library</td><td>pkg:golang/github.com/moby/sys/user@v0.4.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/moby/sys/userns</td><td>v0.2.1</td><td>library</td><td>pkg:golang/github.com/moby/sys/userns@v0.2.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/modern-go/concurrent</td><td>v0.0.0-20180306012644-bacd9c7ef1dd</td><td>library</td><td>pkg:golang/github.com/modern-go/concurrent@v0.0.0-20180306012644-bacd9c7ef1dd</td><td>[]</td></tr>
+      
+      <tr><td>github.com/modern-go/reflect2</td><td>v1.0.3-0.20250322232337-35a7c28c31ee</td><td>library</td><td>pkg:golang/github.com/modern-go/reflect2@v1.0.3-0.20250322232337-35a7c28c31ee</td><td>[]</td></tr>
+      
+      <tr><td>github.com/muesli/ansi</td><td>v0.0.0-20230316100256-276c6243b2f6</td><td>library</td><td>pkg:golang/github.com/muesli/ansi@v0.0.0-20230316100256-276c6243b2f6</td><td>[]</td></tr>
+      
+      <tr><td>github.com/muesli/cancelreader</td><td>v0.2.2</td><td>library</td><td>pkg:golang/github.com/muesli/cancelreader@v0.2.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/muesli/termenv</td><td>v0.16.0</td><td>library</td><td>pkg:golang/github.com/muesli/termenv@v0.16.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/nix-community/go-nix</td><td>v0.0.0-20250101154619-4bdde671e0a1</td><td>library</td><td>pkg:golang/github.com/nix-community/go-nix@v0.0.0-20250101154619-4bdde671e0a1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/nwaples/rardecode/v2</td><td>v2.4.1</td><td>library</td><td>pkg:golang/github.com/nwaples/rardecode/v2@v2.4.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/olekukonko/cat</td><td>v0.0.0-20250911104152-50322a0618f6</td><td>library</td><td>pkg:golang/github.com/olekukonko/cat@v0.0.0-20250911104152-50322a0618f6</td><td>[]</td></tr>
+      
+      <tr><td>github.com/olekukonko/errors</td><td>v1.2.0</td><td>library</td><td>pkg:golang/github.com/olekukonko/errors@v1.2.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/olekukonko/ll</td><td>v0.1.6</td><td>library</td><td>pkg:golang/github.com/olekukonko/ll@v0.1.6</td><td>[]</td></tr>
+      
+      <tr><td>github.com/olekukonko/tablewriter</td><td>v1.1.5</td><td>library</td><td>pkg:golang/github.com/olekukonko/tablewriter@v1.1.5</td><td>[]</td></tr>
+      
+      <tr><td>github.com/opencontainers/go-digest</td><td>v1.0.0</td><td>library</td><td>pkg:golang/github.com/opencontainers/go-digest@v1.0.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/opencontainers/image-spec</td><td>v1.1.1</td><td>library</td><td>pkg:golang/github.com/opencontainers/image-spec@v1.1.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/opencontainers/runtime-spec</td><td>v1.3.0</td><td>library</td><td>pkg:golang/github.com/opencontainers/runtime-spec@v1.3.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/opencontainers/selinux</td><td>v1.15.1</td><td>library</td><td>pkg:golang/github.com/opencontainers/selinux@v1.15.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/pborman/indent</td><td>v1.2.1</td><td>library</td><td>pkg:golang/github.com/pborman/indent@v1.2.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/pelletier/go-toml</td><td>v1.9.5</td><td>library</td><td>pkg:golang/github.com/pelletier/go-toml@v1.9.5</td><td>[]</td></tr>
+      
+      <tr><td>github.com/pelletier/go-toml/v2</td><td>v2.4.3</td><td>library</td><td>pkg:golang/github.com/pelletier/go-toml/v2@v2.4.3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/pierrec/lz4/v4</td><td>v4.1.26</td><td>library</td><td>pkg:golang/github.com/pierrec/lz4/v4@v4.1.26</td><td>[]</td></tr>
+      
+      <tr><td>github.com/piprate/json-gold</td><td>v0.7.0</td><td>library</td><td>pkg:golang/github.com/piprate/json-gold@v0.7.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/pjbgf/sha1cd</td><td>v0.6.0</td><td>library</td><td>pkg:golang/github.com/pjbgf/sha1cd@v0.6.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/pkg/errors</td><td>v0.9.1</td><td>library</td><td>pkg:golang/github.com/pkg/errors@v0.9.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/pkg/profile</td><td>v1.7.0</td><td>library</td><td>pkg:golang/github.com/pkg/profile@v1.7.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/pkg/xattr</td><td>v0.4.12</td><td>library</td><td>pkg:golang/github.com/pkg/xattr@v0.4.12</td><td>[]</td></tr>
+      
+      <tr><td>github.com/pquerna/cachecontrol</td><td>v0.0.0-20180517163645-1555304b9b35</td><td>library</td><td>pkg:golang/github.com/pquerna/cachecontrol@v0.0.0-20180517163645-1555304b9b35</td><td>[]</td></tr>
+      
+      <tr><td>github.com/remyoudompheng/bigfft</td><td>v0.0.0-20230129092748-24d4a6f8daec</td><td>library</td><td>pkg:golang/github.com/remyoudompheng/bigfft@v0.0.0-20230129092748-24d4a6f8daec</td><td>[]</td></tr>
+      
+      <tr><td>github.com/rivo/uniseg</td><td>v0.4.7</td><td>library</td><td>pkg:golang/github.com/rivo/uniseg@v0.4.7</td><td>[]</td></tr>
+      
+      <tr><td>github.com/rust-secure-code/go-rustaudit</td><td>v0.0.0-20250226111315-e20ec32e963c</td><td>library</td><td>pkg:golang/github.com/rust-secure-code/go-rustaudit@v0.0.0-20250226111315-e20ec32e963c</td><td>[]</td></tr>
+      
+      <tr><td>github.com/sagikazarmark/locafero</td><td>v0.11.0</td><td>library</td><td>pkg:golang/github.com/sagikazarmark/locafero@v0.11.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/saintfish/chardet</td><td>v0.0.0-20230101081208-5e3ef4b5456d</td><td>library</td><td>pkg:golang/github.com/saintfish/chardet@v0.0.0-20230101081208-5e3ef4b5456d</td><td>[]</td></tr>
+      
+      <tr><td>github.com/sassoftware/go-rpmutils</td><td>v0.4.0</td><td>library</td><td>pkg:golang/github.com/sassoftware/go-rpmutils@v0.4.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/scylladb/go-set</td><td>v1.0.3-0.20200225121959-cc7b2070d91e</td><td>library</td><td>pkg:golang/github.com/scylladb/go-set@v1.0.3-0.20200225121959-cc7b2070d91e</td><td>[]</td></tr>
+      
+      <tr><td>github.com/secure-systems-lab/go-securesystemslib</td><td>v0.11.1</td><td>library</td><td>pkg:golang/github.com/secure-systems-lab/go-securesystemslib@v0.11.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/sergi/go-diff</td><td>v1.4.0</td><td>library</td><td>pkg:golang/github.com/sergi/go-diff@v1.4.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/shopspring/decimal</td><td>v1.4.0</td><td>library</td><td>pkg:golang/github.com/shopspring/decimal@v1.4.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/sigstore/fulcio</td><td>v1.8.7</td><td>library</td><td>pkg:golang/github.com/sigstore/fulcio@v1.8.7</td><td>[]</td></tr>
+      
+      <tr><td>github.com/sigstore/protobuf-specs</td><td>v0.5.2</td><td>library</td><td>pkg:golang/github.com/sigstore/protobuf-specs@v0.5.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/sigstore/sigstore</td><td>v1.10.11</td><td>library</td><td>pkg:golang/github.com/sigstore/sigstore@v1.10.11</td><td>[]</td></tr>
+      
+      <tr><td>github.com/sirupsen/logrus</td><td>v1.10.2</td><td>library</td><td>pkg:golang/github.com/sirupsen/logrus@v1.10.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/skeema/knownhosts</td><td>v1.3.1</td><td>library</td><td>pkg:golang/github.com/skeema/knownhosts@v1.3.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/smallnest/ringbuffer</td><td>v0.0.0-20241116012123-461381446e3d</td><td>library</td><td>pkg:golang/github.com/smallnest/ringbuffer@v0.0.0-20241116012123-461381446e3d</td><td>[]</td></tr>
+      
+      <tr><td>github.com/smallstep/pkcs7</td><td>v0.2.1</td><td>library</td><td>pkg:golang/github.com/smallstep/pkcs7@v0.2.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/sorairolake/lzip-go</td><td>v0.3.8</td><td>library</td><td>pkg:golang/github.com/sorairolake/lzip-go@v0.3.8</td><td>[]</td></tr>
+      
+      <tr><td>github.com/sourcegraph/conc</td><td>v0.3.1-0.20240121214520-5f936abd7ae8</td><td>library</td><td>pkg:golang/github.com/sourcegraph/conc@v0.3.1-0.20240121214520-5f936abd7ae8</td><td>[]</td></tr>
+      
+      <tr><td>github.com/spdx/gordf</td><td>v0.0.0-20201111095634-7098f93598fb</td><td>library</td><td>pkg:golang/github.com/spdx/gordf@v0.0.0-20201111095634-7098f93598fb</td><td>[]</td></tr>
+      
+      <tr><td>github.com/spdx/tools-golang</td><td>v0.6.0-rc4</td><td>library</td><td>pkg:golang/github.com/spdx/tools-golang@v0.6.0-rc4</td><td>[]</td></tr>
+      
+      <tr><td>github.com/spf13/afero</td><td>v1.15.0</td><td>library</td><td>pkg:golang/github.com/spf13/afero@v1.15.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/spf13/cast</td><td>v1.10.0</td><td>library</td><td>pkg:golang/github.com/spf13/cast@v1.10.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/spf13/cobra</td><td>v1.10.2</td><td>library</td><td>pkg:golang/github.com/spf13/cobra@v1.10.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/spf13/pflag</td><td>v1.0.10</td><td>library</td><td>pkg:golang/github.com/spf13/pflag@v1.0.10</td><td>[]</td></tr>
+      
+      <tr><td>github.com/spf13/viper</td><td>v1.21.0</td><td>library</td><td>pkg:golang/github.com/spf13/viper@v1.21.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/spiffe/go-spiffe/v2</td><td>v2.7.0</td><td>library</td><td>pkg:golang/github.com/spiffe/go-spiffe/v2@v2.7.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/stefanberger/go-pkcs11uri</td><td>v0.0.0-20230803200340-78284954bff6</td><td>library</td><td>pkg:golang/github.com/stefanberger/go-pkcs11uri@v0.0.0-20230803200340-78284954bff6</td><td>[]</td></tr>
+      
+      <tr><td>github.com/subosito/gotenv</td><td>v1.6.0</td><td>library</td><td>pkg:golang/github.com/subosito/gotenv@v1.6.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/sylabs/sif/v2</td><td>v2.24.2</td><td>library</td><td>pkg:golang/github.com/sylabs/sif/v2@v2.24.2</td><td>[]</td></tr>
+      
+      <tr><td>github.com/sylabs/squashfs</td><td>v1.0.6</td><td>library</td><td>pkg:golang/github.com/sylabs/squashfs@v1.0.6</td><td>[]</td></tr>
+      
+      <tr><td>github.com/tailscale/hujson</td><td>v0.0.0-20260302212456-ecc657c15afd</td><td>library</td><td>pkg:golang/github.com/tailscale/hujson@v0.0.0-20260302212456-ecc657c15afd</td><td>[]</td></tr>
+      
+      <tr><td>github.com/tchap/go-patricia/v2</td><td>v2.3.3</td><td>library</td><td>pkg:golang/github.com/tchap/go-patricia/v2@v2.3.3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/therootcompany/xz</td><td>v1.0.1</td><td>library</td><td>pkg:golang/github.com/therootcompany/xz@v1.0.1</td><td>[]</td></tr>
+      
+      <tr><td>github.com/ulikunitz/xz</td><td>v0.5.17</td><td>library</td><td>pkg:golang/github.com/ulikunitz/xz@v0.5.17</td><td>[]</td></tr>
+      
+      <tr><td>github.com/vbatts/go-mtree</td><td>v0.7.0</td><td>library</td><td>pkg:golang/github.com/vbatts/go-mtree@v0.7.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/vbatts/tar-split</td><td>v0.12.3</td><td>library</td><td>pkg:golang/github.com/vbatts/tar-split@v0.12.3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/vbauerster/cupwriter</td><td>v0.0.4</td><td>library</td><td>pkg:golang/github.com/vbauerster/cupwriter@v0.0.4</td><td>[]</td></tr>
+      
+      <tr><td>github.com/vbauerster/mpb/v8</td><td>v8.14.0</td><td>library</td><td>pkg:golang/github.com/vbauerster/mpb/v8@v8.14.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/vifraa/gopom</td><td>v1.0.0</td><td>library</td><td>pkg:golang/github.com/vifraa/gopom@v1.0.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/wagoodman/go-partybus</td><td>v0.0.0-20230516145632-8ccac152c651</td><td>library</td><td>pkg:golang/github.com/wagoodman/go-partybus@v0.0.0-20230516145632-8ccac152c651</td><td>[]</td></tr>
+      
+      <tr><td>github.com/wagoodman/go-progress</td><td>v0.0.0-20260303201901-10176f79b2c0</td><td>library</td><td>pkg:golang/github.com/wagoodman/go-progress@v0.0.0-20260303201901-10176f79b2c0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/xanzy/ssh-agent</td><td>v0.3.3</td><td>library</td><td>pkg:golang/github.com/xanzy/ssh-agent@v0.3.3</td><td>[]</td></tr>
+      
+      <tr><td>github.com/xi2/xz</td><td>v0.0.0-20171230120015-48954b6210f8</td><td>library</td><td>pkg:golang/github.com/xi2/xz@v0.0.0-20171230120015-48954b6210f8</td><td>[]</td></tr>
+      
+      <tr><td>github.com/xo/terminfo</td><td>v0.0.0-20220910002029-abceb7e1c41e</td><td>library</td><td>pkg:golang/github.com/xo/terminfo@v0.0.0-20220910002029-abceb7e1c41e</td><td>[]</td></tr>
+      
+      <tr><td>github.com/youmark/pkcs8</td><td>v0.0.0-20240726163527-a2c0da244d78</td><td>library</td><td>pkg:golang/github.com/youmark/pkcs8@v0.0.0-20240726163527-a2c0da244d78</td><td>[]</td></tr>
+      
+      <tr><td>github.com/zclconf/go-cty</td><td>v1.19.0</td><td>library</td><td>pkg:golang/github.com/zclconf/go-cty@v1.19.0</td><td>[]</td></tr>
+      
+      <tr><td>github.com/zyedidia/generic</td><td>v1.2.2-0.20230320175451-4410d2372cb1</td><td>library</td><td>pkg:golang/github.com/zyedidia/generic@v1.2.2-0.20230320175451-4410d2372cb1</td><td>[]</td></tr>
+      
+      <tr><td>go.opentelemetry.io/auto/sdk</td><td>v1.2.1</td><td>library</td><td>pkg:golang/go.opentelemetry.io/auto/sdk@v1.2.1</td><td>[]</td></tr>
+      
+      <tr><td>go.opentelemetry.io/contrib/detectors/gcp</td><td>v1.44.0</td><td>library</td><td>pkg:golang/go.opentelemetry.io/contrib/detectors/gcp@v1.44.0</td><td>[]</td></tr>
+      
+      <tr><td>go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc</td><td>v0.71.0</td><td>library</td><td>pkg:golang/go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc@v0.71.0</td><td>[]</td></tr>
+      
+      <tr><td>go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp</td><td>v0.71.0</td><td>library</td><td>pkg:golang/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp@v0.71.0</td><td>[]</td></tr>
+      
+      <tr><td>go.opentelemetry.io/otel</td><td>v1.46.0</td><td>library</td><td>pkg:golang/go.opentelemetry.io/otel@v1.46.0</td><td>[]</td></tr>
+      
+      <tr><td>go.opentelemetry.io/otel/metric</td><td>v1.46.0</td><td>library</td><td>pkg:golang/go.opentelemetry.io/otel/metric@v1.46.0</td><td>[]</td></tr>
+      
+      <tr><td>go.opentelemetry.io/otel/sdk</td><td>v1.46.0</td><td>library</td><td>pkg:golang/go.opentelemetry.io/otel/sdk@v1.46.0</td><td>[]</td></tr>
+      
+      <tr><td>go.opentelemetry.io/otel/sdk/metric</td><td>v1.46.0</td><td>library</td><td>pkg:golang/go.opentelemetry.io/otel/sdk/metric@v1.46.0</td><td>[]</td></tr>
+      
+      <tr><td>go.opentelemetry.io/otel/trace</td><td>v1.46.0</td><td>library</td><td>pkg:golang/go.opentelemetry.io/otel/trace@v1.46.0</td><td>[]</td></tr>
+      
+      <tr><td>go.podman.io/image/v5</td><td>v5.41.2</td><td>library</td><td>pkg:golang/go.podman.io/image/v5@v5.41.2</td><td>[]</td></tr>
+      
+      <tr><td>go.podman.io/storage</td><td>v1.64.1</td><td>library</td><td>pkg:golang/go.podman.io/storage@v1.64.1</td><td>[]</td></tr>
+      
+      <tr><td>go.yaml.in/yaml/v3</td><td>v3.0.5</td><td>library</td><td>pkg:golang/go.yaml.in/yaml/v3@v3.0.5</td><td>[]</td></tr>
+      
+      <tr><td>go4.org</td><td>v0.0.0-20230225012048-214862532bf5</td><td>library</td><td>pkg:golang/go4.org@v0.0.0-20230225012048-214862532bf5</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/crypto</td><td>v0.57.0</td><td>library</td><td>pkg:golang/golang.org/x/crypto@v0.57.0</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/exp</td><td>v0.0.0-20260410095643-746e56fc9e2f</td><td>library</td><td>pkg:golang/golang.org/x/exp@v0.0.0-20260410095643-746e56fc9e2f</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/mod</td><td>v0.41.0</td><td>library</td><td>pkg:golang/golang.org/x/mod@v0.41.0</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/net</td><td>v0.59.0</td><td>library</td><td>pkg:golang/golang.org/x/net@v0.59.0</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/oauth2</td><td>v0.36.0</td><td>library</td><td>pkg:golang/golang.org/x/oauth2@v0.36.0</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/sync</td><td>v0.23.0</td><td>library</td><td>pkg:golang/golang.org/x/sync@v0.23.0</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/sys</td><td>v0.48.0</td><td>library</td><td>pkg:golang/golang.org/x/sys@v0.48.0</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/term</td><td>v0.46.0</td><td>library</td><td>pkg:golang/golang.org/x/term@v0.46.0</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/text</td><td>v0.42.0</td><td>library</td><td>pkg:golang/golang.org/x/text@v0.42.0</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/time</td><td>v0.16.0</td><td>library</td><td>pkg:golang/golang.org/x/time@v0.16.0</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/tools</td><td>v0.50.0</td><td>library</td><td>pkg:golang/golang.org/x/tools@v0.50.0</td><td>[]</td></tr>
+      
+      <tr><td>golang.org/x/xerrors</td><td>v0.0.0-20231012003039-104605ab7028</td><td>library</td><td>pkg:golang/golang.org/x/xerrors@v0.0.0-20231012003039-104605ab7028</td><td>[]</td></tr>
+      
+      <tr><td>google.golang.org/api</td><td>v0.294.0</td><td>library</td><td>pkg:golang/google.golang.org/api@v0.294.0</td><td>[]</td></tr>
+      
+      <tr><td>google.golang.org/genproto</td><td>v0.0.0-20260715232425-e75dac1f907d</td><td>library</td><td>pkg:golang/google.golang.org/genproto@v0.0.0-20260715232425-e75dac1f907d</td><td>[]</td></tr>
+      
+      <tr><td>google.golang.org/genproto/googleapis/api</td><td>v0.0.0-20260825221802-da73d73af1c5</td><td>library</td><td>pkg:golang/google.golang.org/genproto/googleapis/api@v0.0.0-20260825221802-da73d73af1c5</td><td>[]</td></tr>
+      
+      <tr><td>google.golang.org/genproto/googleapis/rpc</td><td>v0.0.0-20260825221802-da73d73af1c5</td><td>library</td><td>pkg:golang/google.golang.org/genproto/googleapis/rpc@v0.0.0-20260825221802-da73d73af1c5</td><td>[]</td></tr>
+      
+      <tr><td>google.golang.org/grpc</td><td>v1.83.2</td><td>library</td><td>pkg:golang/google.golang.org/grpc@v1.83.2</td><td>[]</td></tr>
+      
+      <tr><td>google.golang.org/protobuf</td><td>v1.36.12</td><td>library</td><td>pkg:golang/google.golang.org/protobuf@v1.36.12</td><td>[]</td></tr>
+      
+      <tr><td>gopkg.in/warnings.v0</td><td>v0.1.2</td><td>library</td><td>pkg:golang/gopkg.in/warnings.v0@v0.1.2</td><td>[]</td></tr>
+      
+      <tr><td>howett.net/plist</td><td>v1.0.1</td><td>library</td><td>pkg:golang/howett.net/plist@v1.0.1</td><td>[]</td></tr>
+      
+      <tr><td>modernc.org/libc</td><td>v1.75.7</td><td>library</td><td>pkg:golang/modernc.org/libc@v1.75.7</td><td>[]</td></tr>
+      
+      <tr><td>modernc.org/mathutil</td><td>v1.7.1</td><td>library</td><td>pkg:golang/modernc.org/mathutil@v1.7.1</td><td>[]</td></tr>
+      
+      <tr><td>modernc.org/memory</td><td>v1.12.1</td><td>library</td><td>pkg:golang/modernc.org/memory@v1.12.1</td><td>[]</td></tr>
+      
+      <tr><td>modernc.org/sqlite</td><td>v1.59.0</td><td>library</td><td>pkg:golang/modernc.org/sqlite@v1.59.0</td><td>[]</td></tr>
+      
+      <tr><td>stdlib</td><td>go1.26.8</td><td>library</td><td>pkg:golang/stdlib@1.26.8</td><td>[&#39;BSD-3-Clause&#39;]</td></tr>
+      
+      <tr><td>/syft</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="scorecarddev">
+      <summary>
+        <span>scorecarddev</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>scorecarddev</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>source_repo</th><td>https://github.com/anchore/syft</td></tr>
+        
+        <tr><th>scorecard_available</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>score</th><td>8.6</td></tr>
+        
+        <tr><th>checks</th><td><table>
+    <thead><tr><th>name</th><th>score</th><th>reason</th></tr></thead>
+    <tbody>
+      
+      <tr><td>Security-Policy</td><td>10</td><td>security policy file detected</td></tr>
+      
+      <tr><td>Code-Review</td><td>9</td><td>Found 15/16 approved changesets -- score normalized to 9</td></tr>
+      
+      <tr><td>Maintained</td><td>10</td><td>30 commit(s) and 0 issue activity found in the last 90 days -- score normalized to 10</td></tr>
+      
+      <tr><td>Packaging</td><td>-1</td><td>packaging workflow not detected</td></tr>
+      
+      <tr><td>Dangerous-Workflow</td><td>10</td><td>no dangerous workflow patterns detected</td></tr>
+      
+      <tr><td>Token-Permissions</td><td>10</td><td>GitHub workflow tokens follow principle of least privilege</td></tr>
+      
+      <tr><td>Binary-Artifacts</td><td>10</td><td>no binaries found in the repo</td></tr>
+      
+      <tr><td>CII-Best-Practices</td><td>0</td><td>no effort to earn an OpenSSF best practices badge detected</td></tr>
+      
+      <tr><td>Fuzzing</td><td>10</td><td>project is fuzzed</td></tr>
+      
+      <tr><td>License</td><td>10</td><td>license file detected</td></tr>
+      
+      <tr><td>Branch-Protection</td><td>4</td><td>branch protection is not maximal on development and all release branches</td></tr>
+      
+      <tr><td>Signed-Releases</td><td>8</td><td>5 out of the last 5 releases have a total of 5 signed artifacts.</td></tr>
+      
+      <tr><td>Pinned-Dependencies</td><td>6</td><td>dependency not pinned by hash detected -- score normalized to 6</td></tr>
+      
+      <tr><td>SAST</td><td>10</td><td>SAST tool is run on all commits</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>source</th><td><table>
+      <tbody>
+        
+        <tr><th>fetched_at</th><td>2026-10-19T11:01:09.803027+00:00</td></tr>
+        
+        <tr><th>built_at</th><td>2026-10-12</td></tr>
+        
+        <tr><th>version</th><td>v5.6.0</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="size">
+      <summary>
+        <span>size</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>size</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>tag</th><td>sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</td></tr>
+        
+        <tr><th>multi_arch</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>total_compressed_bytes</th><td>31215656</td></tr>
+        
+        <tr><th>total_compressed_human</th><td>29.8 MB</td></tr>
+        
+        <tr><th>layer_count</th><td>3</td></tr>
+        
+        <tr><th>config_size_bytes</th><td>0</td></tr>
+        
+        <tr><th>layers</th><td><em>none</em></td></tr>
+        
+        <tr><th>platforms</th><td><table>
+    <thead><tr><th>platform</th><th>compressed_bytes</th><th>compressed_human</th><th>layer_count</th></tr></thead>
+    <tbody>
+      
+      <tr><td>linux/amd64</td><td>31215656</td><td>29.8 MB</td><td>3</td></tr>
+      
+      <tr><td>linux/arm64</td><td>28512371</td><td>27.2 MB</td><td>3</td></tr>
+      
+      <tr><td>linux/ppc64le</td><td>28500534</td><td>27.2 MB</td><td>3</td></tr>
+      
+      <tr><td>linux/riscv64</td><td>29613743</td><td>28.2 MB</td><td>3</td></tr>
+      
+      <tr><td>linux/s390x</td><td>30181169</td><td>28.8 MB</td><td>3</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="versioning">
+      <summary>
+        <span>versioning</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>versioning</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>total_tags</th><td>1641</td></tr>
+        
+        <tr><th>dominant_pattern</th><td>semver-variant</td></tr>
+        
+        <tr><th>semver_compliant_percentage</th><td>96.5</td></tr>
+        
+        <tr><th>patterns</th><td><table>
+    <thead><tr><th>pattern</th><th>count</th><th>percentage</th><th>examples</th></tr></thead>
+    <tbody>
+      
+      <tr><td>named</td><td>58</td><td>3.5</td><td>[&#39;artifacthub.io&#39;, &#39;debug&#39;, &#39;debug-arm64v8&#39;, &#39;debug-nonroot&#39;, &#39;debug-ppc64le&#39;, &#39;debug-s390x&#39;, &#39;latest&#39;, &#39;nonroot&#39;, &#39;v0-amd64&#39;, &#39;v0-arm64v8&#39;]</td></tr>
+      
+      <tr><td>numeric</td><td>15</td><td>0.9</td><td>[&#39;0&#39;, &#39;0.14&#39;, &#39;v0&#39;, &#39;v0.15&#39;, &#39;v0.16&#39;, &#39;v0.17&#39;, &#39;v0.18&#39;, &#39;v0.19&#39;, &#39;v0.20&#39;, &#39;v0.21&#39;]</td></tr>
+      
+      <tr><td>semver</td><td>215</td><td>13.1</td><td>[&#39;0.14.0&#39;, &#39;v0.100.0&#39;, &#39;v0.101.0&#39;, &#39;v0.101.1&#39;, &#39;v0.102.0&#39;, &#39;v0.103.1&#39;, &#39;v0.104.0&#39;, &#39;v0.105.0&#39;, &#39;v0.105.1&#39;, &#39;v0.15.1&#39;]</td></tr>
+      
+      <tr><td>semver-variant</td><td>1353</td><td>82.4</td><td>[&#39;v0.100.0-arm64v8&#39;, &#39;v0.100.0-debug&#39;, &#39;v0.100.0-debug-arm64v8&#39;, &#39;v0.100.0-debug-ppc64le&#39;, &#39;v0.100.0-debug-s390x&#39;, &#39;v0.100.0-ppc64le&#39;, &#39;v0.100.0-s390x&#39;, &#39;v0.101.0-arm64v8&#39;, &#39;v0.101.0-debug&#39;, &#39;v0.101.0-debug-arm64v8&#39;]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>variants</th><td><table>
+    <thead><tr><th>name</th><th>count</th><th>percentage</th><th>examples</th></tr></thead>
+    <tbody>
+      
+      <tr><td>debug</td><td>631</td><td>38.5</td><td>[&#39;debug&#39;, &#39;debug-arm64v8&#39;, &#39;debug-nonroot&#39;, &#39;debug-ppc64le&#39;, &#39;debug-s390x&#39;, &#39;v0.100.0-debug&#39;, &#39;v0.100.0-debug-arm64v8&#39;, &#39;v0.100.0-debug-ppc64le&#39;, &#39;v0.100.0-debug-s390x&#39;, &#39;v0.101.0-debug&#39;]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>aliases</th><td><ul><li>0</li><li>0.14</li><li>0.14.0</li><li>artifacthub.io</li><li>debug</li><li>debug-arm64v8</li><li>debug-nonroot</li><li>debug-ppc64le</li><li>debug-s390x</li><li>latest</li><li>nonroot</li><li>v0</li><li>v0-amd64</li><li>v0-arm64v8</li><li>v0.100.0</li><li>v0.100.0-arm64v8</li><li>v0.100.0-debug</li><li>v0.100.0-debug-arm64v8</li><li>v0.100.0-debug-ppc64le</li><li>v0.100.0-debug-s390x</li><li>v0.100.0-ppc64le</li><li>v0.100.0-s390x</li><li>v0.101.0</li><li>v0.101.0-arm64v8</li><li>v0.101.0-debug</li><li>v0.101.0-debug-arm64v8</li><li>v0.101.0-debug-ppc64le</li><li>v0.101.0-debug-s390x</li><li>v0.101.0-ppc64le</li><li>v0.101.0-s390x</li><li>v0.101.1</li><li>v0.101.1-arm64v8</li><li>v0.101.1-debug</li><li>v0.101.1-debug-arm64v8</li><li>v0.101.1-debug-ppc64le</li><li>v0.101.1-debug-s390x</li><li>v0.101.1-ppc64le</li><li>v0.101.1-s390x</li><li>v0.102.0</li><li>v0.102.0-arm64v8</li><li>v0.102.0-debug</li><li>v0.102.0-debug-arm64v8</li><li>v0.102.0-debug-ppc64le</li><li>v0.102.0-debug-s390x</li><li>v0.102.0-ppc64le</li><li>v0.102.0-s390x</li><li>v0.103.1</li><li>v0.103.1-arm64v8</li><li>v0.103.1-debug</li><li>v0.103.1-debug-arm64v8</li><li>v0.103.1-debug-ppc64le</li><li>v0.103.1-debug-s390x</li><li>v0.103.1-ppc64le</li><li>v0.103.1-s390x</li><li>v0.104.0</li><li>v0.104.0-arm64v8</li><li>v0.104.0-debug</li><li>v0.104.0-debug-arm64v8</li><li>v0.104.0-debug-ppc64le</li><li>v0.104.0-debug-s390x</li><li>v0.104.0-ppc64le</li><li>v0.104.0-s390x</li><li>v0.105.0</li><li>v0.105.0-arm64v8</li><li>v0.105.0-debug</li><li>v0.105.0-debug-arm64v8</li><li>v0.105.0-debug-ppc64le</li><li>v0.105.0-debug-s390x</li><li>v0.105.0-ppc64le</li><li>v0.105.0-s390x</li><li>v0.105.1</li><li>v0.105.1-arm64v8</li><li>v0.105.1-debug</li><li>v0.105.1-debug-arm64v8</li><li>v0.105.1-debug-ppc64le</li><li>v0.105.1-debug-s390x</li><li>v0.105.1-ppc64le</li><li>v0.105.1-s390x</li><li>v0.15</li><li>v0.15.1</li><li>v0.15.2</li><li>v0.16</li><li>v0.16.1</li><li>v0.17</li><li>v0.17.0</li><li>v0.17.1</li><li>v0.18</li><li>v0.18.0</li><li>v0.19</li><li>v0.19.0</li><li>v0.19.1</li><li>v0.20</li><li>v0.20.0</li><li>v0.21</li><li>v0.21.0</li><li>v0.23</li><li>v0.23.0</li><li>v0.24</li><li>v0.24.0</li><li>v0.24.1</li><li>v0.25</li><li>v0.25.0</li><li>v0.26</li><li>v0.26.0</li><li>v0.27</li><li>v0.27.0</li><li>v0.28-amd64</li><li>v0.28-arm64v8</li><li>v0.28.0</li><li>v0.28.0-amd64</li><li>v0.28.0-arm64v8</li><li>v0.29-amd64</li><li>v0.29-arm64v8</li><li>v0.29.0</li><li>v0.29.0-amd64</li><li>v0.29.0-arm64v8</li><li>v0.30-amd64</li><li>v0.30-arm64v8</li><li>v0.30.0</li><li>v0.30.0-amd64</li><li>v0.30.0-arm64v8</li><li>v0.30.1</li><li>v0.30.1-amd64</li><li>v0.30.1-arm64v8</li><li>v0.31-amd64</li><li>v0.31-arm64v8</li><li>v0.31.0</li><li>v0.31.0-amd64</li><li>v0.31.0-arm64v8</li><li>v0.32-amd64</li><li>v0.32-arm64v8</li><li>v0.32.0</li><li>v0.32.0-amd64</li><li>v0.32.0-arm64v8</li><li>v0.32.1</li><li>v0.32.1-amd64</li><li>v0.32.1-arm64v8</li><li>v0.32.2</li><li>v0.32.2-amd64</li><li>v0.32.2-arm64v8</li><li>v0.33-amd64</li><li>v0.33-arm64v8</li><li>v0.33.0</li><li>v0.33.0-amd64</li><li>v0.33.0-arm64v8</li><li>v0.34-amd64</li><li>v0.34-arm64v8</li><li>v0.34.0</li><li>v0.34.0-amd64</li><li>v0.34.0-arm64v8</li><li>v0.35-amd64</li><li>v0.35-arm64v8</li><li>v0.35.0</li><li>v0.35.0-amd64</li><li>v0.35.0-arm64v8</li><li>v0.35.1</li><li>v0.35.1-amd64</li><li>v0.35.1-arm64v8</li><li>v0.36-amd64</li><li>v0.36-arm64v8</li><li>v0.36.0</li><li>v0.36.0-amd64</li><li>v0.36.0-arm64v8</li><li>v0.37-amd64</li><li>v0.37-arm64v8</li><li>v0.37.10</li><li>v0.37.10-amd64</li><li>v0.37.10-arm64v8</li><li>v0.37.6</li><li>v0.37.6-amd64</li><li>v0.37.6-arm64v8</li><li>v0.37.7</li><li>v0.37.7-amd64</li><li>v0.37.7-arm64v8</li><li>v0.38-amd64</li><li>v0.38-arm64v8</li><li>v0.38.0</li><li>v0.38.0-amd64</li><li>v0.38.0-arm64v8</li><li>v0.39-amd64</li><li>v0.39-arm64v8</li><li>v0.39.3</li><li>v0.39.3-amd64</li><li>v0.39.3-arm64v8</li><li>v0.40-amd64</li><li>v0.40-arm64v8</li><li>v0.40.0</li><li>v0.40.0-amd64</li><li>v0.40.0-arm64v8</li><li>v0.40.1</li><li>v0.40.1-amd64</li><li>v0.40.1-arm64v8</li><li>v0.41-amd64</li><li>v0.41-arm64v8</li><li>v0.41.0</li><li>v0.41.0-amd64</li><li>v0.41.0-arm64v8</li><li>v0.41.1</li><li>v0.41.1-amd64</li><li>v0.41.1-arm64v8</li><li>v0.41.4</li><li>v0.41.4-amd64</li><li>v0.41.4-arm64v8</li><li>v0.41.5</li><li>v0.41.5-amd64</li><li>v0.41.5-arm64v8</li><li>v0.41.6</li><li>v0.41.6-amd64</li><li>v0.41.6-arm64v8</li><li>v0.42-amd64</li><li>v0.42-arm64v8</li><li>v0.42.0</li><li>v0.42.0-amd64</li><li>v0.42.0-arm64v8</li><li>v0.42.1</li><li>v0.42.1-amd64</li><li>v0.42.1-arm64v8</li><li>v0.42.2</li><li>v0.42.2-amd64</li><li>v0.42.2-arm64v8</li><li>v0.42.3</li><li>v0.42.3-amd64</li><li>v0.42.3-arm64v8</li><li>v0.42.4</li><li>v0.42.4-amd64</li><li>v0.42.4-arm64v8</li><li>v0.43-amd64</li><li>v0.43-arm64v8</li><li>v0.43.0</li><li>v0.43.0-amd64</li><li>v0.43.0-arm64v8</li><li>v0.43.1-amd64</li><li>v0.43.2</li><li>v0.43.2-amd64</li><li>v0.43.2-arm64v8</li><li>v0.44-amd64</li><li>v0.44-arm64v8</li><li>v0.44.0</li><li>v0.44.0-amd64</li><li>v0.44.0-arm64v8</li><li>v0.44.1</li><li>v0.44.1-amd64</li><li>v0.44.1-arm64v8</li><li>v0.45-amd64</li><li>v0.45-arm64v8</li><li>v0.45.0</li><li>v0.45.0-amd64</li><li>v0.45.0-arm64v8</li><li>v0.45.1</li><li>v0.45.1-amd64</li><li>v0.45.1-arm64v8</li><li>v0.46-amd64</li><li>v0.46-arm64v8</li><li>v0.46.0</li><li>v0.46.0-amd64</li><li>v0.46.0-arm64v8</li><li>v0.46.1</li><li>v0.46.1-amd64</li><li>v0.46.1-arm64v8</li><li>v0.46.2</li><li>v0.46.2-amd64</li><li>v0.46.2-arm64v8</li><li>v0.46.3</li><li>v0.46.3-amd64</li><li>v0.46.3-arm64v8</li><li>v0.47-amd64</li><li>v0.47-arm64v8</li><li>v0.47.0</li><li>v0.47.0-amd64</li><li>v0.47.0-arm64v8</li><li>v0.48-amd64</li><li>v0.48-arm64v8</li><li>v0.48.0</li><li>v0.48.0-amd64</li><li>v0.48.0-arm64v8</li><li>v0.48.1</li><li>v0.48.1-amd64</li><li>v0.48.1-arm64v8</li><li>v0.49-amd64</li><li>v0.49-arm64v8</li><li>v0.49.0</li><li>v0.49.0-amd64</li><li>v0.49.0-arm64v8</li><li>v0.50-amd64</li><li>v0.50-arm64v8</li><li>v0.50.0</li><li>v0.50.0-amd64</li><li>v0.50.0-arm64v8</li><li>v0.51-amd64</li><li>v0.51-arm64v8</li><li>v0.51.0</li><li>v0.51.0-amd64</li><li>v0.51.0-arm64v8</li><li>v0.52.0</li><li>v0.52.0-arm64v8</li><li>v0.52.0-debug</li><li>v0.52.0-debug-arm64v8</li><li>v0.52.0-ppc64le</li><li>v0.53.2</li><li>v0.53.2-arm64v8</li><li>v0.53.2-debug</li><li>v0.53.2-debug-arm64v8</li><li>v0.53.2-debug-ppc64le</li><li>v0.53.2-debug-s390x</li><li>v0.53.2-ppc64le</li><li>v0.53.2-s390x</li><li>v0.53.3</li><li>v0.53.3-arm64v8</li><li>v0.53.3-debug</li><li>v0.53.3-debug-arm64v8</li><li>v0.53.3-debug-ppc64le</li><li>v0.53.3-debug-s390x</li><li>v0.53.3-ppc64le</li><li>v0.53.3-s390x</li><li>v0.53.4</li><li>v0.53.4-arm64v8</li><li>v0.53.4-debug</li><li>v0.53.4-debug-arm64v8</li><li>v0.53.4-debug-ppc64le</li><li>v0.53.4-debug-s390x</li><li>v0.53.4-ppc64le</li><li>v0.53.4-s390x</li><li>v0.54.0</li><li>v0.54.0-arm64v8</li><li>v0.54.0-debug</li><li>v0.54.0-debug-arm64v8</li><li>v0.54.0-debug-ppc64le</li><li>v0.54.0-debug-s390x</li><li>v0.54.0-ppc64le</li><li>v0.54.0-s390x</li><li>v0.55.0</li><li>v0.55.0-arm64v8</li><li>v0.55.0-debug</li><li>v0.55.0-debug-arm64v8</li><li>v0.55.0-debug-ppc64le</li><li>v0.55.0-debug-s390x</li><li>v0.55.0-ppc64le</li><li>v0.55.0-s390x</li><li>v0.56.0</li><li>v0.56.0-arm64v8</li><li>v0.56.0-debug</li><li>v0.56.0-debug-arm64v8</li><li>v0.56.0-debug-ppc64le</li><li>v0.56.0-debug-s390x</li><li>v0.56.0-ppc64le</li><li>v0.56.0-s390x</li><li>v0.57.0</li><li>v0.57.0-arm64v8</li><li>v0.57.0-debug</li><li>v0.57.0-debug-arm64v8</li><li>v0.57.0-debug-ppc64le</li><li>v0.57.0-debug-s390x</li><li>v0.57.0-ppc64le</li><li>v0.57.0-s390x</li><li>v0.58.0</li><li>v0.58.0-arm64v8</li><li>v0.58.0-debug</li><li>v0.58.0-debug-arm64v8</li><li>v0.58.0-debug-ppc64le</li><li>v0.58.0-debug-s390x</li><li>v0.58.0-ppc64le</li><li>v0.58.0-s390x</li><li>v0.59.0</li><li>v0.59.0-arm64v8</li><li>v0.59.0-debug</li><li>v0.59.0-debug-arm64v8</li><li>v0.59.0-debug-ppc64le</li><li>v0.59.0-debug-s390x</li><li>v0.59.0-ppc64le</li><li>v0.59.0-s390x</li><li>v0.60.0</li><li>v0.60.0-arm64v8</li><li>v0.60.0-debug</li><li>v0.60.0-debug-arm64v8</li><li>v0.60.0-debug-ppc64le</li><li>v0.60.0-debug-s390x</li><li>v0.60.0-ppc64le</li><li>v0.60.0-s390x</li><li>v0.60.1</li><li>v0.60.1-arm64v8</li><li>v0.60.1-debug</li><li>v0.60.1-debug-arm64v8</li><li>v0.60.1-debug-ppc64le</li><li>v0.60.1-debug-s390x</li><li>v0.60.1-ppc64le</li><li>v0.60.1-s390x</li><li>v0.60.2</li><li>v0.60.2-arm64v8</li><li>v0.60.2-debug</li><li>v0.60.2-debug-arm64v8</li><li>v0.60.2-debug-ppc64le</li><li>v0.60.2-debug-s390x</li><li>v0.60.2-ppc64le</li><li>v0.60.2-s390x</li><li>v0.60.3</li><li>v0.60.3-arm64v8</li><li>v0.60.3-debug</li><li>v0.60.3-debug-arm64v8</li><li>v0.60.3-debug-ppc64le</li><li>v0.60.3-debug-s390x</li><li>v0.60.3-ppc64le</li><li>v0.60.3-s390x</li><li>v0.61.0</li><li>v0.61.0-arm64v8</li><li>v0.61.0-debug</li><li>v0.61.0-debug-arm64v8</li><li>v0.61.0-debug-ppc64le</li><li>v0.61.0-debug-s390x</li><li>v0.61.0-ppc64le</li><li>v0.61.0-s390x</li><li>v0.62.0</li><li>v0.62.0-arm64v8</li><li>v0.62.0-debug</li><li>v0.62.0-debug-arm64v8</li><li>v0.62.0-debug-ppc64le</li><li>v0.62.0-debug-s390x</li><li>v0.62.0-ppc64le</li><li>v0.62.0-s390x</li><li>v0.62.1</li><li>v0.62.1-arm64v8</li><li>v0.62.1-debug</li><li>v0.62.1-debug-arm64v8</li><li>v0.62.1-debug-ppc64le</li><li>v0.62.1-debug-s390x</li><li>v0.62.1-ppc64le</li><li>v0.62.1-s390x</li><li>v0.62.2</li><li>v0.62.2-arm64v8</li><li>v0.62.2-debug</li><li>v0.62.2-debug-arm64v8</li><li>v0.62.2-debug-ppc64le</li><li>v0.62.2-debug-s390x</li><li>v0.62.2-ppc64le</li><li>v0.62.2-s390x</li><li>v0.62.3</li><li>v0.62.3-arm64v8</li><li>v0.62.3-debug</li><li>v0.62.3-debug-arm64v8</li><li>v0.62.3-debug-ppc64le</li><li>v0.62.3-debug-s390x</li><li>v0.62.3-ppc64le</li><li>v0.62.3-s390x</li><li>v0.63.0</li><li>v0.63.0-arm64v8</li><li>v0.63.0-debug</li><li>v0.63.0-debug-arm64v8</li><li>v0.63.0-debug-ppc64le</li><li>v0.63.0-debug-s390x</li><li>v0.63.0-ppc64le</li><li>v0.63.0-s390x</li><li>v0.64.0</li><li>v0.64.0-arm64v8</li><li>v0.64.0-debug</li><li>v0.64.0-debug-arm64v8</li><li>v0.64.0-debug-ppc64le</li><li>v0.64.0-debug-s390x</li><li>v0.64.0-ppc64le</li><li>v0.64.0-s390x</li><li>v0.65.0</li><li>v0.65.0-arm64v8</li><li>v0.65.0-debug</li><li>v0.65.0-debug-arm64v8</li><li>v0.65.0-debug-ppc64le</li><li>v0.65.0-debug-s390x</li><li>v0.65.0-ppc64le</li><li>v0.65.0-s390x</li><li>v0.66.0</li><li>v0.66.0-arm64v8</li><li>v0.66.0-debug</li><li>v0.66.0-debug-arm64v8</li><li>v0.66.0-debug-ppc64le</li><li>v0.66.0-debug-s390x</li><li>v0.66.0-ppc64le</li><li>v0.66.0-s390x</li><li>v0.66.1</li><li>v0.66.1-arm64v8</li><li>v0.66.1-debug</li><li>v0.66.1-debug-arm64v8</li><li>v0.66.1-debug-ppc64le</li><li>v0.66.1-debug-s390x</li><li>v0.66.1-ppc64le</li><li>v0.66.1-s390x</li><li>v0.66.2</li><li>v0.66.2-arm64v8</li><li>v0.66.2-debug</li><li>v0.66.2-debug-arm64v8</li><li>v0.66.2-debug-ppc64le</li><li>v0.66.2-debug-s390x</li><li>v0.66.2-ppc64le</li><li>v0.66.2-s390x</li><li>v0.68.0</li><li>v0.68.0-arm64v8</li><li>v0.68.0-debug</li><li>v0.68.0-debug-arm64v8</li><li>v0.68.0-debug-ppc64le</li><li>v0.68.0-debug-s390x</li><li>v0.68.0-ppc64le</li><li>v0.68.0-s390x</li><li>v0.68.1</li><li>v0.68.1-arm64v8</li><li>v0.68.1-debug</li><li>v0.68.1-debug-arm64v8</li><li>v0.68.1-debug-ppc64le</li><li>v0.68.1-debug-s390x</li><li>v0.68.1-ppc64le</li><li>v0.68.1-s390x</li><li>v0.69.0</li><li>v0.69.0-arm64v8</li><li>v0.69.0-debug</li><li>v0.69.0-debug-arm64v8</li><li>v0.69.0-debug-ppc64le</li><li>v0.69.0-debug-s390x</li><li>v0.69.0-ppc64le</li><li>v0.69.0-s390x</li><li>v0.69.1</li><li>v0.69.1-arm64v8</li><li>v0.69.1-debug</li><li>v0.69.1-debug-arm64v8</li><li>v0.69.1-debug-ppc64le</li><li>v0.69.1-debug-s390x</li><li>v0.69.1-ppc64le</li><li>v0.69.1-s390x</li><li>v0.70.0</li><li>v0.70.0-arm64v8</li><li>v0.70.0-debug</li><li>v0.70.0-debug-arm64v8</li><li>v0.70.0-debug-ppc64le</li><li>v0.70.0-debug-s390x</li><li>v0.70.0-ppc64le</li><li>v0.70.0-s390x</li><li>v0.71.0</li><li>v0.71.0-arm64v8</li><li>v0.71.0-debug</li><li>v0.71.0-debug-arm64v8</li><li>v0.71.0-debug-ppc64le</li><li>v0.71.0-debug-s390x</li><li>v0.71.0-ppc64le</li><li>v0.71.0-s390x</li><li>v0.72.0</li><li>v0.72.0-arm64v8</li><li>v0.72.0-debug</li><li>v0.72.0-debug-arm64v8</li><li>v0.72.0-debug-ppc64le</li><li>v0.72.0-debug-s390x</li><li>v0.72.0-ppc64le</li><li>v0.72.0-s390x</li><li>v0.72.1</li><li>v0.72.1-arm64v8</li><li>v0.72.1-debug</li><li>v0.72.1-debug-arm64v8</li><li>v0.72.1-debug-ppc64le</li><li>v0.72.1-debug-s390x</li><li>v0.72.1-ppc64le</li><li>v0.72.1-s390x</li><li>v0.73.0</li><li>v0.73.0-arm64v8</li><li>v0.73.0-debug</li><li>v0.73.0-debug-arm64v8</li><li>v0.73.0-debug-ppc64le</li><li>v0.73.0-debug-s390x</li><li>v0.73.0-ppc64le</li><li>v0.73.0-s390x</li><li>v0.74.0</li><li>v0.74.0-arm64v8</li><li>v0.74.0-debug</li><li>v0.74.0-debug-arm64v8</li><li>v0.74.0-debug-ppc64le</li><li>v0.74.0-debug-s390x</li><li>v0.74.0-ppc64le</li><li>v0.74.0-s390x</li><li>v0.74.1</li><li>v0.74.1-arm64v8</li><li>v0.74.1-debug</li><li>v0.74.1-debug-arm64v8</li><li>v0.74.1-debug-ppc64le</li><li>v0.74.1-debug-s390x</li><li>v0.74.1-ppc64le</li><li>v0.74.1-s390x</li><li>v0.75.0</li><li>v0.75.0-arm64v8</li><li>v0.75.0-debug</li><li>v0.75.0-debug-arm64v8</li><li>v0.75.0-debug-ppc64le</li><li>v0.75.0-debug-s390x</li><li>v0.75.0-ppc64le</li><li>v0.75.0-s390x</li><li>v0.76.0</li><li>v0.76.0-arm64v8</li><li>v0.76.0-debug</li><li>v0.76.0-debug-arm64v8</li><li>v0.76.0-debug-ppc64le</li><li>v0.76.0-debug-s390x</li><li>v0.76.0-ppc64le</li><li>v0.76.0-s390x</li><li>v0.76.1</li><li>v0.76.1-arm64v8</li><li>v0.76.1-debug</li><li>v0.76.1-debug-arm64v8</li><li>v0.76.1-debug-ppc64le</li><li>v0.76.1-debug-s390x</li><li>v0.76.1-ppc64le</li><li>v0.76.1-s390x</li><li>v0.77.0</li><li>v0.77.0-arm64v8</li><li>v0.77.0-debug</li><li>v0.77.0-debug-arm64v8</li><li>v0.77.0-debug-ppc64le</li><li>v0.77.0-debug-s390x</li><li>v0.77.0-ppc64le</li><li>v0.77.0-s390x</li><li>v0.78.0</li><li>v0.78.0-arm64v8</li><li>v0.78.0-debug</li><li>v0.78.0-debug-arm64v8</li><li>v0.78.0-debug-ppc64le</li><li>v0.78.0-debug-s390x</li><li>v0.78.0-ppc64le</li><li>v0.78.0-s390x</li><li>v0.79.0</li><li>v0.79.0-arm64v8</li><li>v0.79.0-debug</li><li>v0.79.0-debug-arm64v8</li><li>v0.79.0-debug-ppc64le</li><li>v0.79.0-debug-s390x</li><li>v0.79.0-ppc64le</li><li>v0.79.0-s390x</li><li>v0.80.0</li><li>v0.80.0-arm64v8</li><li>v0.80.0-debug</li><li>v0.80.0-debug-arm64v8</li><li>v0.80.0-debug-ppc64le</li><li>v0.80.0-debug-s390x</li><li>v0.80.0-ppc64le</li><li>v0.80.0-s390x</li><li>v0.81.0</li><li>v0.81.0-arm64v8</li><li>v0.81.0-debug</li><li>v0.81.0-debug-arm64v8</li><li>v0.81.0-debug-ppc64le</li><li>v0.81.0-debug-s390x</li><li>v0.81.0-ppc64le</li><li>v0.81.0-s390x</li><li>v0.82.0</li><li>v0.82.0-arm64v8</li><li>v0.82.0-debug</li><li>v0.82.0-debug-arm64v8</li><li>v0.82.0-debug-ppc64le</li><li>v0.82.0-debug-s390x</li><li>v0.82.0-ppc64le</li><li>v0.82.0-s390x</li><li>v0.83.0</li><li>v0.83.0-arm64v8</li><li>v0.83.0-debug</li><li>v0.83.0-debug-arm64v8</li><li>v0.83.0-debug-ppc64le</li><li>v0.83.0-debug-s390x</li><li>v0.83.0-ppc64le</li><li>v0.83.0-s390x</li><li>v0.83.1</li><li>v0.83.1-arm64v8</li><li>v0.83.1-debug</li><li>v0.83.1-debug-arm64v8</li><li>v0.83.1-debug-ppc64le</li><li>v0.83.1-debug-s390x</li><li>v0.83.1-ppc64le</li><li>v0.83.1-s390x</li><li>v0.84.0</li><li>v0.84.0-arm64v8</li><li>v0.84.0-debug</li><li>v0.84.0-debug-arm64v8</li><li>v0.84.0-debug-ppc64le</li><li>v0.84.0-debug-s390x</li><li>v0.84.0-ppc64le</li><li>v0.84.0-s390x</li><li>v0.84.1</li><li>v0.84.1-arm64v8</li><li>v0.84.1-debug</li><li>v0.84.1-debug-arm64v8</li><li>v0.84.1-debug-ppc64le</li><li>v0.84.1-debug-s390x</li><li>v0.84.1-ppc64le</li><li>v0.84.1-s390x</li><li>v0.85.0</li><li>v0.85.0-arm64v8</li><li>v0.85.0-debug</li><li>v0.85.0-debug-arm64v8</li><li>v0.85.0-debug-ppc64le</li><li>v0.85.0-debug-s390x</li><li>v0.85.0-ppc64le</li><li>v0.85.0-s390x</li><li>v0.86.0</li><li>v0.86.0-arm64v8</li><li>v0.86.0-debug</li><li>v0.86.0-debug-arm64v8</li><li>v0.86.0-debug-ppc64le</li><li>v0.86.0-debug-s390x</li><li>v0.86.0-ppc64le</li><li>v0.86.0-s390x</li><li>v0.86.1</li><li>v0.86.1-arm64v8</li><li>v0.86.1-debug</li><li>v0.86.1-debug-arm64v8</li><li>v0.86.1-debug-ppc64le</li><li>v0.86.1-debug-s390x</li><li>v0.86.1-ppc64le</li><li>v0.86.1-s390x</li><li>v0.87.0</li><li>v0.87.0-arm64v8</li><li>v0.87.0-debug</li><li>v0.87.0-debug-arm64v8</li><li>v0.87.0-debug-ppc64le</li><li>v0.87.0-debug-s390x</li><li>v0.87.0-ppc64le</li><li>v0.87.0-s390x</li><li>v0.87.1</li><li>v0.87.1-arm64v8</li><li>v0.87.1-debug</li><li>v0.87.1-debug-arm64v8</li><li>v0.87.1-debug-ppc64le</li><li>v0.87.1-debug-s390x</li><li>v0.87.1-ppc64le</li><li>v0.87.1-s390x</li><li>v0.88.0</li><li>v0.88.0-arm64v8</li><li>v0.88.0-debug</li><li>v0.88.0-debug-arm64v8</li><li>v0.88.0-debug-ppc64le</li><li>v0.88.0-debug-s390x</li><li>v0.88.0-ppc64le</li><li>v0.88.0-s390x</li><li>v0.89.0</li><li>v0.89.0-arm64v8</li><li>v0.89.0-debug</li><li>v0.89.0-debug-arm64v8</li><li>v0.89.0-debug-ppc64le</li><li>v0.89.0-debug-s390x</li><li>v0.89.0-ppc64le</li><li>v0.89.0-s390x</li><li>v0.90.0</li><li>v0.90.0-arm64v8</li><li>v0.90.0-debug</li><li>v0.90.0-debug-arm64v8</li><li>v0.90.0-debug-ppc64le</li><li>v0.90.0-debug-s390x</li><li>v0.90.0-ppc64le</li><li>v0.90.0-s390x</li><li>v0.91.0</li><li>v0.91.0-arm64v8</li><li>v0.91.0-debug</li><li>v0.91.0-debug-arm64v8</li><li>v0.91.0-debug-ppc64le</li><li>v0.91.0-debug-s390x</li><li>v0.91.0-ppc64le</li><li>v0.91.0-s390x</li><li>v0.92.0</li><li>v0.92.0-arm64v8</li><li>v0.92.0-debug</li><li>v0.92.0-debug-arm64v8</li><li>v0.92.0-debug-ppc64le</li><li>v0.92.0-debug-s390x</li><li>v0.92.0-ppc64le</li><li>v0.92.0-s390x</li><li>v0.93.0</li><li>v0.93.0-arm64v8</li><li>v0.93.0-debug</li><li>v0.93.0-debug-arm64v8</li><li>v0.93.0-debug-ppc64le</li><li>v0.93.0-debug-s390x</li><li>v0.93.0-ppc64le</li><li>v0.93.0-s390x</li><li>v0.94.0</li><li>v0.94.0-arm64v8</li><li>v0.94.0-debug</li><li>v0.94.0-debug-arm64v8</li><li>v0.94.0-debug-ppc64le</li><li>v0.94.0-debug-s390x</li><li>v0.94.0-ppc64le</li><li>v0.94.0-s390x</li><li>v0.95.0</li><li>v0.95.0-arm64v8</li><li>v0.95.0-debug</li><li>v0.95.0-debug-arm64v8</li><li>v0.95.0-debug-ppc64le</li><li>v0.95.0-debug-s390x</li><li>v0.95.0-ppc64le</li><li>v0.95.0-s390x</li><li>v0.96.0</li><li>v0.96.0-arm64v8</li><li>v0.96.0-debug</li><li>v0.96.0-debug-arm64v8</li><li>v0.96.0-debug-ppc64le</li><li>v0.96.0-debug-s390x</li><li>v0.96.0-ppc64le</li><li>v0.96.0-s390x</li><li>v0.97.0</li><li>v0.97.0-arm64v8</li><li>v0.97.0-debug</li><li>v0.97.0-debug-arm64v8</li><li>v0.97.0-debug-ppc64le</li><li>v0.97.0-debug-s390x</li><li>v0.97.0-ppc64le</li><li>v0.97.0-s390x</li><li>v0.97.1</li><li>v0.97.1-arm64v8</li><li>v0.97.1-debug</li><li>v0.97.1-debug-arm64v8</li><li>v0.97.1-debug-ppc64le</li><li>v0.97.1-debug-s390x</li><li>v0.97.1-ppc64le</li><li>v0.97.1-s390x</li><li>v0.98.0</li><li>v0.98.0-arm64v8</li><li>v0.98.0-debug</li><li>v0.98.0-debug-arm64v8</li><li>v0.98.0-debug-ppc64le</li><li>v0.98.0-debug-s390x</li><li>v0.98.0-ppc64le</li><li>v0.98.0-s390x</li><li>v0.99.0</li><li>v0.99.0-arm64v8</li><li>v0.99.0-debug</li><li>v0.99.0-debug-arm64v8</li><li>v0.99.0-debug-ppc64le</li><li>v0.99.0-debug-s390x</li><li>v0.99.0-ppc64le</li><li>v0.99.0-s390x</li><li>v1.0.0</li><li>v1.0.0-arm64v8</li><li>v1.0.0-debug</li><li>v1.0.0-debug-arm64v8</li><li>v1.0.0-debug-ppc64le</li><li>v1.0.0-debug-s390x</li><li>v1.0.0-ppc64le</li><li>v1.0.0-s390x</li><li>v1.0.1</li><li>v1.0.1-arm64v8</li><li>v1.0.1-debug</li><li>v1.0.1-debug-arm64v8</li><li>v1.0.1-debug-ppc64le</li><li>v1.0.1-debug-s390x</li><li>v1.0.1-ppc64le</li><li>v1.0.1-s390x</li><li>v1.1.0</li><li>v1.1.0-arm64v8</li><li>v1.1.0-debug</li><li>v1.1.0-debug-arm64v8</li><li>v1.1.0-debug-ppc64le</li><li>v1.1.0-debug-s390x</li><li>v1.1.0-ppc64le</li><li>v1.1.0-s390x</li><li>v1.1.1</li><li>v1.1.1-arm64v8</li><li>v1.1.1-debug</li><li>v1.1.1-debug-arm64v8</li><li>v1.1.1-debug-ppc64le</li><li>v1.1.1-debug-s390x</li><li>v1.1.1-ppc64le</li><li>v1.1.1-s390x</li><li>v1.10.0</li><li>v1.10.0-arm64v8</li><li>v1.10.0-debug</li><li>v1.10.0-debug-arm64v8</li><li>v1.10.0-debug-ppc64le</li><li>v1.10.0-debug-s390x</li><li>v1.10.0-ppc64le</li><li>v1.10.0-s390x</li><li>v1.11.0</li><li>v1.11.0-arm64v8</li><li>v1.11.0-debug</li><li>v1.11.0-debug-arm64v8</li><li>v1.11.0-debug-ppc64le</li><li>v1.11.0-debug-s390x</li><li>v1.11.0-ppc64le</li><li>v1.11.0-s390x</li><li>v1.11.1</li><li>v1.11.1-arm64v8</li><li>v1.11.1-debug</li><li>v1.11.1-debug-arm64v8</li><li>v1.11.1-debug-ppc64le</li><li>v1.11.1-debug-s390x</li><li>v1.11.1-ppc64le</li><li>v1.11.1-s390x</li><li>v1.12.2</li><li>v1.12.2-arm64v8</li><li>v1.12.2-debug</li><li>v1.12.2-debug-arm64v8</li><li>v1.12.2-debug-ppc64le</li><li>v1.12.2-debug-s390x</li><li>v1.12.2-ppc64le</li><li>v1.12.2-s390x</li><li>v1.13.0</li><li>v1.13.0-arm64v8</li><li>v1.13.0-debug</li><li>v1.13.0-debug-arm64v8</li><li>v1.13.0-debug-ppc64le</li><li>v1.13.0-debug-s390x</li><li>v1.13.0-ppc64le</li><li>v1.13.0-s390x</li><li>v1.14.0</li><li>v1.14.0-arm64v8</li><li>v1.14.0-debug</li><li>v1.14.0-debug-arm64v8</li><li>v1.14.0-debug-ppc64le</li><li>v1.14.0-debug-s390x</li><li>v1.14.0-ppc64le</li><li>v1.14.0-s390x</li><li>v1.14.1</li><li>v1.14.1-arm64v8</li><li>v1.14.1-debug</li><li>v1.14.1-debug-arm64v8</li><li>v1.14.1-debug-ppc64le</li><li>v1.14.1-debug-s390x</li><li>v1.14.1-ppc64le</li><li>v1.14.1-s390x</li><li>v1.14.2</li><li>v1.14.2-arm64v8</li><li>v1.14.2-debug</li><li>v1.14.2-debug-arm64v8</li><li>v1.14.2-debug-ppc64le</li><li>v1.14.2-debug-s390x</li><li>v1.14.2-ppc64le</li><li>v1.14.2-s390x</li><li>v1.15.0</li><li>v1.15.0-arm64v8</li><li>v1.15.0-debug</li><li>v1.15.0-debug-arm64v8</li><li>v1.15.0-debug-ppc64le</li><li>v1.15.0-debug-s390x</li><li>v1.15.0-ppc64le</li><li>v1.15.0-s390x</li><li>v1.16.0</li><li>v1.16.0-arm64v8</li><li>v1.16.0-debug</li><li>v1.16.0-debug-arm64v8</li><li>v1.16.0-debug-ppc64le</li><li>v1.16.0-debug-s390x</li><li>v1.16.0-ppc64le</li><li>v1.16.0-s390x</li><li>v1.17.0</li><li>v1.17.0-arm64v8</li><li>v1.17.0-debug</li><li>v1.17.0-debug-arm64v8</li><li>v1.17.0-debug-ppc64le</li><li>v1.17.0-debug-s390x</li><li>v1.17.0-ppc64le</li><li>v1.17.0-s390x</li><li>v1.18.0</li><li>v1.18.0-arm64v8</li><li>v1.18.0-debug</li><li>v1.18.0-debug-arm64v8</li><li>v1.18.0-debug-ppc64le</li><li>v1.18.0-debug-s390x</li><li>v1.18.0-ppc64le</li><li>v1.18.0-s390x</li><li>v1.18.1</li><li>v1.18.1-arm64v8</li><li>v1.18.1-debug</li><li>v1.18.1-debug-arm64v8</li><li>v1.18.1-debug-ppc64le</li><li>v1.18.1-debug-s390x</li><li>v1.18.1-ppc64le</li><li>v1.18.1-s390x</li><li>v1.19.0</li><li>v1.19.0-arm64v8</li><li>v1.19.0-debug</li><li>v1.19.0-debug-arm64v8</li><li>v1.19.0-debug-ppc64le</li><li>v1.19.0-debug-s390x</li><li>v1.19.0-ppc64le</li><li>v1.19.0-s390x</li><li>v1.2.0</li><li>v1.2.0-arm64v8</li><li>v1.2.0-debug</li><li>v1.2.0-debug-arm64v8</li><li>v1.2.0-debug-ppc64le</li><li>v1.2.0-debug-s390x</li><li>v1.2.0-ppc64le</li><li>v1.2.0-s390x</li><li>v1.20.0</li><li>v1.20.0-arm64v8</li><li>v1.20.0-debug</li><li>v1.20.0-debug-arm64v8</li><li>v1.20.0-debug-ppc64le</li><li>v1.20.0-debug-s390x</li><li>v1.20.0-ppc64le</li><li>v1.20.0-s390x</li><li>v1.21.0</li><li>v1.21.0-arm64v8</li><li>v1.21.0-debug</li><li>v1.21.0-debug-arm64v8</li><li>v1.21.0-debug-ppc64le</li><li>v1.21.0-debug-s390x</li><li>v1.21.0-ppc64le</li><li>v1.21.0-s390x</li><li>v1.22.0</li><li>v1.22.0-arm64v8</li><li>v1.22.0-debug</li><li>v1.22.0-debug-arm64v8</li><li>v1.22.0-debug-ppc64le</li><li>v1.22.0-debug-s390x</li><li>v1.22.0-ppc64le</li><li>v1.22.0-s390x</li><li>v1.23.0</li><li>v1.23.0-arm64v8</li><li>v1.23.0-debug</li><li>v1.23.0-debug-arm64v8</li><li>v1.23.0-debug-ppc64le</li><li>v1.23.0-debug-s390x</li><li>v1.23.0-ppc64le</li><li>v1.23.0-s390x</li><li>v1.23.1</li><li>v1.23.1-arm64v8</li><li>v1.23.1-debug</li><li>v1.23.1-debug-arm64v8</li><li>v1.23.1-debug-ppc64le</li><li>v1.23.1-debug-s390x</li><li>v1.23.1-ppc64le</li><li>v1.23.1-s390x</li><li>v1.24.0</li><li>v1.24.0-arm64v8</li><li>v1.24.0-debug</li><li>v1.24.0-debug-arm64v8</li><li>v1.24.0-debug-ppc64le</li><li>v1.24.0-debug-s390x</li><li>v1.24.0-ppc64le</li><li>v1.24.0-s390x</li><li>v1.25.0</li><li>v1.25.0-arm64v8</li><li>v1.25.0-debug</li><li>v1.25.0-debug-arm64v8</li><li>v1.25.0-debug-ppc64le</li><li>v1.25.0-debug-s390x</li><li>v1.25.0-ppc64le</li><li>v1.25.0-s390x</li><li>v1.25.1</li><li>v1.25.1-arm64v8</li><li>v1.25.1-debug</li><li>v1.25.1-debug-arm64v8</li><li>v1.25.1-debug-ppc64le</li><li>v1.25.1-debug-s390x</li><li>v1.25.1-ppc64le</li><li>v1.25.1-s390x</li><li>v1.26.0</li><li>v1.26.0-arm64v8</li><li>v1.26.0-debug</li><li>v1.26.0-debug-arm64v8</li><li>v1.26.0-debug-ppc64le</li><li>v1.26.0-debug-s390x</li><li>v1.26.0-ppc64le</li><li>v1.26.0-s390x</li><li>v1.26.1</li><li>v1.26.1-arm64v8</li><li>v1.26.1-debug</li><li>v1.26.1-debug-arm64v8</li><li>v1.26.1-debug-ppc64le</li><li>v1.26.1-debug-s390x</li><li>v1.26.1-ppc64le</li><li>v1.26.1-s390x</li><li>v1.27.0</li><li>v1.27.0-amd64</li><li>v1.27.0-arm64v8</li><li>v1.27.0-debug</li><li>v1.27.0-debug-amd64</li><li>v1.27.0-debug-arm64v8</li><li>v1.27.0-debug-ppc64le</li><li>v1.27.0-debug-s390x</li><li>v1.27.0-ppc64le</li><li>v1.27.0-s390x</li><li>v1.27.1</li><li>v1.27.1-amd64</li><li>v1.27.1-arm64v8</li><li>v1.27.1-debug</li><li>v1.27.1-debug-amd64</li><li>v1.27.1-debug-arm64v8</li><li>v1.27.1-debug-ppc64le</li><li>v1.27.1-debug-s390x</li><li>v1.27.1-nonroot</li><li>v1.27.1-nonroot-amd64</li><li>v1.27.1-nonroot-arm64v8</li><li>v1.27.1-nonroot-ppc64le</li><li>v1.27.1-nonroot-s390x</li><li>v1.27.1-ppc64le</li><li>v1.27.1-s390x</li><li>v1.28.0</li><li>v1.28.0-amd64</li><li>v1.28.0-arm64v8</li><li>v1.28.0-debug</li><li>v1.28.0-debug-amd64</li><li>v1.28.0-debug-arm64v8</li><li>v1.28.0-debug-ppc64le</li><li>v1.28.0-debug-s390x</li><li>v1.28.0-nonroot</li><li>v1.28.0-nonroot-amd64</li><li>v1.28.0-nonroot-arm64v8</li><li>v1.28.0-nonroot-ppc64le</li><li>v1.28.0-nonroot-s390x</li><li>v1.28.0-ppc64le</li><li>v1.28.0-s390x</li><li>v1.29.0</li><li>v1.29.0-amd64</li><li>v1.29.0-arm64v8</li><li>v1.29.0-debug</li><li>v1.29.0-debug-amd64</li><li>v1.29.0-debug-arm64v8</li><li>v1.29.0-debug-ppc64le</li><li>v1.29.0-debug-s390x</li><li>v1.29.0-nonroot</li><li>v1.29.0-nonroot-amd64</li><li>v1.29.0-nonroot-arm64v8</li><li>v1.29.0-nonroot-ppc64le</li><li>v1.29.0-nonroot-s390x</li><li>v1.29.0-ppc64le</li><li>v1.29.0-s390x</li><li>v1.29.1</li><li>v1.29.1-amd64</li><li>v1.29.1-arm64v8</li><li>v1.29.1-debug</li><li>v1.29.1-debug-amd64</li><li>v1.29.1-debug-arm64v8</li><li>v1.29.1-debug-ppc64le</li><li>v1.29.1-debug-s390x</li><li>v1.29.1-nonroot</li><li>v1.29.1-nonroot-amd64</li><li>v1.29.1-nonroot-arm64v8</li><li>v1.29.1-nonroot-ppc64le</li><li>v1.29.1-nonroot-s390x</li><li>v1.29.1-ppc64le</li><li>v1.29.1-s390x</li><li>v1.3.0</li><li>v1.3.0-arm64v8</li><li>v1.3.0-debug</li><li>v1.3.0-debug-arm64v8</li><li>v1.3.0-debug-ppc64le</li><li>v1.3.0-debug-s390x</li><li>v1.3.0-ppc64le</li><li>v1.3.0-s390x</li><li>v1.30.0</li><li>v1.30.0-amd64</li><li>v1.30.0-arm64v8</li><li>v1.30.0-debug</li><li>v1.30.0-debug-amd64</li><li>v1.30.0-debug-arm64v8</li><li>v1.30.0-debug-ppc64le</li><li>v1.30.0-debug-s390x</li><li>v1.30.0-nonroot</li><li>v1.30.0-nonroot-amd64</li><li>v1.30.0-nonroot-arm64v8</li><li>v1.30.0-nonroot-ppc64le</li><li>v1.30.0-nonroot-s390x</li><li>v1.30.0-ppc64le</li><li>v1.30.0-s390x</li><li>v1.31.0</li><li>v1.31.0-amd64</li><li>v1.31.0-arm64v8</li><li>v1.31.0-debug</li><li>v1.31.0-debug-amd64</li><li>v1.31.0-debug-arm64v8</li><li>v1.31.0-debug-ppc64le</li><li>v1.31.0-debug-s390x</li><li>v1.31.0-nonroot</li><li>v1.31.0-nonroot-amd64</li><li>v1.31.0-nonroot-arm64v8</li><li>v1.31.0-nonroot-ppc64le</li><li>v1.31.0-nonroot-s390x</li><li>v1.31.0-ppc64le</li><li>v1.31.0-s390x</li><li>v1.32.0</li><li>v1.32.0-amd64</li><li>v1.32.0-arm64v8</li><li>v1.32.0-debug</li><li>v1.32.0-debug-amd64</li><li>v1.32.0-debug-arm64v8</li><li>v1.32.0-debug-ppc64le</li><li>v1.32.0-debug-s390x</li><li>v1.32.0-nonroot</li><li>v1.32.0-nonroot-amd64</li><li>v1.32.0-nonroot-arm64v8</li><li>v1.32.0-nonroot-ppc64le</li><li>v1.32.0-nonroot-s390x</li><li>v1.32.0-ppc64le</li><li>v1.32.0-s390x</li><li>v1.33.0</li><li>v1.33.0-amd64</li><li>v1.33.0-arm64v8</li><li>v1.33.0-debug</li><li>v1.33.0-debug-amd64</li><li>v1.33.0-debug-arm64v8</li><li>v1.33.0-debug-ppc64le</li><li>v1.33.0-debug-s390x</li><li>v1.33.0-nonroot</li><li>v1.33.0-nonroot-amd64</li><li>v1.33.0-nonroot-arm64v8</li><li>v1.33.0-nonroot-ppc64le</li><li>v1.33.0-nonroot-s390x</li><li>v1.33.0-ppc64le</li><li>v1.33.0-s390x</li><li>v1.34.1</li><li>v1.34.1-amd64</li><li>v1.34.1-arm64v8</li><li>v1.34.1-debug</li><li>v1.34.1-debug-amd64</li><li>v1.34.1-debug-arm64v8</li><li>v1.34.1-debug-ppc64le</li><li>v1.34.1-debug-s390x</li><li>v1.34.1-nonroot</li><li>v1.34.1-nonroot-amd64</li><li>v1.34.1-nonroot-arm64v8</li><li>v1.34.1-nonroot-ppc64le</li><li>v1.34.1-nonroot-s390x</li><li>v1.34.1-ppc64le</li><li>v1.34.1-s390x</li><li>v1.34.2</li><li>v1.34.2-amd64</li><li>v1.34.2-arm64v8</li><li>v1.34.2-debug</li><li>v1.34.2-debug-amd64</li><li>v1.34.2-debug-arm64v8</li><li>v1.34.2-debug-ppc64le</li><li>v1.34.2-debug-s390x</li><li>v1.34.2-nonroot</li><li>v1.34.2-nonroot-amd64</li><li>v1.34.2-nonroot-arm64v8</li><li>v1.34.2-nonroot-ppc64le</li><li>v1.34.2-nonroot-s390x</li><li>v1.34.2-ppc64le</li><li>v1.34.2-s390x</li><li>v1.36.0</li><li>v1.36.0-amd64</li><li>v1.36.0-arm64v8</li><li>v1.36.0-debug</li><li>v1.36.0-debug-amd64</li><li>v1.36.0-debug-arm64v8</li><li>v1.36.0-debug-ppc64le</li><li>v1.36.0-debug-s390x</li><li>v1.36.0-nonroot</li><li>v1.36.0-nonroot-amd64</li><li>v1.36.0-nonroot-arm64v8</li><li>v1.36.0-nonroot-ppc64le</li><li>v1.36.0-nonroot-s390x</li><li>v1.36.0-ppc64le</li><li>v1.36.0-s390x</li><li>v1.37.0</li><li>v1.37.0-amd64</li><li>v1.37.0-arm64v8</li><li>v1.37.0-debug</li><li>v1.37.0-debug-amd64</li><li>v1.37.0-debug-arm64v8</li><li>v1.37.0-debug-ppc64le</li><li>v1.37.0-debug-s390x</li><li>v1.37.0-nonroot</li><li>v1.37.0-nonroot-amd64</li><li>v1.37.0-nonroot-arm64v8</li><li>v1.37.0-nonroot-ppc64le</li><li>v1.37.0-nonroot-s390x</li><li>v1.37.0-ppc64le</li><li>v1.37.0-s390x</li><li>v1.38.0</li><li>v1.38.0-amd64</li><li>v1.38.0-arm64v8</li><li>v1.38.0-debug</li><li>v1.38.0-debug-amd64</li><li>v1.38.0-debug-arm64v8</li><li>v1.38.0-debug-ppc64le</li><li>v1.38.0-debug-s390x</li><li>v1.38.0-nonroot</li><li>v1.38.0-nonroot-amd64</li><li>v1.38.0-nonroot-arm64v8</li><li>v1.38.0-nonroot-ppc64le</li><li>v1.38.0-nonroot-s390x</li><li>v1.38.0-ppc64le</li><li>v1.38.0-s390x</li><li>v1.38.1</li><li>v1.38.1-amd64</li><li>v1.38.1-arm64v8</li><li>v1.38.1-debug</li><li>v1.38.1-debug-amd64</li><li>v1.38.1-debug-arm64v8</li><li>v1.38.1-debug-ppc64le</li><li>v1.38.1-debug-s390x</li><li>v1.38.1-nonroot</li><li>v1.38.1-nonroot-amd64</li><li>v1.38.1-nonroot-arm64v8</li><li>v1.38.1-nonroot-ppc64le</li><li>v1.38.1-nonroot-s390x</li><li>v1.38.1-ppc64le</li><li>v1.38.1-s390x</li><li>v1.38.2</li><li>v1.38.2-amd64</li><li>v1.38.2-arm64v8</li><li>v1.38.2-debug</li><li>v1.38.2-debug-amd64</li><li>v1.38.2-debug-arm64v8</li><li>v1.38.2-debug-ppc64le</li><li>v1.38.2-debug-s390x</li><li>v1.38.2-nonroot</li><li>v1.38.2-nonroot-amd64</li><li>v1.38.2-nonroot-arm64v8</li><li>v1.38.2-nonroot-ppc64le</li><li>v1.38.2-nonroot-s390x</li><li>v1.38.2-ppc64le</li><li>v1.38.2-s390x</li><li>v1.39.0</li><li>v1.39.0-amd64</li><li>v1.39.0-arm64v8</li><li>v1.39.0-debug</li><li>v1.39.0-debug-amd64</li><li>v1.39.0-debug-arm64v8</li><li>v1.39.0-debug-ppc64le</li><li>v1.39.0-debug-s390x</li><li>v1.39.0-nonroot</li><li>v1.39.0-nonroot-amd64</li><li>v1.39.0-nonroot-arm64v8</li><li>v1.39.0-nonroot-ppc64le</li><li>v1.39.0-nonroot-s390x</li><li>v1.39.0-ppc64le</li><li>v1.39.0-s390x</li><li>v1.4.0</li><li>v1.4.0-arm64v8</li><li>v1.4.0-debug</li><li>v1.4.0-debug-arm64v8</li><li>v1.4.0-debug-ppc64le</li><li>v1.4.0-debug-s390x</li><li>v1.4.0-ppc64le</li><li>v1.4.0-s390x</li><li>v1.4.1</li><li>v1.4.1-arm64v8</li><li>v1.4.1-debug</li><li>v1.4.1-debug-arm64v8</li><li>v1.4.1-debug-ppc64le</li><li>v1.4.1-debug-s390x</li><li>v1.4.1-ppc64le</li><li>v1.4.1-s390x</li><li>v1.40.0</li><li>v1.40.0-amd64</li><li>v1.40.0-arm64v8</li><li>v1.40.0-debug</li><li>v1.40.0-debug-amd64</li><li>v1.40.0-debug-arm64v8</li><li>v1.40.0-debug-ppc64le</li><li>v1.40.0-debug-s390x</li><li>v1.40.0-nonroot</li><li>v1.40.0-nonroot-amd64</li><li>v1.40.0-nonroot-arm64v8</li><li>v1.40.0-nonroot-ppc64le</li><li>v1.40.0-nonroot-s390x</li><li>v1.40.0-ppc64le</li><li>v1.40.0-s390x</li><li>v1.40.1</li><li>v1.40.1-amd64</li><li>v1.40.1-arm64v8</li><li>v1.40.1-debug</li><li>v1.40.1-debug-amd64</li><li>v1.40.1-debug-arm64v8</li><li>v1.40.1-debug-ppc64le</li><li>v1.40.1-debug-s390x</li><li>v1.40.1-nonroot</li><li>v1.40.1-nonroot-amd64</li><li>v1.40.1-nonroot-arm64v8</li><li>v1.40.1-nonroot-ppc64le</li><li>v1.40.1-nonroot-s390x</li><li>v1.40.1-ppc64le</li><li>v1.40.1-s390x</li><li>v1.41.0</li><li>v1.41.0-amd64</li><li>v1.41.0-arm64v8</li><li>v1.41.0-debug</li><li>v1.41.0-debug-amd64</li><li>v1.41.0-debug-arm64v8</li><li>v1.41.0-debug-ppc64le</li><li>v1.41.0-debug-s390x</li><li>v1.41.0-nonroot</li><li>v1.41.0-nonroot-amd64</li><li>v1.41.0-nonroot-arm64v8</li><li>v1.41.0-nonroot-ppc64le</li><li>v1.41.0-nonroot-s390x</li><li>v1.41.0-ppc64le</li><li>v1.41.0-s390x</li><li>v1.41.1</li><li>v1.41.1-amd64</li><li>v1.41.1-arm64v8</li><li>v1.41.1-debug</li><li>v1.41.1-debug-amd64</li><li>v1.41.1-debug-arm64v8</li><li>v1.41.1-debug-ppc64le</li><li>v1.41.1-debug-s390x</li><li>v1.41.1-nonroot</li><li>v1.41.1-nonroot-amd64</li><li>v1.41.1-nonroot-arm64v8</li><li>v1.41.1-nonroot-ppc64le</li><li>v1.41.1-nonroot-s390x</li><li>v1.41.1-ppc64le</li><li>v1.41.1-s390x</li><li>v1.41.2</li><li>v1.41.2-amd64</li><li>v1.41.2-arm64v8</li><li>v1.41.2-debug</li><li>v1.41.2-debug-amd64</li><li>v1.41.2-debug-arm64v8</li><li>v1.41.2-debug-ppc64le</li><li>v1.41.2-debug-s390x</li><li>v1.41.2-nonroot</li><li>v1.41.2-nonroot-amd64</li><li>v1.41.2-nonroot-arm64v8</li><li>v1.41.2-nonroot-ppc64le</li><li>v1.41.2-nonroot-s390x</li><li>v1.41.2-ppc64le</li><li>v1.41.2-s390x</li><li>v1.42.0</li><li>v1.42.0-amd64</li><li>v1.42.0-arm64v8</li><li>v1.42.0-debug</li><li>v1.42.0-debug-amd64</li><li>v1.42.0-debug-arm64v8</li><li>v1.42.0-debug-ppc64le</li><li>v1.42.0-debug-s390x</li><li>v1.42.0-nonroot</li><li>v1.42.0-nonroot-amd64</li><li>v1.42.0-nonroot-arm64v8</li><li>v1.42.0-nonroot-ppc64le</li><li>v1.42.0-nonroot-s390x</li><li>v1.42.0-ppc64le</li><li>v1.42.0-s390x</li><li>v1.42.1</li><li>v1.42.1-amd64</li><li>v1.42.1-arm64v8</li><li>v1.42.1-debug</li><li>v1.42.1-debug-amd64</li><li>v1.42.1-debug-arm64v8</li><li>v1.42.1-debug-ppc64le</li><li>v1.42.1-debug-s390x</li><li>v1.42.1-nonroot</li><li>v1.42.1-nonroot-amd64</li><li>v1.42.1-nonroot-arm64v8</li><li>v1.42.1-nonroot-ppc64le</li><li>v1.42.1-nonroot-s390x</li><li>v1.42.1-ppc64le</li><li>v1.42.1-s390x</li><li>v1.42.2</li><li>v1.42.2-amd64</li><li>v1.42.2-arm64v8</li><li>v1.42.2-debug</li><li>v1.42.2-debug-amd64</li><li>v1.42.2-debug-arm64v8</li><li>v1.42.2-debug-ppc64le</li><li>v1.42.2-debug-s390x</li><li>v1.42.2-nonroot</li><li>v1.42.2-nonroot-amd64</li><li>v1.42.2-nonroot-arm64v8</li><li>v1.42.2-nonroot-ppc64le</li><li>v1.42.2-nonroot-s390x</li><li>v1.42.2-ppc64le</li><li>v1.42.2-s390x</li><li>v1.42.3</li><li>v1.42.3-amd64</li><li>v1.42.3-arm64v8</li><li>v1.42.3-debug</li><li>v1.42.3-debug-amd64</li><li>v1.42.3-debug-arm64v8</li><li>v1.42.3-debug-ppc64le</li><li>v1.42.3-debug-s390x</li><li>v1.42.3-nonroot</li><li>v1.42.3-nonroot-amd64</li><li>v1.42.3-nonroot-arm64v8</li><li>v1.42.3-nonroot-ppc64le</li><li>v1.42.3-nonroot-s390x</li><li>v1.42.3-ppc64le</li><li>v1.42.3-s390x</li><li>v1.42.4</li><li>v1.42.4-amd64</li><li>v1.42.4-arm64v8</li><li>v1.42.4-debug</li><li>v1.42.4-debug-amd64</li><li>v1.42.4-debug-arm64v8</li><li>v1.42.4-debug-ppc64le</li><li>v1.42.4-debug-s390x</li><li>v1.42.4-nonroot</li><li>v1.42.4-nonroot-amd64</li><li>v1.42.4-nonroot-arm64v8</li><li>v1.42.4-nonroot-ppc64le</li><li>v1.42.4-nonroot-s390x</li><li>v1.42.4-ppc64le</li><li>v1.42.4-s390x</li><li>v1.43.0</li><li>v1.43.0-amd64</li><li>v1.43.0-arm64v8</li><li>v1.43.0-debug</li><li>v1.43.0-debug-amd64</li><li>v1.43.0-debug-arm64v8</li><li>v1.43.0-debug-ppc64le</li><li>v1.43.0-debug-s390x</li><li>v1.43.0-nonroot</li><li>v1.43.0-nonroot-amd64</li><li>v1.43.0-nonroot-arm64v8</li><li>v1.43.0-nonroot-ppc64le</li><li>v1.43.0-nonroot-s390x</li><li>v1.43.0-ppc64le</li><li>v1.43.0-s390x</li><li>v1.44.0</li><li>v1.44.0-amd64</li><li>v1.44.0-arm64v8</li><li>v1.44.0-debug</li><li>v1.44.0-debug-amd64</li><li>v1.44.0-debug-arm64v8</li><li>v1.44.0-debug-ppc64le</li><li>v1.44.0-debug-riscv64</li><li>v1.44.0-debug-s390x</li><li>v1.44.0-nonroot</li><li>v1.44.0-nonroot-amd64</li><li>v1.44.0-nonroot-arm64v8</li><li>v1.44.0-nonroot-ppc64le</li><li>v1.44.0-nonroot-riscv64</li><li>v1.44.0-nonroot-s390x</li><li>v1.44.0-ppc64le</li><li>v1.44.0-riscv64</li><li>v1.44.0-s390x</li><li>v1.45.0</li><li>v1.45.0-amd64</li><li>v1.45.0-arm64v8</li><li>v1.45.0-debug</li><li>v1.45.0-debug-amd64</li><li>v1.45.0-debug-arm64v8</li><li>v1.45.0-debug-ppc64le</li><li>v1.45.0-debug-riscv64</li><li>v1.45.0-debug-s390x</li><li>v1.45.0-nonroot</li><li>v1.45.0-nonroot-amd64</li><li>v1.45.0-nonroot-arm64v8</li><li>v1.45.0-nonroot-ppc64le</li><li>v1.45.0-nonroot-riscv64</li><li>v1.45.0-nonroot-s390x</li><li>v1.45.0-ppc64le</li><li>v1.45.0-riscv64</li><li>v1.45.0-s390x</li><li>v1.45.1</li><li>v1.45.1-amd64</li><li>v1.45.1-arm64v8</li><li>v1.45.1-debug</li><li>v1.45.1-debug-amd64</li><li>v1.45.1-debug-arm64v8</li><li>v1.45.1-debug-ppc64le</li><li>v1.45.1-debug-riscv64</li><li>v1.45.1-debug-s390x</li><li>v1.45.1-nonroot</li><li>v1.45.1-nonroot-amd64</li><li>v1.45.1-nonroot-arm64v8</li><li>v1.45.1-nonroot-ppc64le</li><li>v1.45.1-nonroot-riscv64</li><li>v1.45.1-nonroot-s390x</li><li>v1.45.1-ppc64le</li><li>v1.45.1-riscv64</li><li>v1.45.1-s390x</li><li>v1.46.0</li><li>v1.46.0-amd64</li><li>v1.46.0-arm64v8</li><li>v1.46.0-debug</li><li>v1.46.0-debug-amd64</li><li>v1.46.0-debug-arm64v8</li><li>v1.46.0-debug-ppc64le</li><li>v1.46.0-debug-riscv64</li><li>v1.46.0-debug-s390x</li><li>v1.46.0-nonroot</li><li>v1.46.0-nonroot-amd64</li><li>v1.46.0-nonroot-arm64v8</li><li>v1.46.0-nonroot-ppc64le</li><li>v1.46.0-nonroot-riscv64</li><li>v1.46.0-nonroot-s390x</li><li>v1.46.0-ppc64le</li><li>v1.46.0-riscv64</li><li>v1.46.0-s390x</li><li>v1.48.0</li><li>v1.48.0-debug</li><li>v1.48.0-debug-nonroot</li><li>v1.48.0-nonroot</li><li>v1.49.0</li><li>v1.49.0-debug</li><li>v1.49.0-debug-nonroot</li><li>v1.49.0-nonroot</li><li>v1.5.0</li><li>v1.5.0-arm64v8</li><li>v1.5.0-debug</li><li>v1.5.0-debug-arm64v8</li><li>v1.5.0-debug-ppc64le</li><li>v1.5.0-debug-s390x</li><li>v1.5.0-ppc64le</li><li>v1.5.0-s390x</li><li>v1.50.0</li><li>v1.50.0-debug</li><li>v1.50.0-debug-nonroot</li><li>v1.50.0-nonroot</li><li>v1.51.0</li><li>v1.51.0-debug</li><li>v1.51.0-debug-nonroot</li><li>v1.51.0-nonroot</li><li>v1.51.1</li><li>v1.51.1-debug</li><li>v1.51.1-debug-nonroot</li><li>v1.51.1-nonroot</li><li>v1.52.0</li><li>v1.52.0-debug</li><li>v1.52.0-debug-nonroot</li><li>v1.52.0-nonroot</li><li>v1.54.0</li><li>v1.54.0-debug</li><li>v1.54.0-debug-nonroot</li><li>v1.54.0-nonroot</li><li>v1.54.1</li><li>v1.54.1-debug</li><li>v1.54.1-debug-nonroot</li><li>v1.54.1-nonroot</li><li>v1.6.0</li><li>v1.6.0-arm64v8</li><li>v1.6.0-debug</li><li>v1.6.0-debug-arm64v8</li><li>v1.6.0-debug-ppc64le</li><li>v1.6.0-debug-s390x</li><li>v1.6.0-ppc64le</li><li>v1.6.0-s390x</li><li>v1.7.0</li><li>v1.7.0-arm64v8</li><li>v1.7.0-debug</li><li>v1.7.0-debug-arm64v8</li><li>v1.7.0-debug-ppc64le</li><li>v1.7.0-debug-s390x</li><li>v1.7.0-ppc64le</li><li>v1.7.0-s390x</li><li>v1.8.0</li><li>v1.8.0-arm64v8</li><li>v1.8.0-debug</li><li>v1.8.0-debug-arm64v8</li><li>v1.8.0-debug-ppc64le</li><li>v1.8.0-debug-s390x</li><li>v1.8.0-ppc64le</li><li>v1.8.0-s390x</li><li>v1.9.0</li><li>v1.9.0-arm64v8</li><li>v1.9.0-debug</li><li>v1.9.0-debug-arm64v8</li><li>v1.9.0-debug-ppc64le</li><li>v1.9.0-debug-s390x</li><li>v1.9.0-ppc64le</li><li>v1.9.0-s390x</li></ul></td></tr>
+        
+        <tr><th>release_lines</th><td><ul><li>v1.54.1</li></ul></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="provenance">
+      <summary>
+        <span>provenance</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>provenance</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>tag</th><td>sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</td></tr>
+        
+        <tr><th>has_provenance</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>has_cosign_signature</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>signatures</th><td><em>none</em></td></tr>
+        
+        <tr><th>verified_signers</th><td><em>none</em></td></tr>
+        
+        <tr><th>signatures_complete</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>signature_gaps</th><td><em>none</em></td></tr>
+        
+        <tr><th>source_tracked</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>indicators_count</th><td>4</td></tr>
+        
+        <tr><th>indicators</th><td><table>
+    <thead><tr><th>type</th><th>key</th><th>value</th></tr></thead>
+    <tbody>
+      
+      <tr><td>oci-annotation</td><td>org.opencontainers.image.source</td><td>https://github.com/anchore/syft</td></tr>
+      
+      <tr><td>oci-annotation</td><td>org.opencontainers.image.revision</td><td>b254e6d92f28c3868a755f62fb3ca8f26e9fee76</td></tr>
+      
+      <tr><td>oci-annotation</td><td>org.opencontainers.image.created</td><td>2026-10-06T15:32:19Z</td></tr>
+      
+      <tr><td>oci-annotation</td><td>org.opencontainers.image.vendor</td><td>Anchore, Inc.</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="oci">
+      <summary>
+        <span>oci</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>oci</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>tag</th><td>sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</td></tr>
+        
+        <tr><th>platforms</th><td><table>
+    <thead><tr><th>architecture</th><th>os</th><th>created</th><th>labels</th><th>user</th><th>env</th><th>exposed_ports</th><th>layers_count</th><th>size</th><th>digest</th></tr></thead>
+    <tbody>
+      
+      <tr><td>amd64</td><td>linux</td><td>2026-10-06T15:34:16.483430315Z</td><td>{&#39;io.artifacthub.package.license&#39;: &#39;Apache-2.0&#39;, &#39;io.artifacthub.package.logo-url&#39;: &#39;https://user-images.githubusercontent.com/5199289/136844524-1527b09f-c5cb-4aa9-be54-5aa92a6086c1.png&#39;, &#39;io.artifacthub.package.readme-url&#39;: &#39;https://raw.githubusercontent.com/anchore/syft/main/README.md&#39;, &#39;org.opencontainers.image.created&#39;: &#39;2026-10-06T15:32:19Z&#39;, &#39;org.opencontainers.image.description&#39;: &#39;CLI tool and library for generating a Software Bill of Materials from container images and filesystems&#39;, &#39;org.opencontainers.image.licenses&#39;: &#39;Apache-2.0&#39;, &#39;org.opencontainers.image.revision&#39;: &#39;b254e6d92f28c3868a755f62fb3ca8f26e9fee76&#39;, &#39;org.opencontainers.image.source&#39;: &#39;https://github.com/anchore/syft&#39;, &#39;org.opencontainers.image.title&#39;: &#39;syft&#39;, &#39;org.opencontainers.image.vendor&#39;: &#39;Anchore, Inc.&#39;, &#39;org.opencontainers.image.version&#39;: &#39;1.54.1&#39;}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>3</td><td>31215656</td><td>sha256:507b76f097cd0f4a0f998a346afe61f5776329913d6ab3c0bd678b6635356120</td></tr>
+      
+      <tr><td>arm64</td><td>linux</td><td>2026-10-06T15:34:16.860754357Z</td><td>{&#39;io.artifacthub.package.license&#39;: &#39;Apache-2.0&#39;, &#39;io.artifacthub.package.logo-url&#39;: &#39;https://user-images.githubusercontent.com/5199289/136844524-1527b09f-c5cb-4aa9-be54-5aa92a6086c1.png&#39;, &#39;io.artifacthub.package.readme-url&#39;: &#39;https://raw.githubusercontent.com/anchore/syft/main/README.md&#39;, &#39;org.opencontainers.image.created&#39;: &#39;2026-10-06T15:32:19Z&#39;, &#39;org.opencontainers.image.description&#39;: &#39;CLI tool and library for generating a Software Bill of Materials from container images and filesystems&#39;, &#39;org.opencontainers.image.licenses&#39;: &#39;Apache-2.0&#39;, &#39;org.opencontainers.image.revision&#39;: &#39;b254e6d92f28c3868a755f62fb3ca8f26e9fee76&#39;, &#39;org.opencontainers.image.source&#39;: &#39;https://github.com/anchore/syft&#39;, &#39;org.opencontainers.image.title&#39;: &#39;syft&#39;, &#39;org.opencontainers.image.vendor&#39;: &#39;Anchore, Inc.&#39;, &#39;org.opencontainers.image.version&#39;: &#39;1.54.1&#39;}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>3</td><td>28512371</td><td>sha256:9c493ce4965bb26995e0f30b5a7799cb4628c83c1733cfca4dcd4ac2e92cb1a6</td></tr>
+      
+      <tr><td>ppc64le</td><td>linux</td><td>2026-10-06T15:34:16.310590925Z</td><td>{&#39;io.artifacthub.package.license&#39;: &#39;Apache-2.0&#39;, &#39;io.artifacthub.package.logo-url&#39;: &#39;https://user-images.githubusercontent.com/5199289/136844524-1527b09f-c5cb-4aa9-be54-5aa92a6086c1.png&#39;, &#39;io.artifacthub.package.readme-url&#39;: &#39;https://raw.githubusercontent.com/anchore/syft/main/README.md&#39;, &#39;org.opencontainers.image.created&#39;: &#39;2026-10-06T15:32:19Z&#39;, &#39;org.opencontainers.image.description&#39;: &#39;CLI tool and library for generating a Software Bill of Materials from container images and filesystems&#39;, &#39;org.opencontainers.image.licenses&#39;: &#39;Apache-2.0&#39;, &#39;org.opencontainers.image.revision&#39;: &#39;b254e6d92f28c3868a755f62fb3ca8f26e9fee76&#39;, &#39;org.opencontainers.image.source&#39;: &#39;https://github.com/anchore/syft&#39;, &#39;org.opencontainers.image.title&#39;: &#39;syft&#39;, &#39;org.opencontainers.image.vendor&#39;: &#39;Anchore, Inc.&#39;, &#39;org.opencontainers.image.version&#39;: &#39;1.54.1&#39;}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>3</td><td>28500534</td><td>sha256:a5daf02d77de403423ec2f9bdac374155b702227dc5d5cd1139ad9d95648d58b</td></tr>
+      
+      <tr><td>riscv64</td><td>linux</td><td>2026-10-06T15:34:16.187406804Z</td><td>{&#39;io.artifacthub.package.license&#39;: &#39;Apache-2.0&#39;, &#39;io.artifacthub.package.logo-url&#39;: &#39;https://user-images.githubusercontent.com/5199289/136844524-1527b09f-c5cb-4aa9-be54-5aa92a6086c1.png&#39;, &#39;io.artifacthub.package.readme-url&#39;: &#39;https://raw.githubusercontent.com/anchore/syft/main/README.md&#39;, &#39;org.opencontainers.image.created&#39;: &#39;2026-10-06T15:32:19Z&#39;, &#39;org.opencontainers.image.description&#39;: &#39;CLI tool and library for generating a Software Bill of Materials from container images and filesystems&#39;, &#39;org.opencontainers.image.licenses&#39;: &#39;Apache-2.0&#39;, &#39;org.opencontainers.image.revision&#39;: &#39;b254e6d92f28c3868a755f62fb3ca8f26e9fee76&#39;, &#39;org.opencontainers.image.source&#39;: &#39;https://github.com/anchore/syft&#39;, &#39;org.opencontainers.image.title&#39;: &#39;syft&#39;, &#39;org.opencontainers.image.vendor&#39;: &#39;Anchore, Inc.&#39;, &#39;org.opencontainers.image.version&#39;: &#39;1.54.1&#39;}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>3</td><td>29613743</td><td>sha256:3c45ad7a24fb25501d8aa4237638959b95278dc243bfee452cc5e383d68a2beb</td></tr>
+      
+      <tr><td>s390x</td><td>linux</td><td>2026-10-06T15:34:16.85682563Z</td><td>{&#39;io.artifacthub.package.license&#39;: &#39;Apache-2.0&#39;, &#39;io.artifacthub.package.logo-url&#39;: &#39;https://user-images.githubusercontent.com/5199289/136844524-1527b09f-c5cb-4aa9-be54-5aa92a6086c1.png&#39;, &#39;io.artifacthub.package.readme-url&#39;: &#39;https://raw.githubusercontent.com/anchore/syft/main/README.md&#39;, &#39;org.opencontainers.image.created&#39;: &#39;2026-10-06T15:32:19Z&#39;, &#39;org.opencontainers.image.description&#39;: &#39;CLI tool and library for generating a Software Bill of Materials from container images and filesystems&#39;, &#39;org.opencontainers.image.licenses&#39;: &#39;Apache-2.0&#39;, &#39;org.opencontainers.image.revision&#39;: &#39;b254e6d92f28c3868a755f62fb3ca8f26e9fee76&#39;, &#39;org.opencontainers.image.source&#39;: &#39;https://github.com/anchore/syft&#39;, &#39;org.opencontainers.image.title&#39;: &#39;syft&#39;, &#39;org.opencontainers.image.vendor&#39;: &#39;Anchore, Inc.&#39;, &#39;org.opencontainers.image.version&#39;: &#39;1.54.1&#39;}</td><td></td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;]</td><td>[]</td><td>3</td><td>30181169</td><td>sha256:486cba6f6d61a20ca71b425b511ff5a3e47c940bf623b50f13a0e1f065f6e86a</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>platforms_supported</th><td><ul><li>linux/amd64</li><li>linux/arm64</li><li>linux/ppc64le</li><li>linux/riscv64</li><li>linux/s390x</li></ul></td></tr>
+        
+        <tr><th>tags</th><td><ul><li>0</li><li>0.14</li><li>0.14.0</li><li>artifacthub.io</li><li>debug</li><li>debug-arm64v8</li><li>debug-nonroot</li><li>debug-ppc64le</li><li>debug-s390x</li><li>latest</li><li>nonroot</li><li>v0</li><li>v0-amd64</li><li>v0-arm64v8</li><li>v0.100.0</li><li>v0.100.0-arm64v8</li><li>v0.100.0-debug</li><li>v0.100.0-debug-arm64v8</li><li>v0.100.0-debug-ppc64le</li><li>v0.100.0-debug-s390x</li><li>v0.100.0-ppc64le</li><li>v0.100.0-s390x</li><li>v0.101.0</li><li>v0.101.0-arm64v8</li><li>v0.101.0-debug</li><li>v0.101.0-debug-arm64v8</li><li>v0.101.0-debug-ppc64le</li><li>v0.101.0-debug-s390x</li><li>v0.101.0-ppc64le</li><li>v0.101.0-s390x</li><li>v0.101.1</li><li>v0.101.1-arm64v8</li><li>v0.101.1-debug</li><li>v0.101.1-debug-arm64v8</li><li>v0.101.1-debug-ppc64le</li><li>v0.101.1-debug-s390x</li><li>v0.101.1-ppc64le</li><li>v0.101.1-s390x</li><li>v0.102.0</li><li>v0.102.0-arm64v8</li><li>v0.102.0-debug</li><li>v0.102.0-debug-arm64v8</li><li>v0.102.0-debug-ppc64le</li><li>v0.102.0-debug-s390x</li><li>v0.102.0-ppc64le</li><li>v0.102.0-s390x</li><li>v0.103.1</li><li>v0.103.1-arm64v8</li><li>v0.103.1-debug</li><li>v0.103.1-debug-arm64v8</li><li>v0.103.1-debug-ppc64le</li><li>v0.103.1-debug-s390x</li><li>v0.103.1-ppc64le</li><li>v0.103.1-s390x</li><li>v0.104.0</li><li>v0.104.0-arm64v8</li><li>v0.104.0-debug</li><li>v0.104.0-debug-arm64v8</li><li>v0.104.0-debug-ppc64le</li><li>v0.104.0-debug-s390x</li><li>v0.104.0-ppc64le</li><li>v0.104.0-s390x</li><li>v0.105.0</li><li>v0.105.0-arm64v8</li><li>v0.105.0-debug</li><li>v0.105.0-debug-arm64v8</li><li>v0.105.0-debug-ppc64le</li><li>v0.105.0-debug-s390x</li><li>v0.105.0-ppc64le</li><li>v0.105.0-s390x</li><li>v0.105.1</li><li>v0.105.1-arm64v8</li><li>v0.105.1-debug</li><li>v0.105.1-debug-arm64v8</li><li>v0.105.1-debug-ppc64le</li><li>v0.105.1-debug-s390x</li><li>v0.105.1-ppc64le</li><li>v0.105.1-s390x</li><li>v0.15</li><li>v0.15.1</li><li>v0.15.2</li><li>v0.16</li><li>v0.16.1</li><li>v0.17</li><li>v0.17.0</li><li>v0.17.1</li><li>v0.18</li><li>v0.18.0</li><li>v0.19</li><li>v0.19.0</li><li>v0.19.1</li><li>v0.20</li><li>v0.20.0</li><li>v0.21</li><li>v0.21.0</li><li>v0.23</li><li>v0.23.0</li><li>v0.24</li><li>v0.24.0</li><li>v0.24.1</li><li>v0.25</li><li>v0.25.0</li><li>v0.26</li><li>v0.26.0</li><li>v0.27</li><li>v0.27.0</li><li>v0.28-amd64</li><li>v0.28-arm64v8</li><li>v0.28.0</li><li>v0.28.0-amd64</li><li>v0.28.0-arm64v8</li><li>v0.29-amd64</li><li>v0.29-arm64v8</li><li>v0.29.0</li><li>v0.29.0-amd64</li><li>v0.29.0-arm64v8</li><li>v0.30-amd64</li><li>v0.30-arm64v8</li><li>v0.30.0</li><li>v0.30.0-amd64</li><li>v0.30.0-arm64v8</li><li>v0.30.1</li><li>v0.30.1-amd64</li><li>v0.30.1-arm64v8</li><li>v0.31-amd64</li><li>v0.31-arm64v8</li><li>v0.31.0</li><li>v0.31.0-amd64</li><li>v0.31.0-arm64v8</li><li>v0.32-amd64</li><li>v0.32-arm64v8</li><li>v0.32.0</li><li>v0.32.0-amd64</li><li>v0.32.0-arm64v8</li><li>v0.32.1</li><li>v0.32.1-amd64</li><li>v0.32.1-arm64v8</li><li>v0.32.2</li><li>v0.32.2-amd64</li><li>v0.32.2-arm64v8</li><li>v0.33-amd64</li><li>v0.33-arm64v8</li><li>v0.33.0</li><li>v0.33.0-amd64</li><li>v0.33.0-arm64v8</li><li>v0.34-amd64</li><li>v0.34-arm64v8</li><li>v0.34.0</li><li>v0.34.0-amd64</li><li>v0.34.0-arm64v8</li><li>v0.35-amd64</li><li>v0.35-arm64v8</li><li>v0.35.0</li><li>v0.35.0-amd64</li><li>v0.35.0-arm64v8</li><li>v0.35.1</li><li>v0.35.1-amd64</li><li>v0.35.1-arm64v8</li><li>v0.36-amd64</li><li>v0.36-arm64v8</li><li>v0.36.0</li><li>v0.36.0-amd64</li><li>v0.36.0-arm64v8</li><li>v0.37-amd64</li><li>v0.37-arm64v8</li><li>v0.37.10</li><li>v0.37.10-amd64</li><li>v0.37.10-arm64v8</li><li>v0.37.6</li><li>v0.37.6-amd64</li><li>v0.37.6-arm64v8</li><li>v0.37.7</li><li>v0.37.7-amd64</li><li>v0.37.7-arm64v8</li><li>v0.38-amd64</li><li>v0.38-arm64v8</li><li>v0.38.0</li><li>v0.38.0-amd64</li><li>v0.38.0-arm64v8</li><li>v0.39-amd64</li><li>v0.39-arm64v8</li><li>v0.39.3</li><li>v0.39.3-amd64</li><li>v0.39.3-arm64v8</li><li>v0.40-amd64</li><li>v0.40-arm64v8</li><li>v0.40.0</li><li>v0.40.0-amd64</li><li>v0.40.0-arm64v8</li><li>v0.40.1</li><li>v0.40.1-amd64</li><li>v0.40.1-arm64v8</li><li>v0.41-amd64</li><li>v0.41-arm64v8</li><li>v0.41.0</li><li>v0.41.0-amd64</li><li>v0.41.0-arm64v8</li><li>v0.41.1</li><li>v0.41.1-amd64</li><li>v0.41.1-arm64v8</li><li>v0.41.4</li><li>v0.41.4-amd64</li><li>v0.41.4-arm64v8</li><li>v0.41.5</li><li>v0.41.5-amd64</li><li>v0.41.5-arm64v8</li><li>v0.41.6</li><li>v0.41.6-amd64</li><li>v0.41.6-arm64v8</li><li>v0.42-amd64</li><li>v0.42-arm64v8</li><li>v0.42.0</li><li>v0.42.0-amd64</li><li>v0.42.0-arm64v8</li><li>v0.42.1</li><li>v0.42.1-amd64</li><li>v0.42.1-arm64v8</li><li>v0.42.2</li><li>v0.42.2-amd64</li><li>v0.42.2-arm64v8</li><li>v0.42.3</li><li>v0.42.3-amd64</li><li>v0.42.3-arm64v8</li><li>v0.42.4</li><li>v0.42.4-amd64</li><li>v0.42.4-arm64v8</li><li>v0.43-amd64</li><li>v0.43-arm64v8</li><li>v0.43.0</li><li>v0.43.0-amd64</li><li>v0.43.0-arm64v8</li><li>v0.43.1-amd64</li><li>v0.43.2</li><li>v0.43.2-amd64</li><li>v0.43.2-arm64v8</li><li>v0.44-amd64</li><li>v0.44-arm64v8</li><li>v0.44.0</li><li>v0.44.0-amd64</li><li>v0.44.0-arm64v8</li><li>v0.44.1</li><li>v0.44.1-amd64</li><li>v0.44.1-arm64v8</li><li>v0.45-amd64</li><li>v0.45-arm64v8</li><li>v0.45.0</li><li>v0.45.0-amd64</li><li>v0.45.0-arm64v8</li><li>v0.45.1</li><li>v0.45.1-amd64</li><li>v0.45.1-arm64v8</li><li>v0.46-amd64</li><li>v0.46-arm64v8</li><li>v0.46.0</li><li>v0.46.0-amd64</li><li>v0.46.0-arm64v8</li><li>v0.46.1</li><li>v0.46.1-amd64</li><li>v0.46.1-arm64v8</li><li>v0.46.2</li><li>v0.46.2-amd64</li><li>v0.46.2-arm64v8</li><li>v0.46.3</li><li>v0.46.3-amd64</li><li>v0.46.3-arm64v8</li><li>v0.47-amd64</li><li>v0.47-arm64v8</li><li>v0.47.0</li><li>v0.47.0-amd64</li><li>v0.47.0-arm64v8</li><li>v0.48-amd64</li><li>v0.48-arm64v8</li><li>v0.48.0</li><li>v0.48.0-amd64</li><li>v0.48.0-arm64v8</li><li>v0.48.1</li><li>v0.48.1-amd64</li><li>v0.48.1-arm64v8</li><li>v0.49-amd64</li><li>v0.49-arm64v8</li><li>v0.49.0</li><li>v0.49.0-amd64</li><li>v0.49.0-arm64v8</li><li>v0.50-amd64</li><li>v0.50-arm64v8</li><li>v0.50.0</li><li>v0.50.0-amd64</li><li>v0.50.0-arm64v8</li><li>v0.51-amd64</li><li>v0.51-arm64v8</li><li>v0.51.0</li><li>v0.51.0-amd64</li><li>v0.51.0-arm64v8</li><li>v0.52.0</li><li>v0.52.0-arm64v8</li><li>v0.52.0-debug</li><li>v0.52.0-debug-arm64v8</li><li>v0.52.0-ppc64le</li><li>v0.53.2</li><li>v0.53.2-arm64v8</li><li>v0.53.2-debug</li><li>v0.53.2-debug-arm64v8</li><li>v0.53.2-debug-ppc64le</li><li>v0.53.2-debug-s390x</li><li>v0.53.2-ppc64le</li><li>v0.53.2-s390x</li><li>v0.53.3</li><li>v0.53.3-arm64v8</li><li>v0.53.3-debug</li><li>v0.53.3-debug-arm64v8</li><li>v0.53.3-debug-ppc64le</li><li>v0.53.3-debug-s390x</li><li>v0.53.3-ppc64le</li><li>v0.53.3-s390x</li><li>v0.53.4</li><li>v0.53.4-arm64v8</li><li>v0.53.4-debug</li><li>v0.53.4-debug-arm64v8</li><li>v0.53.4-debug-ppc64le</li><li>v0.53.4-debug-s390x</li><li>v0.53.4-ppc64le</li><li>v0.53.4-s390x</li><li>v0.54.0</li><li>v0.54.0-arm64v8</li><li>v0.54.0-debug</li><li>v0.54.0-debug-arm64v8</li><li>v0.54.0-debug-ppc64le</li><li>v0.54.0-debug-s390x</li><li>v0.54.0-ppc64le</li><li>v0.54.0-s390x</li><li>v0.55.0</li><li>v0.55.0-arm64v8</li><li>v0.55.0-debug</li><li>v0.55.0-debug-arm64v8</li><li>v0.55.0-debug-ppc64le</li><li>v0.55.0-debug-s390x</li><li>v0.55.0-ppc64le</li><li>v0.55.0-s390x</li><li>v0.56.0</li><li>v0.56.0-arm64v8</li><li>v0.56.0-debug</li><li>v0.56.0-debug-arm64v8</li><li>v0.56.0-debug-ppc64le</li><li>v0.56.0-debug-s390x</li><li>v0.56.0-ppc64le</li><li>v0.56.0-s390x</li><li>v0.57.0</li><li>v0.57.0-arm64v8</li><li>v0.57.0-debug</li><li>v0.57.0-debug-arm64v8</li><li>v0.57.0-debug-ppc64le</li><li>v0.57.0-debug-s390x</li><li>v0.57.0-ppc64le</li><li>v0.57.0-s390x</li><li>v0.58.0</li><li>v0.58.0-arm64v8</li><li>v0.58.0-debug</li><li>v0.58.0-debug-arm64v8</li><li>v0.58.0-debug-ppc64le</li><li>v0.58.0-debug-s390x</li><li>v0.58.0-ppc64le</li><li>v0.58.0-s390x</li><li>v0.59.0</li><li>v0.59.0-arm64v8</li><li>v0.59.0-debug</li><li>v0.59.0-debug-arm64v8</li><li>v0.59.0-debug-ppc64le</li><li>v0.59.0-debug-s390x</li><li>v0.59.0-ppc64le</li><li>v0.59.0-s390x</li><li>v0.60.0</li><li>v0.60.0-arm64v8</li><li>v0.60.0-debug</li><li>v0.60.0-debug-arm64v8</li><li>v0.60.0-debug-ppc64le</li><li>v0.60.0-debug-s390x</li><li>v0.60.0-ppc64le</li><li>v0.60.0-s390x</li><li>v0.60.1</li><li>v0.60.1-arm64v8</li><li>v0.60.1-debug</li><li>v0.60.1-debug-arm64v8</li><li>v0.60.1-debug-ppc64le</li><li>v0.60.1-debug-s390x</li><li>v0.60.1-ppc64le</li><li>v0.60.1-s390x</li><li>v0.60.2</li><li>v0.60.2-arm64v8</li><li>v0.60.2-debug</li><li>v0.60.2-debug-arm64v8</li><li>v0.60.2-debug-ppc64le</li><li>v0.60.2-debug-s390x</li><li>v0.60.2-ppc64le</li><li>v0.60.2-s390x</li><li>v0.60.3</li><li>v0.60.3-arm64v8</li><li>v0.60.3-debug</li><li>v0.60.3-debug-arm64v8</li><li>v0.60.3-debug-ppc64le</li><li>v0.60.3-debug-s390x</li><li>v0.60.3-ppc64le</li><li>v0.60.3-s390x</li><li>v0.61.0</li><li>v0.61.0-arm64v8</li><li>v0.61.0-debug</li><li>v0.61.0-debug-arm64v8</li><li>v0.61.0-debug-ppc64le</li><li>v0.61.0-debug-s390x</li><li>v0.61.0-ppc64le</li><li>v0.61.0-s390x</li><li>v0.62.0</li><li>v0.62.0-arm64v8</li><li>v0.62.0-debug</li><li>v0.62.0-debug-arm64v8</li><li>v0.62.0-debug-ppc64le</li><li>v0.62.0-debug-s390x</li><li>v0.62.0-ppc64le</li><li>v0.62.0-s390x</li><li>v0.62.1</li><li>v0.62.1-arm64v8</li><li>v0.62.1-debug</li><li>v0.62.1-debug-arm64v8</li><li>v0.62.1-debug-ppc64le</li><li>v0.62.1-debug-s390x</li><li>v0.62.1-ppc64le</li><li>v0.62.1-s390x</li><li>v0.62.2</li><li>v0.62.2-arm64v8</li><li>v0.62.2-debug</li><li>v0.62.2-debug-arm64v8</li><li>v0.62.2-debug-ppc64le</li><li>v0.62.2-debug-s390x</li><li>v0.62.2-ppc64le</li><li>v0.62.2-s390x</li><li>v0.62.3</li><li>v0.62.3-arm64v8</li><li>v0.62.3-debug</li><li>v0.62.3-debug-arm64v8</li><li>v0.62.3-debug-ppc64le</li><li>v0.62.3-debug-s390x</li><li>v0.62.3-ppc64le</li><li>v0.62.3-s390x</li><li>v0.63.0</li><li>v0.63.0-arm64v8</li><li>v0.63.0-debug</li><li>v0.63.0-debug-arm64v8</li><li>v0.63.0-debug-ppc64le</li><li>v0.63.0-debug-s390x</li><li>v0.63.0-ppc64le</li><li>v0.63.0-s390x</li><li>v0.64.0</li><li>v0.64.0-arm64v8</li><li>v0.64.0-debug</li><li>v0.64.0-debug-arm64v8</li><li>v0.64.0-debug-ppc64le</li><li>v0.64.0-debug-s390x</li><li>v0.64.0-ppc64le</li><li>v0.64.0-s390x</li><li>v0.65.0</li><li>v0.65.0-arm64v8</li><li>v0.65.0-debug</li><li>v0.65.0-debug-arm64v8</li><li>v0.65.0-debug-ppc64le</li><li>v0.65.0-debug-s390x</li><li>v0.65.0-ppc64le</li><li>v0.65.0-s390x</li><li>v0.66.0</li><li>v0.66.0-arm64v8</li><li>v0.66.0-debug</li><li>v0.66.0-debug-arm64v8</li><li>v0.66.0-debug-ppc64le</li><li>v0.66.0-debug-s390x</li><li>v0.66.0-ppc64le</li><li>v0.66.0-s390x</li><li>v0.66.1</li><li>v0.66.1-arm64v8</li><li>v0.66.1-debug</li><li>v0.66.1-debug-arm64v8</li><li>v0.66.1-debug-ppc64le</li><li>v0.66.1-debug-s390x</li><li>v0.66.1-ppc64le</li><li>v0.66.1-s390x</li><li>v0.66.2</li><li>v0.66.2-arm64v8</li><li>v0.66.2-debug</li><li>v0.66.2-debug-arm64v8</li><li>v0.66.2-debug-ppc64le</li><li>v0.66.2-debug-s390x</li><li>v0.66.2-ppc64le</li><li>v0.66.2-s390x</li><li>v0.68.0</li><li>v0.68.0-arm64v8</li><li>v0.68.0-debug</li><li>v0.68.0-debug-arm64v8</li><li>v0.68.0-debug-ppc64le</li><li>v0.68.0-debug-s390x</li><li>v0.68.0-ppc64le</li><li>v0.68.0-s390x</li><li>v0.68.1</li><li>v0.68.1-arm64v8</li><li>v0.68.1-debug</li><li>v0.68.1-debug-arm64v8</li><li>v0.68.1-debug-ppc64le</li><li>v0.68.1-debug-s390x</li><li>v0.68.1-ppc64le</li><li>v0.68.1-s390x</li><li>v0.69.0</li><li>v0.69.0-arm64v8</li><li>v0.69.0-debug</li><li>v0.69.0-debug-arm64v8</li><li>v0.69.0-debug-ppc64le</li><li>v0.69.0-debug-s390x</li><li>v0.69.0-ppc64le</li><li>v0.69.0-s390x</li><li>v0.69.1</li><li>v0.69.1-arm64v8</li><li>v0.69.1-debug</li><li>v0.69.1-debug-arm64v8</li><li>v0.69.1-debug-ppc64le</li><li>v0.69.1-debug-s390x</li><li>v0.69.1-ppc64le</li><li>v0.69.1-s390x</li><li>v0.70.0</li><li>v0.70.0-arm64v8</li><li>v0.70.0-debug</li><li>v0.70.0-debug-arm64v8</li><li>v0.70.0-debug-ppc64le</li><li>v0.70.0-debug-s390x</li><li>v0.70.0-ppc64le</li><li>v0.70.0-s390x</li><li>v0.71.0</li><li>v0.71.0-arm64v8</li><li>v0.71.0-debug</li><li>v0.71.0-debug-arm64v8</li><li>v0.71.0-debug-ppc64le</li><li>v0.71.0-debug-s390x</li><li>v0.71.0-ppc64le</li><li>v0.71.0-s390x</li><li>v0.72.0</li><li>v0.72.0-arm64v8</li><li>v0.72.0-debug</li><li>v0.72.0-debug-arm64v8</li><li>v0.72.0-debug-ppc64le</li><li>v0.72.0-debug-s390x</li><li>v0.72.0-ppc64le</li><li>v0.72.0-s390x</li><li>v0.72.1</li><li>v0.72.1-arm64v8</li><li>v0.72.1-debug</li><li>v0.72.1-debug-arm64v8</li><li>v0.72.1-debug-ppc64le</li><li>v0.72.1-debug-s390x</li><li>v0.72.1-ppc64le</li><li>v0.72.1-s390x</li><li>v0.73.0</li><li>v0.73.0-arm64v8</li><li>v0.73.0-debug</li><li>v0.73.0-debug-arm64v8</li><li>v0.73.0-debug-ppc64le</li><li>v0.73.0-debug-s390x</li><li>v0.73.0-ppc64le</li><li>v0.73.0-s390x</li><li>v0.74.0</li><li>v0.74.0-arm64v8</li><li>v0.74.0-debug</li><li>v0.74.0-debug-arm64v8</li><li>v0.74.0-debug-ppc64le</li><li>v0.74.0-debug-s390x</li><li>v0.74.0-ppc64le</li><li>v0.74.0-s390x</li><li>v0.74.1</li><li>v0.74.1-arm64v8</li><li>v0.74.1-debug</li><li>v0.74.1-debug-arm64v8</li><li>v0.74.1-debug-ppc64le</li><li>v0.74.1-debug-s390x</li><li>v0.74.1-ppc64le</li><li>v0.74.1-s390x</li><li>v0.75.0</li><li>v0.75.0-arm64v8</li><li>v0.75.0-debug</li><li>v0.75.0-debug-arm64v8</li><li>v0.75.0-debug-ppc64le</li><li>v0.75.0-debug-s390x</li><li>v0.75.0-ppc64le</li><li>v0.75.0-s390x</li><li>v0.76.0</li><li>v0.76.0-arm64v8</li><li>v0.76.0-debug</li><li>v0.76.0-debug-arm64v8</li><li>v0.76.0-debug-ppc64le</li><li>v0.76.0-debug-s390x</li><li>v0.76.0-ppc64le</li><li>v0.76.0-s390x</li><li>v0.76.1</li><li>v0.76.1-arm64v8</li><li>v0.76.1-debug</li><li>v0.76.1-debug-arm64v8</li><li>v0.76.1-debug-ppc64le</li><li>v0.76.1-debug-s390x</li><li>v0.76.1-ppc64le</li><li>v0.76.1-s390x</li><li>v0.77.0</li><li>v0.77.0-arm64v8</li><li>v0.77.0-debug</li><li>v0.77.0-debug-arm64v8</li><li>v0.77.0-debug-ppc64le</li><li>v0.77.0-debug-s390x</li><li>v0.77.0-ppc64le</li><li>v0.77.0-s390x</li><li>v0.78.0</li><li>v0.78.0-arm64v8</li><li>v0.78.0-debug</li><li>v0.78.0-debug-arm64v8</li><li>v0.78.0-debug-ppc64le</li><li>v0.78.0-debug-s390x</li><li>v0.78.0-ppc64le</li><li>v0.78.0-s390x</li><li>v0.79.0</li><li>v0.79.0-arm64v8</li><li>v0.79.0-debug</li><li>v0.79.0-debug-arm64v8</li><li>v0.79.0-debug-ppc64le</li><li>v0.79.0-debug-s390x</li><li>v0.79.0-ppc64le</li><li>v0.79.0-s390x</li><li>v0.80.0</li><li>v0.80.0-arm64v8</li><li>v0.80.0-debug</li><li>v0.80.0-debug-arm64v8</li><li>v0.80.0-debug-ppc64le</li><li>v0.80.0-debug-s390x</li><li>v0.80.0-ppc64le</li><li>v0.80.0-s390x</li><li>v0.81.0</li><li>v0.81.0-arm64v8</li><li>v0.81.0-debug</li><li>v0.81.0-debug-arm64v8</li><li>v0.81.0-debug-ppc64le</li><li>v0.81.0-debug-s390x</li><li>v0.81.0-ppc64le</li><li>v0.81.0-s390x</li><li>v0.82.0</li><li>v0.82.0-arm64v8</li><li>v0.82.0-debug</li><li>v0.82.0-debug-arm64v8</li><li>v0.82.0-debug-ppc64le</li><li>v0.82.0-debug-s390x</li><li>v0.82.0-ppc64le</li><li>v0.82.0-s390x</li><li>v0.83.0</li><li>v0.83.0-arm64v8</li><li>v0.83.0-debug</li><li>v0.83.0-debug-arm64v8</li><li>v0.83.0-debug-ppc64le</li><li>v0.83.0-debug-s390x</li><li>v0.83.0-ppc64le</li><li>v0.83.0-s390x</li><li>v0.83.1</li><li>v0.83.1-arm64v8</li><li>v0.83.1-debug</li><li>v0.83.1-debug-arm64v8</li><li>v0.83.1-debug-ppc64le</li><li>v0.83.1-debug-s390x</li><li>v0.83.1-ppc64le</li><li>v0.83.1-s390x</li><li>v0.84.0</li><li>v0.84.0-arm64v8</li><li>v0.84.0-debug</li><li>v0.84.0-debug-arm64v8</li><li>v0.84.0-debug-ppc64le</li><li>v0.84.0-debug-s390x</li><li>v0.84.0-ppc64le</li><li>v0.84.0-s390x</li><li>v0.84.1</li><li>v0.84.1-arm64v8</li><li>v0.84.1-debug</li><li>v0.84.1-debug-arm64v8</li><li>v0.84.1-debug-ppc64le</li><li>v0.84.1-debug-s390x</li><li>v0.84.1-ppc64le</li><li>v0.84.1-s390x</li><li>v0.85.0</li><li>v0.85.0-arm64v8</li><li>v0.85.0-debug</li><li>v0.85.0-debug-arm64v8</li><li>v0.85.0-debug-ppc64le</li><li>v0.85.0-debug-s390x</li><li>v0.85.0-ppc64le</li><li>v0.85.0-s390x</li><li>v0.86.0</li><li>v0.86.0-arm64v8</li><li>v0.86.0-debug</li><li>v0.86.0-debug-arm64v8</li><li>v0.86.0-debug-ppc64le</li><li>v0.86.0-debug-s390x</li><li>v0.86.0-ppc64le</li><li>v0.86.0-s390x</li><li>v0.86.1</li><li>v0.86.1-arm64v8</li><li>v0.86.1-debug</li><li>v0.86.1-debug-arm64v8</li><li>v0.86.1-debug-ppc64le</li><li>v0.86.1-debug-s390x</li><li>v0.86.1-ppc64le</li><li>v0.86.1-s390x</li><li>v0.87.0</li><li>v0.87.0-arm64v8</li><li>v0.87.0-debug</li><li>v0.87.0-debug-arm64v8</li><li>v0.87.0-debug-ppc64le</li><li>v0.87.0-debug-s390x</li><li>v0.87.0-ppc64le</li><li>v0.87.0-s390x</li><li>v0.87.1</li><li>v0.87.1-arm64v8</li><li>v0.87.1-debug</li><li>v0.87.1-debug-arm64v8</li><li>v0.87.1-debug-ppc64le</li><li>v0.87.1-debug-s390x</li><li>v0.87.1-ppc64le</li><li>v0.87.1-s390x</li><li>v0.88.0</li><li>v0.88.0-arm64v8</li><li>v0.88.0-debug</li><li>v0.88.0-debug-arm64v8</li><li>v0.88.0-debug-ppc64le</li><li>v0.88.0-debug-s390x</li><li>v0.88.0-ppc64le</li><li>v0.88.0-s390x</li><li>v0.89.0</li><li>v0.89.0-arm64v8</li><li>v0.89.0-debug</li><li>v0.89.0-debug-arm64v8</li><li>v0.89.0-debug-ppc64le</li><li>v0.89.0-debug-s390x</li><li>v0.89.0-ppc64le</li><li>v0.89.0-s390x</li><li>v0.90.0</li><li>v0.90.0-arm64v8</li><li>v0.90.0-debug</li><li>v0.90.0-debug-arm64v8</li><li>v0.90.0-debug-ppc64le</li><li>v0.90.0-debug-s390x</li><li>v0.90.0-ppc64le</li><li>v0.90.0-s390x</li><li>v0.91.0</li><li>v0.91.0-arm64v8</li><li>v0.91.0-debug</li><li>v0.91.0-debug-arm64v8</li><li>v0.91.0-debug-ppc64le</li><li>v0.91.0-debug-s390x</li><li>v0.91.0-ppc64le</li><li>v0.91.0-s390x</li><li>v0.92.0</li><li>v0.92.0-arm64v8</li><li>v0.92.0-debug</li><li>v0.92.0-debug-arm64v8</li><li>v0.92.0-debug-ppc64le</li><li>v0.92.0-debug-s390x</li><li>v0.92.0-ppc64le</li><li>v0.92.0-s390x</li><li>v0.93.0</li><li>v0.93.0-arm64v8</li><li>v0.93.0-debug</li><li>v0.93.0-debug-arm64v8</li><li>v0.93.0-debug-ppc64le</li><li>v0.93.0-debug-s390x</li><li>v0.93.0-ppc64le</li><li>v0.93.0-s390x</li><li>v0.94.0</li><li>v0.94.0-arm64v8</li><li>v0.94.0-debug</li><li>v0.94.0-debug-arm64v8</li><li>v0.94.0-debug-ppc64le</li><li>v0.94.0-debug-s390x</li><li>v0.94.0-ppc64le</li><li>v0.94.0-s390x</li><li>v0.95.0</li><li>v0.95.0-arm64v8</li><li>v0.95.0-debug</li><li>v0.95.0-debug-arm64v8</li><li>v0.95.0-debug-ppc64le</li><li>v0.95.0-debug-s390x</li><li>v0.95.0-ppc64le</li><li>v0.95.0-s390x</li><li>v0.96.0</li><li>v0.96.0-arm64v8</li><li>v0.96.0-debug</li><li>v0.96.0-debug-arm64v8</li><li>v0.96.0-debug-ppc64le</li><li>v0.96.0-debug-s390x</li><li>v0.96.0-ppc64le</li><li>v0.96.0-s390x</li><li>v0.97.0</li><li>v0.97.0-arm64v8</li><li>v0.97.0-debug</li><li>v0.97.0-debug-arm64v8</li><li>v0.97.0-debug-ppc64le</li><li>v0.97.0-debug-s390x</li><li>v0.97.0-ppc64le</li><li>v0.97.0-s390x</li><li>v0.97.1</li><li>v0.97.1-arm64v8</li><li>v0.97.1-debug</li><li>v0.97.1-debug-arm64v8</li><li>v0.97.1-debug-ppc64le</li><li>v0.97.1-debug-s390x</li><li>v0.97.1-ppc64le</li><li>v0.97.1-s390x</li><li>v0.98.0</li><li>v0.98.0-arm64v8</li><li>v0.98.0-debug</li><li>v0.98.0-debug-arm64v8</li><li>v0.98.0-debug-ppc64le</li><li>v0.98.0-debug-s390x</li><li>v0.98.0-ppc64le</li><li>v0.98.0-s390x</li><li>v0.99.0</li><li>v0.99.0-arm64v8</li><li>v0.99.0-debug</li><li>v0.99.0-debug-arm64v8</li><li>v0.99.0-debug-ppc64le</li><li>v0.99.0-debug-s390x</li><li>v0.99.0-ppc64le</li><li>v0.99.0-s390x</li><li>v1.0.0</li><li>v1.0.0-arm64v8</li><li>v1.0.0-debug</li><li>v1.0.0-debug-arm64v8</li><li>v1.0.0-debug-ppc64le</li><li>v1.0.0-debug-s390x</li><li>v1.0.0-ppc64le</li><li>v1.0.0-s390x</li><li>v1.0.1</li><li>v1.0.1-arm64v8</li><li>v1.0.1-debug</li><li>v1.0.1-debug-arm64v8</li><li>v1.0.1-debug-ppc64le</li><li>v1.0.1-debug-s390x</li><li>v1.0.1-ppc64le</li><li>v1.0.1-s390x</li><li>v1.1.0</li><li>v1.1.0-arm64v8</li><li>v1.1.0-debug</li><li>v1.1.0-debug-arm64v8</li><li>v1.1.0-debug-ppc64le</li><li>v1.1.0-debug-s390x</li><li>v1.1.0-ppc64le</li><li>v1.1.0-s390x</li><li>v1.1.1</li><li>v1.1.1-arm64v8</li><li>v1.1.1-debug</li><li>v1.1.1-debug-arm64v8</li><li>v1.1.1-debug-ppc64le</li><li>v1.1.1-debug-s390x</li><li>v1.1.1-ppc64le</li><li>v1.1.1-s390x</li><li>v1.10.0</li><li>v1.10.0-arm64v8</li><li>v1.10.0-debug</li><li>v1.10.0-debug-arm64v8</li><li>v1.10.0-debug-ppc64le</li><li>v1.10.0-debug-s390x</li><li>v1.10.0-ppc64le</li><li>v1.10.0-s390x</li><li>v1.11.0</li><li>v1.11.0-arm64v8</li><li>v1.11.0-debug</li><li>v1.11.0-debug-arm64v8</li><li>v1.11.0-debug-ppc64le</li><li>v1.11.0-debug-s390x</li><li>v1.11.0-ppc64le</li><li>v1.11.0-s390x</li><li>v1.11.1</li><li>v1.11.1-arm64v8</li><li>v1.11.1-debug</li><li>v1.11.1-debug-arm64v8</li><li>v1.11.1-debug-ppc64le</li><li>v1.11.1-debug-s390x</li><li>v1.11.1-ppc64le</li><li>v1.11.1-s390x</li><li>v1.12.2</li><li>v1.12.2-arm64v8</li><li>v1.12.2-debug</li><li>v1.12.2-debug-arm64v8</li><li>v1.12.2-debug-ppc64le</li><li>v1.12.2-debug-s390x</li><li>v1.12.2-ppc64le</li><li>v1.12.2-s390x</li><li>v1.13.0</li><li>v1.13.0-arm64v8</li><li>v1.13.0-debug</li><li>v1.13.0-debug-arm64v8</li><li>v1.13.0-debug-ppc64le</li><li>v1.13.0-debug-s390x</li><li>v1.13.0-ppc64le</li><li>v1.13.0-s390x</li><li>v1.14.0</li><li>v1.14.0-arm64v8</li><li>v1.14.0-debug</li><li>v1.14.0-debug-arm64v8</li><li>v1.14.0-debug-ppc64le</li><li>v1.14.0-debug-s390x</li><li>v1.14.0-ppc64le</li><li>v1.14.0-s390x</li><li>v1.14.1</li><li>v1.14.1-arm64v8</li><li>v1.14.1-debug</li><li>v1.14.1-debug-arm64v8</li><li>v1.14.1-debug-ppc64le</li><li>v1.14.1-debug-s390x</li><li>v1.14.1-ppc64le</li><li>v1.14.1-s390x</li><li>v1.14.2</li><li>v1.14.2-arm64v8</li><li>v1.14.2-debug</li><li>v1.14.2-debug-arm64v8</li><li>v1.14.2-debug-ppc64le</li><li>v1.14.2-debug-s390x</li><li>v1.14.2-ppc64le</li><li>v1.14.2-s390x</li><li>v1.15.0</li><li>v1.15.0-arm64v8</li><li>v1.15.0-debug</li><li>v1.15.0-debug-arm64v8</li><li>v1.15.0-debug-ppc64le</li><li>v1.15.0-debug-s390x</li><li>v1.15.0-ppc64le</li><li>v1.15.0-s390x</li><li>v1.16.0</li><li>v1.16.0-arm64v8</li><li>v1.16.0-debug</li><li>v1.16.0-debug-arm64v8</li><li>v1.16.0-debug-ppc64le</li><li>v1.16.0-debug-s390x</li><li>v1.16.0-ppc64le</li><li>v1.16.0-s390x</li><li>v1.17.0</li><li>v1.17.0-arm64v8</li><li>v1.17.0-debug</li><li>v1.17.0-debug-arm64v8</li><li>v1.17.0-debug-ppc64le</li><li>v1.17.0-debug-s390x</li><li>v1.17.0-ppc64le</li><li>v1.17.0-s390x</li><li>v1.18.0</li><li>v1.18.0-arm64v8</li><li>v1.18.0-debug</li><li>v1.18.0-debug-arm64v8</li><li>v1.18.0-debug-ppc64le</li><li>v1.18.0-debug-s390x</li><li>v1.18.0-ppc64le</li><li>v1.18.0-s390x</li><li>v1.18.1</li><li>v1.18.1-arm64v8</li><li>v1.18.1-debug</li><li>v1.18.1-debug-arm64v8</li><li>v1.18.1-debug-ppc64le</li><li>v1.18.1-debug-s390x</li><li>v1.18.1-ppc64le</li><li>v1.18.1-s390x</li><li>v1.19.0</li><li>v1.19.0-arm64v8</li><li>v1.19.0-debug</li><li>v1.19.0-debug-arm64v8</li><li>v1.19.0-debug-ppc64le</li><li>v1.19.0-debug-s390x</li><li>v1.19.0-ppc64le</li><li>v1.19.0-s390x</li><li>v1.2.0</li><li>v1.2.0-arm64v8</li><li>v1.2.0-debug</li><li>v1.2.0-debug-arm64v8</li><li>v1.2.0-debug-ppc64le</li><li>v1.2.0-debug-s390x</li><li>v1.2.0-ppc64le</li><li>v1.2.0-s390x</li><li>v1.20.0</li><li>v1.20.0-arm64v8</li><li>v1.20.0-debug</li><li>v1.20.0-debug-arm64v8</li><li>v1.20.0-debug-ppc64le</li><li>v1.20.0-debug-s390x</li><li>v1.20.0-ppc64le</li><li>v1.20.0-s390x</li><li>v1.21.0</li><li>v1.21.0-arm64v8</li><li>v1.21.0-debug</li><li>v1.21.0-debug-arm64v8</li><li>v1.21.0-debug-ppc64le</li><li>v1.21.0-debug-s390x</li><li>v1.21.0-ppc64le</li><li>v1.21.0-s390x</li><li>v1.22.0</li><li>v1.22.0-arm64v8</li><li>v1.22.0-debug</li><li>v1.22.0-debug-arm64v8</li><li>v1.22.0-debug-ppc64le</li><li>v1.22.0-debug-s390x</li><li>v1.22.0-ppc64le</li><li>v1.22.0-s390x</li><li>v1.23.0</li><li>v1.23.0-arm64v8</li><li>v1.23.0-debug</li><li>v1.23.0-debug-arm64v8</li><li>v1.23.0-debug-ppc64le</li><li>v1.23.0-debug-s390x</li><li>v1.23.0-ppc64le</li><li>v1.23.0-s390x</li><li>v1.23.1</li><li>v1.23.1-arm64v8</li><li>v1.23.1-debug</li><li>v1.23.1-debug-arm64v8</li><li>v1.23.1-debug-ppc64le</li><li>v1.23.1-debug-s390x</li><li>v1.23.1-ppc64le</li><li>v1.23.1-s390x</li><li>v1.24.0</li><li>v1.24.0-arm64v8</li><li>v1.24.0-debug</li><li>v1.24.0-debug-arm64v8</li><li>v1.24.0-debug-ppc64le</li><li>v1.24.0-debug-s390x</li><li>v1.24.0-ppc64le</li><li>v1.24.0-s390x</li><li>v1.25.0</li><li>v1.25.0-arm64v8</li><li>v1.25.0-debug</li><li>v1.25.0-debug-arm64v8</li><li>v1.25.0-debug-ppc64le</li><li>v1.25.0-debug-s390x</li><li>v1.25.0-ppc64le</li><li>v1.25.0-s390x</li><li>v1.25.1</li><li>v1.25.1-arm64v8</li><li>v1.25.1-debug</li><li>v1.25.1-debug-arm64v8</li><li>v1.25.1-debug-ppc64le</li><li>v1.25.1-debug-s390x</li><li>v1.25.1-ppc64le</li><li>v1.25.1-s390x</li><li>v1.26.0</li><li>v1.26.0-arm64v8</li><li>v1.26.0-debug</li><li>v1.26.0-debug-arm64v8</li><li>v1.26.0-debug-ppc64le</li><li>v1.26.0-debug-s390x</li><li>v1.26.0-ppc64le</li><li>v1.26.0-s390x</li><li>v1.26.1</li><li>v1.26.1-arm64v8</li><li>v1.26.1-debug</li><li>v1.26.1-debug-arm64v8</li><li>v1.26.1-debug-ppc64le</li><li>v1.26.1-debug-s390x</li><li>v1.26.1-ppc64le</li><li>v1.26.1-s390x</li><li>v1.27.0</li><li>v1.27.0-amd64</li><li>v1.27.0-arm64v8</li><li>v1.27.0-debug</li><li>v1.27.0-debug-amd64</li><li>v1.27.0-debug-arm64v8</li><li>v1.27.0-debug-ppc64le</li><li>v1.27.0-debug-s390x</li><li>v1.27.0-ppc64le</li><li>v1.27.0-s390x</li><li>v1.27.1</li><li>v1.27.1-amd64</li><li>v1.27.1-arm64v8</li><li>v1.27.1-debug</li><li>v1.27.1-debug-amd64</li><li>v1.27.1-debug-arm64v8</li><li>v1.27.1-debug-ppc64le</li><li>v1.27.1-debug-s390x</li><li>v1.27.1-nonroot</li><li>v1.27.1-nonroot-amd64</li><li>v1.27.1-nonroot-arm64v8</li><li>v1.27.1-nonroot-ppc64le</li><li>v1.27.1-nonroot-s390x</li><li>v1.27.1-ppc64le</li><li>v1.27.1-s390x</li><li>v1.28.0</li><li>v1.28.0-amd64</li><li>v1.28.0-arm64v8</li><li>v1.28.0-debug</li><li>v1.28.0-debug-amd64</li><li>v1.28.0-debug-arm64v8</li><li>v1.28.0-debug-ppc64le</li><li>v1.28.0-debug-s390x</li><li>v1.28.0-nonroot</li><li>v1.28.0-nonroot-amd64</li><li>v1.28.0-nonroot-arm64v8</li><li>v1.28.0-nonroot-ppc64le</li><li>v1.28.0-nonroot-s390x</li><li>v1.28.0-ppc64le</li><li>v1.28.0-s390x</li><li>v1.29.0</li><li>v1.29.0-amd64</li><li>v1.29.0-arm64v8</li><li>v1.29.0-debug</li><li>v1.29.0-debug-amd64</li><li>v1.29.0-debug-arm64v8</li><li>v1.29.0-debug-ppc64le</li><li>v1.29.0-debug-s390x</li><li>v1.29.0-nonroot</li><li>v1.29.0-nonroot-amd64</li><li>v1.29.0-nonroot-arm64v8</li><li>v1.29.0-nonroot-ppc64le</li><li>v1.29.0-nonroot-s390x</li><li>v1.29.0-ppc64le</li><li>v1.29.0-s390x</li><li>v1.29.1</li><li>v1.29.1-amd64</li><li>v1.29.1-arm64v8</li><li>v1.29.1-debug</li><li>v1.29.1-debug-amd64</li><li>v1.29.1-debug-arm64v8</li><li>v1.29.1-debug-ppc64le</li><li>v1.29.1-debug-s390x</li><li>v1.29.1-nonroot</li><li>v1.29.1-nonroot-amd64</li><li>v1.29.1-nonroot-arm64v8</li><li>v1.29.1-nonroot-ppc64le</li><li>v1.29.1-nonroot-s390x</li><li>v1.29.1-ppc64le</li><li>v1.29.1-s390x</li><li>v1.3.0</li><li>v1.3.0-arm64v8</li><li>v1.3.0-debug</li><li>v1.3.0-debug-arm64v8</li><li>v1.3.0-debug-ppc64le</li><li>v1.3.0-debug-s390x</li><li>v1.3.0-ppc64le</li><li>v1.3.0-s390x</li><li>v1.30.0</li><li>v1.30.0-amd64</li><li>v1.30.0-arm64v8</li><li>v1.30.0-debug</li><li>v1.30.0-debug-amd64</li><li>v1.30.0-debug-arm64v8</li><li>v1.30.0-debug-ppc64le</li><li>v1.30.0-debug-s390x</li><li>v1.30.0-nonroot</li><li>v1.30.0-nonroot-amd64</li><li>v1.30.0-nonroot-arm64v8</li><li>v1.30.0-nonroot-ppc64le</li><li>v1.30.0-nonroot-s390x</li><li>v1.30.0-ppc64le</li><li>v1.30.0-s390x</li><li>v1.31.0</li><li>v1.31.0-amd64</li><li>v1.31.0-arm64v8</li><li>v1.31.0-debug</li><li>v1.31.0-debug-amd64</li><li>v1.31.0-debug-arm64v8</li><li>v1.31.0-debug-ppc64le</li><li>v1.31.0-debug-s390x</li><li>v1.31.0-nonroot</li><li>v1.31.0-nonroot-amd64</li><li>v1.31.0-nonroot-arm64v8</li><li>v1.31.0-nonroot-ppc64le</li><li>v1.31.0-nonroot-s390x</li><li>v1.31.0-ppc64le</li><li>v1.31.0-s390x</li><li>v1.32.0</li><li>v1.32.0-amd64</li><li>v1.32.0-arm64v8</li><li>v1.32.0-debug</li><li>v1.32.0-debug-amd64</li><li>v1.32.0-debug-arm64v8</li><li>v1.32.0-debug-ppc64le</li><li>v1.32.0-debug-s390x</li><li>v1.32.0-nonroot</li><li>v1.32.0-nonroot-amd64</li><li>v1.32.0-nonroot-arm64v8</li><li>v1.32.0-nonroot-ppc64le</li><li>v1.32.0-nonroot-s390x</li><li>v1.32.0-ppc64le</li><li>v1.32.0-s390x</li><li>v1.33.0</li><li>v1.33.0-amd64</li><li>v1.33.0-arm64v8</li><li>v1.33.0-debug</li><li>v1.33.0-debug-amd64</li><li>v1.33.0-debug-arm64v8</li><li>v1.33.0-debug-ppc64le</li><li>v1.33.0-debug-s390x</li><li>v1.33.0-nonroot</li><li>v1.33.0-nonroot-amd64</li><li>v1.33.0-nonroot-arm64v8</li><li>v1.33.0-nonroot-ppc64le</li><li>v1.33.0-nonroot-s390x</li><li>v1.33.0-ppc64le</li><li>v1.33.0-s390x</li><li>v1.34.1</li><li>v1.34.1-amd64</li><li>v1.34.1-arm64v8</li><li>v1.34.1-debug</li><li>v1.34.1-debug-amd64</li><li>v1.34.1-debug-arm64v8</li><li>v1.34.1-debug-ppc64le</li><li>v1.34.1-debug-s390x</li><li>v1.34.1-nonroot</li><li>v1.34.1-nonroot-amd64</li><li>v1.34.1-nonroot-arm64v8</li><li>v1.34.1-nonroot-ppc64le</li><li>v1.34.1-nonroot-s390x</li><li>v1.34.1-ppc64le</li><li>v1.34.1-s390x</li><li>v1.34.2</li><li>v1.34.2-amd64</li><li>v1.34.2-arm64v8</li><li>v1.34.2-debug</li><li>v1.34.2-debug-amd64</li><li>v1.34.2-debug-arm64v8</li><li>v1.34.2-debug-ppc64le</li><li>v1.34.2-debug-s390x</li><li>v1.34.2-nonroot</li><li>v1.34.2-nonroot-amd64</li><li>v1.34.2-nonroot-arm64v8</li><li>v1.34.2-nonroot-ppc64le</li><li>v1.34.2-nonroot-s390x</li><li>v1.34.2-ppc64le</li><li>v1.34.2-s390x</li><li>v1.36.0</li><li>v1.36.0-amd64</li><li>v1.36.0-arm64v8</li><li>v1.36.0-debug</li><li>v1.36.0-debug-amd64</li><li>v1.36.0-debug-arm64v8</li><li>v1.36.0-debug-ppc64le</li><li>v1.36.0-debug-s390x</li><li>v1.36.0-nonroot</li><li>v1.36.0-nonroot-amd64</li><li>v1.36.0-nonroot-arm64v8</li><li>v1.36.0-nonroot-ppc64le</li><li>v1.36.0-nonroot-s390x</li><li>v1.36.0-ppc64le</li><li>v1.36.0-s390x</li><li>v1.37.0</li><li>v1.37.0-amd64</li><li>v1.37.0-arm64v8</li><li>v1.37.0-debug</li><li>v1.37.0-debug-amd64</li><li>v1.37.0-debug-arm64v8</li><li>v1.37.0-debug-ppc64le</li><li>v1.37.0-debug-s390x</li><li>v1.37.0-nonroot</li><li>v1.37.0-nonroot-amd64</li><li>v1.37.0-nonroot-arm64v8</li><li>v1.37.0-nonroot-ppc64le</li><li>v1.37.0-nonroot-s390x</li><li>v1.37.0-ppc64le</li><li>v1.37.0-s390x</li><li>v1.38.0</li><li>v1.38.0-amd64</li><li>v1.38.0-arm64v8</li><li>v1.38.0-debug</li><li>v1.38.0-debug-amd64</li><li>v1.38.0-debug-arm64v8</li><li>v1.38.0-debug-ppc64le</li><li>v1.38.0-debug-s390x</li><li>v1.38.0-nonroot</li><li>v1.38.0-nonroot-amd64</li><li>v1.38.0-nonroot-arm64v8</li><li>v1.38.0-nonroot-ppc64le</li><li>v1.38.0-nonroot-s390x</li><li>v1.38.0-ppc64le</li><li>v1.38.0-s390x</li><li>v1.38.1</li><li>v1.38.1-amd64</li><li>v1.38.1-arm64v8</li><li>v1.38.1-debug</li><li>v1.38.1-debug-amd64</li><li>v1.38.1-debug-arm64v8</li><li>v1.38.1-debug-ppc64le</li><li>v1.38.1-debug-s390x</li><li>v1.38.1-nonroot</li><li>v1.38.1-nonroot-amd64</li><li>v1.38.1-nonroot-arm64v8</li><li>v1.38.1-nonroot-ppc64le</li><li>v1.38.1-nonroot-s390x</li><li>v1.38.1-ppc64le</li><li>v1.38.1-s390x</li><li>v1.38.2</li><li>v1.38.2-amd64</li><li>v1.38.2-arm64v8</li><li>v1.38.2-debug</li><li>v1.38.2-debug-amd64</li><li>v1.38.2-debug-arm64v8</li><li>v1.38.2-debug-ppc64le</li><li>v1.38.2-debug-s390x</li><li>v1.38.2-nonroot</li><li>v1.38.2-nonroot-amd64</li><li>v1.38.2-nonroot-arm64v8</li><li>v1.38.2-nonroot-ppc64le</li><li>v1.38.2-nonroot-s390x</li><li>v1.38.2-ppc64le</li><li>v1.38.2-s390x</li><li>v1.39.0</li><li>v1.39.0-amd64</li><li>v1.39.0-arm64v8</li><li>v1.39.0-debug</li><li>v1.39.0-debug-amd64</li><li>v1.39.0-debug-arm64v8</li><li>v1.39.0-debug-ppc64le</li><li>v1.39.0-debug-s390x</li><li>v1.39.0-nonroot</li><li>v1.39.0-nonroot-amd64</li><li>v1.39.0-nonroot-arm64v8</li><li>v1.39.0-nonroot-ppc64le</li><li>v1.39.0-nonroot-s390x</li><li>v1.39.0-ppc64le</li><li>v1.39.0-s390x</li><li>v1.4.0</li><li>v1.4.0-arm64v8</li><li>v1.4.0-debug</li><li>v1.4.0-debug-arm64v8</li><li>v1.4.0-debug-ppc64le</li><li>v1.4.0-debug-s390x</li><li>v1.4.0-ppc64le</li><li>v1.4.0-s390x</li><li>v1.4.1</li><li>v1.4.1-arm64v8</li><li>v1.4.1-debug</li><li>v1.4.1-debug-arm64v8</li><li>v1.4.1-debug-ppc64le</li><li>v1.4.1-debug-s390x</li><li>v1.4.1-ppc64le</li><li>v1.4.1-s390x</li><li>v1.40.0</li><li>v1.40.0-amd64</li><li>v1.40.0-arm64v8</li><li>v1.40.0-debug</li><li>v1.40.0-debug-amd64</li><li>v1.40.0-debug-arm64v8</li><li>v1.40.0-debug-ppc64le</li><li>v1.40.0-debug-s390x</li><li>v1.40.0-nonroot</li><li>v1.40.0-nonroot-amd64</li><li>v1.40.0-nonroot-arm64v8</li><li>v1.40.0-nonroot-ppc64le</li><li>v1.40.0-nonroot-s390x</li><li>v1.40.0-ppc64le</li><li>v1.40.0-s390x</li><li>v1.40.1</li><li>v1.40.1-amd64</li><li>v1.40.1-arm64v8</li><li>v1.40.1-debug</li><li>v1.40.1-debug-amd64</li><li>v1.40.1-debug-arm64v8</li><li>v1.40.1-debug-ppc64le</li><li>v1.40.1-debug-s390x</li><li>v1.40.1-nonroot</li><li>v1.40.1-nonroot-amd64</li><li>v1.40.1-nonroot-arm64v8</li><li>v1.40.1-nonroot-ppc64le</li><li>v1.40.1-nonroot-s390x</li><li>v1.40.1-ppc64le</li><li>v1.40.1-s390x</li><li>v1.41.0</li><li>v1.41.0-amd64</li><li>v1.41.0-arm64v8</li><li>v1.41.0-debug</li><li>v1.41.0-debug-amd64</li><li>v1.41.0-debug-arm64v8</li><li>v1.41.0-debug-ppc64le</li><li>v1.41.0-debug-s390x</li><li>v1.41.0-nonroot</li><li>v1.41.0-nonroot-amd64</li><li>v1.41.0-nonroot-arm64v8</li><li>v1.41.0-nonroot-ppc64le</li><li>v1.41.0-nonroot-s390x</li><li>v1.41.0-ppc64le</li><li>v1.41.0-s390x</li><li>v1.41.1</li><li>v1.41.1-amd64</li><li>v1.41.1-arm64v8</li><li>v1.41.1-debug</li><li>v1.41.1-debug-amd64</li><li>v1.41.1-debug-arm64v8</li><li>v1.41.1-debug-ppc64le</li><li>v1.41.1-debug-s390x</li><li>v1.41.1-nonroot</li><li>v1.41.1-nonroot-amd64</li><li>v1.41.1-nonroot-arm64v8</li><li>v1.41.1-nonroot-ppc64le</li><li>v1.41.1-nonroot-s390x</li><li>v1.41.1-ppc64le</li><li>v1.41.1-s390x</li><li>v1.41.2</li><li>v1.41.2-amd64</li><li>v1.41.2-arm64v8</li><li>v1.41.2-debug</li><li>v1.41.2-debug-amd64</li><li>v1.41.2-debug-arm64v8</li><li>v1.41.2-debug-ppc64le</li><li>v1.41.2-debug-s390x</li><li>v1.41.2-nonroot</li><li>v1.41.2-nonroot-amd64</li><li>v1.41.2-nonroot-arm64v8</li><li>v1.41.2-nonroot-ppc64le</li><li>v1.41.2-nonroot-s390x</li><li>v1.41.2-ppc64le</li><li>v1.41.2-s390x</li><li>v1.42.0</li><li>v1.42.0-amd64</li><li>v1.42.0-arm64v8</li><li>v1.42.0-debug</li><li>v1.42.0-debug-amd64</li><li>v1.42.0-debug-arm64v8</li><li>v1.42.0-debug-ppc64le</li><li>v1.42.0-debug-s390x</li><li>v1.42.0-nonroot</li><li>v1.42.0-nonroot-amd64</li><li>v1.42.0-nonroot-arm64v8</li><li>v1.42.0-nonroot-ppc64le</li><li>v1.42.0-nonroot-s390x</li><li>v1.42.0-ppc64le</li><li>v1.42.0-s390x</li><li>v1.42.1</li><li>v1.42.1-amd64</li><li>v1.42.1-arm64v8</li><li>v1.42.1-debug</li><li>v1.42.1-debug-amd64</li><li>v1.42.1-debug-arm64v8</li><li>v1.42.1-debug-ppc64le</li><li>v1.42.1-debug-s390x</li><li>v1.42.1-nonroot</li><li>v1.42.1-nonroot-amd64</li><li>v1.42.1-nonroot-arm64v8</li><li>v1.42.1-nonroot-ppc64le</li><li>v1.42.1-nonroot-s390x</li><li>v1.42.1-ppc64le</li><li>v1.42.1-s390x</li><li>v1.42.2</li><li>v1.42.2-amd64</li><li>v1.42.2-arm64v8</li><li>v1.42.2-debug</li><li>v1.42.2-debug-amd64</li><li>v1.42.2-debug-arm64v8</li><li>v1.42.2-debug-ppc64le</li><li>v1.42.2-debug-s390x</li><li>v1.42.2-nonroot</li><li>v1.42.2-nonroot-amd64</li><li>v1.42.2-nonroot-arm64v8</li><li>v1.42.2-nonroot-ppc64le</li><li>v1.42.2-nonroot-s390x</li><li>v1.42.2-ppc64le</li><li>v1.42.2-s390x</li><li>v1.42.3</li><li>v1.42.3-amd64</li><li>v1.42.3-arm64v8</li><li>v1.42.3-debug</li><li>v1.42.3-debug-amd64</li><li>v1.42.3-debug-arm64v8</li><li>v1.42.3-debug-ppc64le</li><li>v1.42.3-debug-s390x</li><li>v1.42.3-nonroot</li><li>v1.42.3-nonroot-amd64</li><li>v1.42.3-nonroot-arm64v8</li><li>v1.42.3-nonroot-ppc64le</li><li>v1.42.3-nonroot-s390x</li><li>v1.42.3-ppc64le</li><li>v1.42.3-s390x</li><li>v1.42.4</li><li>v1.42.4-amd64</li><li>v1.42.4-arm64v8</li><li>v1.42.4-debug</li><li>v1.42.4-debug-amd64</li><li>v1.42.4-debug-arm64v8</li><li>v1.42.4-debug-ppc64le</li><li>v1.42.4-debug-s390x</li><li>v1.42.4-nonroot</li><li>v1.42.4-nonroot-amd64</li><li>v1.42.4-nonroot-arm64v8</li><li>v1.42.4-nonroot-ppc64le</li><li>v1.42.4-nonroot-s390x</li><li>v1.42.4-ppc64le</li><li>v1.42.4-s390x</li><li>v1.43.0</li><li>v1.43.0-amd64</li><li>v1.43.0-arm64v8</li><li>v1.43.0-debug</li><li>v1.43.0-debug-amd64</li><li>v1.43.0-debug-arm64v8</li><li>v1.43.0-debug-ppc64le</li><li>v1.43.0-debug-s390x</li><li>v1.43.0-nonroot</li><li>v1.43.0-nonroot-amd64</li><li>v1.43.0-nonroot-arm64v8</li><li>v1.43.0-nonroot-ppc64le</li><li>v1.43.0-nonroot-s390x</li><li>v1.43.0-ppc64le</li><li>v1.43.0-s390x</li><li>v1.44.0</li><li>v1.44.0-amd64</li><li>v1.44.0-arm64v8</li><li>v1.44.0-debug</li><li>v1.44.0-debug-amd64</li><li>v1.44.0-debug-arm64v8</li><li>v1.44.0-debug-ppc64le</li><li>v1.44.0-debug-riscv64</li><li>v1.44.0-debug-s390x</li><li>v1.44.0-nonroot</li><li>v1.44.0-nonroot-amd64</li><li>v1.44.0-nonroot-arm64v8</li><li>v1.44.0-nonroot-ppc64le</li><li>v1.44.0-nonroot-riscv64</li><li>v1.44.0-nonroot-s390x</li><li>v1.44.0-ppc64le</li><li>v1.44.0-riscv64</li><li>v1.44.0-s390x</li><li>v1.45.0</li><li>v1.45.0-amd64</li><li>v1.45.0-arm64v8</li><li>v1.45.0-debug</li><li>v1.45.0-debug-amd64</li><li>v1.45.0-debug-arm64v8</li><li>v1.45.0-debug-ppc64le</li><li>v1.45.0-debug-riscv64</li><li>v1.45.0-debug-s390x</li><li>v1.45.0-nonroot</li><li>v1.45.0-nonroot-amd64</li><li>v1.45.0-nonroot-arm64v8</li><li>v1.45.0-nonroot-ppc64le</li><li>v1.45.0-nonroot-riscv64</li><li>v1.45.0-nonroot-s390x</li><li>v1.45.0-ppc64le</li><li>v1.45.0-riscv64</li><li>v1.45.0-s390x</li><li>v1.45.1</li><li>v1.45.1-amd64</li><li>v1.45.1-arm64v8</li><li>v1.45.1-debug</li><li>v1.45.1-debug-amd64</li><li>v1.45.1-debug-arm64v8</li><li>v1.45.1-debug-ppc64le</li><li>v1.45.1-debug-riscv64</li><li>v1.45.1-debug-s390x</li><li>v1.45.1-nonroot</li><li>v1.45.1-nonroot-amd64</li><li>v1.45.1-nonroot-arm64v8</li><li>v1.45.1-nonroot-ppc64le</li><li>v1.45.1-nonroot-riscv64</li><li>v1.45.1-nonroot-s390x</li><li>v1.45.1-ppc64le</li><li>v1.45.1-riscv64</li><li>v1.45.1-s390x</li><li>v1.46.0</li><li>v1.46.0-amd64</li><li>v1.46.0-arm64v8</li><li>v1.46.0-debug</li><li>v1.46.0-debug-amd64</li><li>v1.46.0-debug-arm64v8</li><li>v1.46.0-debug-ppc64le</li><li>v1.46.0-debug-riscv64</li><li>v1.46.0-debug-s390x</li><li>v1.46.0-nonroot</li><li>v1.46.0-nonroot-amd64</li><li>v1.46.0-nonroot-arm64v8</li><li>v1.46.0-nonroot-ppc64le</li><li>v1.46.0-nonroot-riscv64</li><li>v1.46.0-nonroot-s390x</li><li>v1.46.0-ppc64le</li><li>v1.46.0-riscv64</li><li>v1.46.0-s390x</li><li>v1.48.0</li><li>v1.48.0-debug</li><li>v1.48.0-debug-nonroot</li><li>v1.48.0-nonroot</li><li>v1.49.0</li><li>v1.49.0-debug</li><li>v1.49.0-debug-nonroot</li><li>v1.49.0-nonroot</li><li>v1.5.0</li><li>v1.5.0-arm64v8</li><li>v1.5.0-debug</li><li>v1.5.0-debug-arm64v8</li><li>v1.5.0-debug-ppc64le</li><li>v1.5.0-debug-s390x</li><li>v1.5.0-ppc64le</li><li>v1.5.0-s390x</li><li>v1.50.0</li><li>v1.50.0-debug</li><li>v1.50.0-debug-nonroot</li><li>v1.50.0-nonroot</li><li>v1.51.0</li><li>v1.51.0-debug</li><li>v1.51.0-debug-nonroot</li><li>v1.51.0-nonroot</li><li>v1.51.1</li><li>v1.51.1-debug</li><li>v1.51.1-debug-nonroot</li><li>v1.51.1-nonroot</li><li>v1.52.0</li><li>v1.52.0-debug</li><li>v1.52.0-debug-nonroot</li><li>v1.52.0-nonroot</li><li>v1.54.0</li><li>v1.54.0-debug</li><li>v1.54.0-debug-nonroot</li><li>v1.54.0-nonroot</li><li>v1.54.1</li><li>v1.54.1-debug</li><li>v1.54.1-debug-nonroot</li><li>v1.54.1-nonroot</li><li>v1.6.0</li><li>v1.6.0-arm64v8</li><li>v1.6.0-debug</li><li>v1.6.0-debug-arm64v8</li><li>v1.6.0-debug-ppc64le</li><li>v1.6.0-debug-s390x</li><li>v1.6.0-ppc64le</li><li>v1.6.0-s390x</li><li>v1.7.0</li><li>v1.7.0-arm64v8</li><li>v1.7.0-debug</li><li>v1.7.0-debug-arm64v8</li><li>v1.7.0-debug-ppc64le</li><li>v1.7.0-debug-s390x</li><li>v1.7.0-ppc64le</li><li>v1.7.0-s390x</li><li>v1.8.0</li><li>v1.8.0-arm64v8</li><li>v1.8.0-debug</li><li>v1.8.0-debug-arm64v8</li><li>v1.8.0-debug-ppc64le</li><li>v1.8.0-debug-s390x</li><li>v1.8.0-ppc64le</li><li>v1.8.0-s390x</li><li>v1.9.0</li><li>v1.9.0-arm64v8</li><li>v1.9.0-debug</li><li>v1.9.0-debug-arm64v8</li><li>v1.9.0-debug-ppc64le</li><li>v1.9.0-debug-s390x</li><li>v1.9.0-ppc64le</li><li>v1.9.0-s390x</li></ul></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="secrets">
+      <summary>
+        <span>secrets</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>secrets</td></tr>
+        
+        <tr><th>repository</th><td>anchore/syft</td></tr>
+        
+        <tr><th>tag</th><td>sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa</td></tr>
+        
+        <tr><th>scanner_version</th><td>trufflehog 3.95.3</td></tr>
+        
+        <tr><th>secrets_count</th><td>0</td></tr>
+        
+        <tr><th>verified_count</th><td>0</td></tr>
+        
+        <tr><th>findings</th><td><em>none</em></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="metadata">
+      <summary>
+        <span>metadata</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>metadata</td></tr>
+        
+        <tr><th>metadata</th><td><table>
+      <tbody>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>metadata_validation</th><td><table>
+      <tbody>
+        
+        <tr><th>ci.platform</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>ci.job.id</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>ci.job.url</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>schema_sources</th><td><em>none</em></td></tr>
+        
+        <tr><th>enforcement</th><td>enforcing</td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+
+    <footer>Generated by regis 0.43.0 on 2026-10-19 11:01 UTC</footer>
+  </main>
+</div>
+</body>
+</html>
