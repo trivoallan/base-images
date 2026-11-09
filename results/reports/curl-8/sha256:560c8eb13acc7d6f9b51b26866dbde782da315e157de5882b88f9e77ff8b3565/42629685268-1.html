@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ghcr.io/trivoallan/base-transit/oci/curl:sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565 — regis report</title>
+  <style>
+    :root {
+      --bg:#fff; --fg:#18181b; --muted:#71717a; --line:#e4e4e7; --panel:#fafafa;
+      --crit:#991b1b; --crit-bg:#fef2f2; --high:#c2410c; --high-bg:#fff7ed;
+      --med:#a16207; --low:#166534; --low-bg:#f0fdf4; --accent:#18181b;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:system-ui,-apple-system,sans-serif; font-size:14px; line-height:1.5; color:var(--fg); background:var(--bg); }
+    .mono { font-family:ui-monospace,"SF Mono",Menlo,monospace; }
+    .muted { color:var(--muted); }
+    a { color:inherit; }
+    .layout { display:grid; grid-template-columns:200px 1fr; max-width:1200px; margin:0 auto; min-height:100vh; }
+    .sidebar { position:sticky; top:0; align-self:start; max-height:100vh; overflow:auto; background:var(--panel); border-right:1px solid var(--line); padding:1.25rem 1rem; }
+    .brand { font-weight:800; letter-spacing:.05em; margin-bottom:1rem; }
+    .toc a { display:flex; justify-content:space-between; gap:.5rem; text-decoration:none; color:var(--muted); padding:.2rem 0; font-size:13px; }
+    .toc a:hover { color:var(--fg); }
+    .st-fail { color:var(--crit); font-weight:700; }
+    .st-pass { color:var(--low); }
+    main { padding:1.5rem 2rem; min-width:0; }
+    header.rep { border-bottom:1px solid var(--line); padding-bottom:1rem; margin-bottom:1.25rem; }
+    header.rep h1 { font-size:1.3rem; word-break:break-all; }
+    header.rep .meta { display:grid; grid-template-columns:max-content 1fr; gap:.1rem .75rem; font-size:13px; margin-top:.5rem; }
+    header.rep .meta dt { font-weight:600; color:var(--muted); }
+    header.rep .meta dd { color:var(--fg); word-break:break-all; }
+    .verdict { margin:1rem 0 1.25rem; }
+    .hero { display:flex; align-items:center; gap:1rem; }
+    .ring { width:64px; height:64px; border-radius:50%; border:5px solid var(--accent); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.3rem; flex:0 0 auto; }
+    .verdict-headline { font-size:1.2rem; margin:0; }
+    .counts { color:var(--muted); font-size:13px; margin-top:.15rem; }
+    .verdict-badges { margin-top:.5rem; }
+    .pill, .badge { display:inline-block; padding:.12rem .5rem; border-radius:999px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+    .badge { border-radius:3px; }
+    .badge-critical { background:var(--crit-bg); color:var(--crit); }
+    .badge-high { background:var(--high-bg); color:var(--high); }
+    .badge-medium { background:#fefce8; color:var(--med); }
+    .badge-low { background:var(--low-bg); color:var(--low); }
+    .badge-pass, .badge-passed { background:var(--low-bg); color:var(--low); }
+    .badge-fail, .badge-failed { background:var(--crit-bg); color:var(--crit); }
+    .badge-warn, .badge-warning, .badge-incomplete { background:var(--high-bg); color:var(--high); }
+    .badge-none { background:var(--panel); color:var(--muted); }
+    .triage { border:1px solid var(--line); border-left:3px solid var(--high); border-radius:6px; background:var(--panel); padding:.75rem 1rem; margin:1rem 0; }
+    .triage.clear { border-left-color:var(--low); }
+    .triage h2 { font-size:.95rem; margin-bottom:.4rem; }
+    .triage table { width:100%; border-collapse:collapse; font-size:13px; margin:0; }
+    .triage td { padding:.25rem .4rem; border:none; border-top:1px solid var(--line); vertical-align:top; background:transparent; }
+    .triage-source { font-size:12px; margin:0 0 .4rem; }
+    .triage th { padding:.25rem .4rem; border:none; border-bottom:1px solid var(--line); text-align:left; font-size:11px; text-transform:uppercase; color:var(--muted); background:transparent; }
+    .sev { display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; margin:1rem 0; }
+    .sev .cell { border:1px solid var(--line); border-radius:6px; text-align:center; padding:.5rem; }
+    .sev .n { display:block; font-size:1.4rem; font-weight:800; line-height:1; }
+    .sev .l { font-size:11px; text-transform:uppercase; color:var(--muted); }
+    .sev .critical .n { color:var(--crit); } .sev .high .n { color:var(--high); }
+    .sev .medium .n { color:var(--med); } .sev .low .n { color:var(--low); }
+    h2.section-title { font-size:1rem; margin:1.5rem 0 .5rem; }
+    details.an { border:1px solid var(--line); border-radius:6px; margin:.75rem 0; }
+    details.an > summary { cursor:pointer; padding:.5rem .75rem; font-weight:700; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+    details.an > summary::-webkit-details-marker { display:none; }
+    details.an > summary::before { content:"▸"; margin-right:.5rem; color:var(--muted); }
+    details.an[open] > summary::before { content:"▾"; }
+    details.an .an-body { padding:.25rem .75rem .75rem; }
+    details.an:target { border-color:var(--accent); }
+    table { border-collapse:collapse; width:100%; margin:.5rem 0; font-size:13px; }
+    th { background:var(--panel); text-align:left; padding:.4rem .75rem; border:1px solid var(--line); font-weight:600; color:#52525b; }
+    td { padding:.35rem .75rem; border:1px solid var(--line); vertical-align:top; }
+    ul { padding-left:1.2rem; } li { margin:.1rem 0; }
+    dl.scalars { display:grid; grid-template-columns:max-content 1fr; gap:.15rem .75rem; font-size:13px; }
+    dl.scalars dt { font-weight:600; color:var(--muted); }
+    em { color:var(--muted); font-style:normal; }
+    footer { margin-top:2rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+    @media (max-width:720px) {
+      .layout { grid-template-columns:1fr; }
+      .sidebar { position:sticky; top:0; max-height:none; height:auto; border-right:none; border-bottom:1px solid var(--line); padding:.6rem .75rem; z-index:5; }
+      .brand { display:inline-block; margin:0 .5rem 0 0; }
+      .toc { display:flex; gap:.4rem; overflow-x:auto; white-space:nowrap; }
+      .toc a { flex:0 0 auto; border:1px solid var(--line); border-radius:999px; padding:.2rem .6rem; }
+      .sev { grid-template-columns:repeat(2,1fr); }
+      main { padding:1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">regis</div>
+    <nav class="toc">
+      <a href="#verdict"><span>Verdict</span></a>
+      <a href="#triage"><span>Triage</span></a>
+      
+      <a href="#endoflife"><span>endoflife</span><span class="st-pass">✓</span></a>
+      
+      <a href="#hadolint"><span>hadolint</span><span class="st-pass">✓</span></a>
+      
+      <a href="#dockle"><span>dockle</span><span class="st-pass">✓</span></a>
+      
+      <a href="#popularity"><span>popularity</span><span class="st-pass">✓</span></a>
+      
+      <a href="#freshness"><span>freshness</span><span class="st-pass">✓</span></a>
+      
+      <a href="#sbom"><span>sbom</span><span class="st-pass">✓</span></a>
+      
+      <a href="#scorecarddev"><span>scorecarddev</span><span class="st-pass">✓</span></a>
+      
+      <a href="#oci"><span>oci</span><span class="st-pass">✓</span></a>
+      
+      <a href="#cve"><span>cve</span><span class="st-pass">✓</span></a>
+      
+      <a href="#versioning"><span>versioning</span><span class="st-pass">✓</span></a>
+      
+      <a href="#size"><span>size</span><span class="st-pass">✓</span></a>
+      
+      <a href="#secrets"><span>secrets</span><span class="st-pass">✓</span></a>
+      
+      <a href="#provenance"><span>provenance</span><span class="st-pass">✓</span></a>
+      
+      <a href="#metadata"><span>metadata</span><span class="st-pass">✓</span></a>
+      
+    </nav>
+  </aside>
+
+  <main>
+    <header class="rep" id="top">
+      <h1>ghcr.io/trivoallan/base-transit/oci/curl:sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</h1>
+      <dl class="meta">
+        <dt>Registry</dt><dd>ghcr.io</dd>
+        <dt>Repository</dt><dd>trivoallan/base-transit/oci/curl</dd>
+        <dt>Tag</dt><dd class="mono">sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</dd>
+        
+        <dt>Digest</dt><dd class="mono">sha256-560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</dd>
+        
+        
+        <dt>Analysis date</dt><dd>2026-11-09T14:09:30.731676+00:00</dd>
+        
+      </dl>
+    </header>
+
+    
+    <section id="verdict" class="verdict">
+      <div class="hero">
+        <div class="ring" aria-label="Score 100 out of 100">100</div>
+        <div>
+          <h2 class="verdict-headline">🏷️ Placement direct · 100/100</h2>
+          <p class="counts">7/7 rules · all pass ✓</p>
+        </div>
+      </div>
+      
+    </section>
+    
+
+    
+    
+    <section id="triage" class="triage clear">
+      <h2>✓ All checks passed</h2>
+      
+    </section>
+    
+
+    
+    <section class="sev">
+      
+      <div class="cell critical"><span class="n">0</span><span class="l">critical</span></div>
+      
+      <div class="cell high"><span class="n">1</span><span class="l">high</span></div>
+      
+      <div class="cell medium"><span class="n">7</span><span class="l">medium</span></div>
+      
+      <div class="cell low"><span class="n">1</span><span class="l">low</span></div>
+      
+    </section>
+    
+
+    
+    <section id="playbooks">
+      <h2 class="section-title">Playbook results</h2>
+      <table>
+        <thead>
+          <tr><th>Playbook</th><th>Tier</th><th>Score</th><th>Failing rules</th></tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            <td>Image reconstructible <span class="muted">1.0.0</span></td>
+            <td>None Placement direct</td>
+            <td>100%</td>
+            <td>0</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </section>
+    
+
+    
+    
+    <details class="an" id="endoflife">
+      <summary>
+        <span>endoflife</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>endoflife</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>product</th><td>curl</td></tr>
+        
+        <tr><th>product_found</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>tag</th><td>sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</td></tr>
+        
+        <tr><th>matched_cycle</th><td><em>—</em></td></tr>
+        
+        <tr><th>is_eol</th><td><em>—</em></td></tr>
+        
+        <tr><th>active_cycles_count</th><td><em>—</em></td></tr>
+        
+        <tr><th>eol_cycles_count</th><td><em>—</em></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="hadolint">
+      <summary>
+        <span>hadolint</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>hadolint</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>tag</th><td>sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</td></tr>
+        
+        <tr><th>passed</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>issues_count</th><td>1</td></tr>
+        
+        <tr><th>issues_by_level</th><td><table>
+      <tbody>
+        
+        <tr><th>error</th><td>0</td></tr>
+        
+        <tr><th>warning</th><td>0</td></tr>
+        
+        <tr><th>info</th><td>1</td></tr>
+        
+        <tr><th>style</th><td>0</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>issues</th><td><table>
+    <thead><tr><th>code</th><th>level</th><th>message</th><th>line</th></tr></thead>
+    <tbody>
+      
+      <tr><td>DL3059</td><td>info</td><td>Multiple consecutive `RUN` instructions. Consider consolidation.</td><td>3</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>dockerfile</th><td>FROM scratch
+RUN /bin/sh
+RUN USER root
+RUN RUN /bin/sh -c set -eux; if [ -f /etc/apk/repositories ]; then sed -ri &#39;s#https?://[^/]+#https://dl-cdn.alpinelinux.org#g&#39; /etc/apk/repositories; fi # buildkit
+RUN RUN /bin/sh -c set -eux; : &#34;knock-upgrade-epoch=20261109T135548Z&#34;; if command -v apt-get &gt;/dev/null 2&gt;&amp;1; then export DEBIAN_FRONTEND=noninteractive; if [ -f /etc/apt/apt.conf.d/docker-clean ]; then mv /etc/apt/apt.conf.d/docker-clean /tmp/knock-docker-clean; fi; echo &#39;Binary::apt::APT::Keep-Downloaded-Packages &#34;true&#34;;&#39; &gt; /etc/apt/apt.conf.d/knock-keep-cache; rm -rf /var/lib/apt/lists/*; apt-get -o APT::Update::Error-Mode=any update; ls /var/lib/apt/lists/*Release &gt;/dev/null 2&gt;&amp;1 || { echo &#34;upgradePackages: no package index fetched&#34; &gt;&amp;2; exit 1; }; apt-get -o APT::Get::Always-Include-Phased-Updates=true -y upgrade; rm -f /etc/apt/apt.conf.d/knock-keep-cache; if [ -f /tmp/knock-docker-clean ]; then mv /tmp/knock-docker-clean /etc/apt/apt.conf.d/docker-clean; fi; rm -rf /var/lib/apt/lists/*; elif command -v apk &gt;/dev/null 2&gt;&amp;1; then apk upgrade --no-cache; else echo &#34;upgradePackages: no apt-get or apk in image&#34; &gt;&amp;2; exit 1; fi # buildkit
+RUN USER curl_user</td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="dockle">
+      <summary>
+        <span>dockle</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>dockle</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>tag</th><td>sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</td></tr>
+        
+        <tr><th>passed</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>issues_count</th><td>3</td></tr>
+        
+        <tr><th>issues_by_level</th><td><table>
+      <tbody>
+        
+        <tr><th>FATAL</th><td>0</td></tr>
+        
+        <tr><th>WARN</th><td>0</td></tr>
+        
+        <tr><th>INFO</th><td>3</td></tr>
+        
+        <tr><th>SKIP</th><td>0</td></tr>
+        
+        <tr><th>PASS</th><td>0</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>issues</th><td><table>
+    <thead><tr><th>code</th><th>level</th><th>title</th><th>alerts</th></tr></thead>
+    <tbody>
+      
+      <tr><td>CIS-DI-0005</td><td>INFO</td><td>Enable Content trust for Docker</td><td>[&#39;export DOCKER_CONTENT_TRUST=1 before docker pull/build&#39;]</td></tr>
+      
+      <tr><td>CIS-DI-0006</td><td>INFO</td><td>Add HEALTHCHECK instruction to the container image</td><td>[&#39;not found HEALTHCHECK statement&#39;]</td></tr>
+      
+      <tr><td>CIS-DI-0008</td><td>INFO</td><td>Confirm safety of setuid/setgid files</td><td>[&#39;setuid file: urwxr-xr-x usr/bin/ksu&#39;]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="popularity">
+      <summary>
+        <span>popularity</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>popularity</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>available</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>pull_count</th><td><em>—</em></td></tr>
+        
+        <tr><th>star_count</th><td><em>—</em></td></tr>
+        
+        <tr><th>description</th><td><em>—</em></td></tr>
+        
+        <tr><th>date_registered</th><td><em>—</em></td></tr>
+        
+        <tr><th>is_official</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="freshness">
+      <summary>
+        <span>freshness</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>freshness</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>tag</th><td>sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</td></tr>
+        
+        <tr><th>tag_created</th><td>2026-11-09T14:08:19.255175253Z</td></tr>
+        
+        <tr><th>latest_created</th><td><em>—</em></td></tr>
+        
+        <tr><th>age_days</th><td>0</td></tr>
+        
+        <tr><th>behind_latest_days</th><td><em>—</em></td></tr>
+        
+        <tr><th>reproducible_build</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>is_latest</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="sbom">
+      <summary>
+        <span>sbom</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>sbom</td></tr>
+        
+        <tr><th>scanner_version</th><td>1.44.0</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>tag</th><td>sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</td></tr>
+        
+        <tr><th>has_sbom</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>sbom_format</th><td>CycloneDX</td></tr>
+        
+        <tr><th>sbom_version</th><td>1.6</td></tr>
+        
+        <tr><th>total_components</th><td>173</td></tr>
+        
+        <tr><th>component_types</th><td><table>
+      <tbody>
+        
+        <tr><th>library</th><td>36</td></tr>
+        
+        <tr><th>application</th><td>1</td></tr>
+        
+        <tr><th>operating-system</th><td>1</td></tr>
+        
+        <tr><th>file</th><td>135</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>total_dependencies</th><td>31</td></tr>
+        
+        <tr><th>licenses</th><td><ul><li>Apache-2.0</li><li>BSD-3-Clause</li><li>GPL-2.0-only</li><li>MIT</li><li>Zlib</li></ul></td></tr>
+        
+        <tr><th>copyleft_licenses</th><td><ul><li>GPL-2.0-only</li></ul></td></tr>
+        
+        <tr><th>components</th><td><table>
+    <thead><tr><th>name</th><th>version</th><th>type</th><th>purl</th><th>licenses</th></tr></thead>
+    <tbody>
+      
+      <tr><td>alpine-baselayout</td><td>3.7.2-r1</td><td>library</td><td>pkg:apk/alpine/alpine-baselayout@3.7.2-r1?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>alpine-baselayout-data</td><td>3.7.2-r1</td><td>library</td><td>pkg:apk/alpine/alpine-baselayout-data@3.7.2-r1?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=alpine-baselayout</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>alpine-keys</td><td>2.6-r0</td><td>library</td><td>pkg:apk/alpine/alpine-keys@2.6-r0?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>alpine-release</td><td>3.24.4-r0</td><td>library</td><td>pkg:apk/alpine/alpine-release@3.24.4-r0?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=alpine-base</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>apk-tools</td><td>3.0.9-r0</td><td>library</td><td>pkg:apk/alpine/apk-tools@3.0.9-r0?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>brotli-libs</td><td>1.2.1-r0</td><td>library</td><td>pkg:apk/alpine/brotli-libs@1.2.1-r0?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=brotli</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>busybox</td><td>1.37.0-r31</td><td>library</td><td>pkg:apk/alpine/busybox@1.37.0-r31?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>busybox-binsh</td><td>1.37.0-r31</td><td>library</td><td>pkg:apk/alpine/busybox-binsh@1.37.0-r31?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=busybox</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>c-ares</td><td>1.34.9-r0</td><td>library</td><td>pkg:apk/alpine/c-ares@1.34.9-r0?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>ca-certificates-bundle</td><td>20261020-r0</td><td>library</td><td>pkg:apk/alpine/ca-certificates-bundle@20261020-r0?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=ca-certificates</td><td>[]</td></tr>
+      
+      <tr><td>curl</td><td>8.23.0</td><td>application</td><td>pkg:generic/curl@8.23.0</td><td>[]</td></tr>
+      
+      <tr><td>e2fsprogs-libs</td><td>1.47.4-r0</td><td>library</td><td>pkg:apk/alpine/e2fsprogs-libs@1.47.4-r0?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=e2fsprogs</td><td>[]</td></tr>
+      
+      <tr><td>keyutils-libs</td><td>1.6.3-r4</td><td>library</td><td>pkg:apk/alpine/keyutils-libs@1.6.3-r4?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=keyutils</td><td>[]</td></tr>
+      
+      <tr><td>krb5</td><td>1.22.2-r1</td><td>library</td><td>pkg:apk/alpine/krb5@1.22.2-r1?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>krb5-conf</td><td>1.0-r2</td><td>library</td><td>pkg:apk/alpine/krb5-conf@1.0-r2?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>krb5-libs</td><td>1.22.2-r1</td><td>library</td><td>pkg:apk/alpine/krb5-libs@1.22.2-r1?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=krb5</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>libapk</td><td>3.0.9-r0</td><td>library</td><td>pkg:apk/alpine/libapk@3.0.9-r0?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=apk-tools</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>libcom_err</td><td>1.47.4-r0</td><td>library</td><td>pkg:apk/alpine/libcom_err@1.47.4-r0?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=e2fsprogs</td><td>[]</td></tr>
+      
+      <tr><td>libcrypto3</td><td>3.5.9-r0</td><td>library</td><td>pkg:apk/alpine/libcrypto3@3.5.9-r0?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=openssl</td><td>[&#39;Apache-2.0&#39;]</td></tr>
+      
+      <tr><td>libev</td><td>4.33-r1</td><td>library</td><td>pkg:apk/alpine/libev@4.33-r1?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[]</td></tr>
+      
+      <tr><td>libgcc</td><td>15.2.0-r5</td><td>library</td><td>pkg:apk/alpine/libgcc@15.2.0-r5?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=gcc</td><td>[]</td></tr>
+      
+      <tr><td>libidn2</td><td>2.3.8-r0</td><td>library</td><td>pkg:apk/alpine/libidn2@2.3.8-r0?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[]</td></tr>
+      
+      <tr><td>libpsl</td><td>0.21.5-r3</td><td>library</td><td>pkg:apk/alpine/libpsl@0.21.5-r3?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>libssh2</td><td>1.11.1-r4</td><td>library</td><td>pkg:apk/alpine/libssh2@1.11.1-r4?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;BSD-3-Clause&#39;]</td></tr>
+      
+      <tr><td>libssl3</td><td>3.5.9-r0</td><td>library</td><td>pkg:apk/alpine/libssl3@3.5.9-r0?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=openssl</td><td>[&#39;Apache-2.0&#39;]</td></tr>
+      
+      <tr><td>libstdc++</td><td>15.2.0-r5</td><td>library</td><td>pkg:apk/alpine/libstdc%2B%2B@15.2.0-r5?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=gcc</td><td>[]</td></tr>
+      
+      <tr><td>libunistring</td><td>1.4.2-r0</td><td>library</td><td>pkg:apk/alpine/libunistring@1.4.2-r0?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[]</td></tr>
+      
+      <tr><td>libverto</td><td>0.3.2-r2</td><td>library</td><td>pkg:apk/alpine/libverto@0.3.2-r2?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>musl</td><td>1.2.6-r3</td><td>library</td><td>pkg:apk/alpine/musl@1.2.6-r3?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>musl-utils</td><td>1.2.6-r3</td><td>library</td><td>pkg:apk/alpine/musl-utils@1.2.6-r3?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=musl</td><td>[]</td></tr>
+      
+      <tr><td>nghttp2</td><td>1.70.0-r0</td><td>library</td><td>pkg:apk/alpine/nghttp2@1.70.0-r0?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>nghttp2-libs</td><td>1.70.0-r0</td><td>library</td><td>pkg:apk/alpine/nghttp2-libs@1.70.0-r0?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=nghttp2</td><td>[&#39;MIT&#39;]</td></tr>
+      
+      <tr><td>scanelf</td><td>1.3.9-r1</td><td>library</td><td>pkg:apk/alpine/scanelf@1.3.9-r1?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=pax-utils</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>ssl_client</td><td>1.37.0-r31</td><td>library</td><td>pkg:apk/alpine/ssl_client@1.37.0-r31?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=busybox</td><td>[&#39;GPL-2.0-only&#39;]</td></tr>
+      
+      <tr><td>zlib</td><td>1.4-r0</td><td>library</td><td>pkg:apk/alpine/zlib@1.4-r0?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[&#39;Zlib&#39;]</td></tr>
+      
+      <tr><td>zstd</td><td>1.5.7-r2</td><td>library</td><td>pkg:apk/alpine/zstd@1.5.7-r2?arch=x86_64&amp;distro=alpine-3.24.4</td><td>[]</td></tr>
+      
+      <tr><td>zstd-libs</td><td>1.5.7-r2</td><td>library</td><td>pkg:apk/alpine/zstd-libs@1.5.7-r2?arch=x86_64&amp;distro=alpine-3.24.4&amp;upstream=zstd</td><td>[]</td></tr>
+      
+      <tr><td>alpine</td><td>3.24.4</td><td>operating-system</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/bin/busybox</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/apk/keys/alpine-devel@lists.alpinelinux.org-4a6a0840.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/apk/keys/alpine-devel@lists.alpinelinux.org-5261cecb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/apk/keys/alpine-devel@lists.alpinelinux.org-6165ee59.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/busybox-paths.d/busybox</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/crontabs/root</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/fstab</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/group</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/hostname</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/hosts</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/inittab</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/krb5.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/logrotate.d/acpid</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modprobe.d/aliases.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modprobe.d/blacklist.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modprobe.d/i386.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/modules</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/motd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/network/if-up.d/dad</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/nsswitch.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/passwd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile.d/20locale.sh</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile.d/README</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/profile.d/color_prompt.sh.disabled</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/protocols</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/securetty</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/services</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/shadow</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/shells</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/certs/ca-certificates.crt</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/ct_log_list.cnf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/ct_log_list.cnf.dist</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/openssl.cnf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/ssl/openssl.cnf.dist</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/sysctl.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/udhcpc/udhcpc.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/lib/ld-musl-x86_64.so.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/sbin/ldconfig</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/curl</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/getconf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/getent</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/gss-client</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/h2load</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/iconv</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/k5srvutil</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/kadmin</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/kdestroy</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/kinit</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/klist</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/kpasswd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/ksu</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/kswitch</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/ktutil</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/kvno</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/ldd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/nghttp</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/nghttpd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/nghttpx</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/pzstd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/scanelf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/sim_client</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/ssl_client</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/uuclient</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/zstd</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/zstdgrep</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/bin/zstdless</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/afalg.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/capi.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/loader_attic.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/engines-3/padlock.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/krb5/plugins/kdb/db2.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/krb5/plugins/preauth/otp.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/krb5/plugins/preauth/spake.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/krb5/plugins/preauth/test.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/krb5/plugins/tls/k5tls.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libbrotlicommon.so.1.2.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libbrotlidec.so.1.2.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libbrotlienc.so.1.2.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libcares.so.2.19.8</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libcom_err.so.2.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libcrypto.so.3</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libe2p.so.2.3</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libev.so.4.0.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libext2fs.so.2.4</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libgcc_s.so.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libgssapi_krb5.so.2.2</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libgssrpc.so.4.2</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libidn2.so.0.4.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libk5crypto.so.3.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libkadm5clnt_mit.so.12.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libkadm5srv_mit.so.12.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libkdb5.so.10.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libkeyutils.so.1.10</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libkrad.so.0.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libkrb5.so.3.3</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libkrb5support.so.0.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libnghttp2.so.14.29.5</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libpsl.so.5.3.5</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libss.so.2.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libssh2.so.1.0.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libssl.so.3</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libstdc++.so.6.0.34</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libunistring.so.5.2.1</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libverto.so.1.0.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libzstd.so.1.5.7</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/ossl-modules/legacy.so</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/sysctl.d/00-alpine.conf</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-4a6a0840.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-5243ef4b.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-524d27bb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-5261cecb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-58199dcc.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-58cbb476.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-58e4f17d.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-5e69ca50.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-60ac2099.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-6165ee59.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-61666e3f.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616a9724.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616abc23.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616ac3bc.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616adfeb.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616ae350.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-616db30d.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/apk/keys/alpine-devel@lists.alpinelinux.org-66ba20fe.rsa.pub</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/share/udhcpc/default.script</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/alpine-release</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/issue</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/etc/secfixes.d/alpine</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/lib/apk/db/installed</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/sbin/apk</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libapk.so.3.0.0</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/libz.so.1.4</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+      <tr><td>/usr/lib/os-release</td><td><em>—</em></td><td>file</td><td><em>—</em></td><td>[]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="scorecarddev">
+      <summary>
+        <span>scorecarddev</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>scorecarddev</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>source_repo</th><td>https://github.com/curl/curl-container</td></tr>
+        
+        <tr><th>scorecard_available</th><td><span class="badge badge-fail">no</span></td></tr>
+        
+        <tr><th>score</th><td><em>—</em></td></tr>
+        
+        <tr><th>checks</th><td><em>none</em></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="oci">
+      <summary>
+        <span>oci</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>oci</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>tag</th><td>sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</td></tr>
+        
+        <tr><th>platforms</th><td><table>
+    <thead><tr><th>architecture</th><th>os</th><th>created</th><th>labels</th><th>user</th><th>env</th><th>exposed_ports</th><th>layers_count</th><th>size</th><th>digest</th></tr></thead>
+    <tbody>
+      
+      <tr><td>amd64</td><td>linux</td><td>2026-11-09T14:08:19.255175253Z</td><td>{&#39;docker.cmd&#39;: &#39;podman run -it quay.io/curl/curl-linux-amd64:8.23.0:8.23.0&#39;, &#39;io.buildah.version&#39;: &#39;1.33.7&#39;, &#39;maintainer&#39;: &#39;James Fuller &lt;jim.fuller@webcomposite.com&gt;&#39;, &#39;name&#39;: &#39;curl-linux-amd64:8.23.0&#39;, &#39;org.opencontainers.image.description&#39;: &#39;minimal image for curl&#39;, &#39;org.opencontainers.image.licenses&#39;: &#39;MIT&#39;, &#39;org.opencontainers.image.source&#39;: &#39;https://github.com/curl/curl-container&#39;, &#39;version&#39;: &#39;8.23.0&#39;}</td><td>curl_user</td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;, &#39;CURL_CA_BUNDLE=/cacert.pem&#39;]</td><td>[]</td><td>3</td><td>11119175</td><td>sha256:6d3a1b6d1483da5362da090e1a47ed4dc09d2ab12b4c2127fedf518848e034b6</td></tr>
+      
+      <tr><td>arm64</td><td>linux</td><td>2026-11-09T14:08:22.609290252Z</td><td>{&#39;docker.cmd&#39;: &#39;podman run -it quay.io/curl/curl-linux-arm64:8.23.0:8.23.0&#39;, &#39;io.buildah.version&#39;: &#39;1.33.7&#39;, &#39;maintainer&#39;: &#39;James Fuller &lt;jim.fuller@webcomposite.com&gt;&#39;, &#39;name&#39;: &#39;curl-linux-arm64:8.23.0&#39;, &#39;org.opencontainers.image.description&#39;: &#39;minimal image for curl&#39;, &#39;org.opencontainers.image.licenses&#39;: &#39;MIT&#39;, &#39;org.opencontainers.image.source&#39;: &#39;https://github.com/curl/curl-container&#39;, &#39;version&#39;: &#39;8.23.0&#39;}</td><td>curl_user</td><td>[&#39;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#39;, &#39;CURL_CA_BUNDLE=/cacert.pem&#39;]</td><td>[]</td><td>3</td><td>11387911</td><td>sha256:c9bf52ca80c11a11c2d3c50c5674644344634a69d105e2b591e2fcc94a83618f</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>platforms_supported</th><td><ul><li>linux/amd64</li><li>linux/arm64</li></ul></td></tr>
+        
+        <tr><th>tags</th><td><ul><li>8.23.0</li><li>sha256-560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</li></ul></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="cve">
+      <summary>
+        <span>cve</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>cve</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>tag</th><td>sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</td></tr>
+        
+        <tr><th>scanner_version</th><td>0.112.0</td></tr>
+        
+        <tr><th>vulnerability_count</th><td>9</td></tr>
+        
+        <tr><th>critical_count</th><td>0</td></tr>
+        
+        <tr><th>high_count</th><td>1</td></tr>
+        
+        <tr><th>medium_count</th><td>7</td></tr>
+        
+        <tr><th>low_count</th><td>1</td></tr>
+        
+        <tr><th>negligible_count</th><td>0</td></tr>
+        
+        <tr><th>unknown_count</th><td>0</td></tr>
+        
+        <tr><th>fixed_count</th><td>0</td></tr>
+        
+        <tr><th>targets</th><td><table>
+    <thead><tr><th>Target</th><th>Vulnerabilities</th></tr></thead>
+    <tbody>
+      
+      <tr><td>apk</td><td>[{&#39;VulnerabilityID&#39;: &#39;CVE-2026-59844&#39;, &#39;PkgName&#39;: &#39;libssh2&#39;, &#39;InstalledVersion&#39;: &#39;1.11.1-r4&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-59844&#39;, &#39;Description&#39;: &#39;A flaw was found in libssh. A remote authenticated client can issue SSH_FXP_READ requests with an arbitrarily large length, causing a libssh SFTP server to allocate excessive memory and potentially exhaust it through repeated requests.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-59843&#39;, &#39;PkgName&#39;: &#39;libssh2&#39;, &#39;InstalledVersion&#39;: &#39;1.11.1-r4&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-59843&#39;, &#39;Description&#39;: &#39;A flaw was found in libssh. A remote authenticated peer can advertise a zero maximum packet size in SSH_MSG_CHANNEL_OPEN, causing later channel writes to loop indefinitely and consume CPU, leading to denial of service.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-59850&#39;, &#39;PkgName&#39;: &#39;libssh2&#39;, &#39;InstalledVersion&#39;: &#39;1.11.1-r4&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;HIGH&#39;, &#39;Title&#39;: &#39;CVE-2026-59850&#39;, &#39;Description&#39;: &#39;A flaw was found in libssh. If data packets are processed after a channel is closed, channel data callbacks can be invoked after the associated data has already been freed, leading to crashes or possible use-after-free conditions.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2025-60876&#39;, &#39;PkgName&#39;: &#39;busybox&#39;, &#39;InstalledVersion&#39;: &#39;1.37.0-r31&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2025-60876&#39;, &#39;Description&#39;: &#39;BusyBox wget thru 1.3.7 accepted raw CR (0x0D)/LF (0x0A) and other C0 control bytes in the HTTP request-target (path/query), allowing the request line to be split and attacker-controlled headers to be injected. To preserve the HTTP/1.1 request-line shape METHOD SP request-target SP HTTP/1.1, a raw space (0x20) in the request-target must also be rejected (clients should use %20).&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2025-60876&#39;, &#39;PkgName&#39;: &#39;busybox-binsh&#39;, &#39;InstalledVersion&#39;: &#39;1.37.0-r31&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2025-60876&#39;, &#39;Description&#39;: &#39;BusyBox wget thru 1.3.7 accepted raw CR (0x0D)/LF (0x0A) and other C0 control bytes in the HTTP request-target (path/query), allowing the request line to be split and attacker-controlled headers to be injected. To preserve the HTTP/1.1 request-line shape METHOD SP request-target SP HTTP/1.1, a raw space (0x20) in the request-target must also be rejected (clients should use %20).&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2025-60876&#39;, &#39;PkgName&#39;: &#39;ssl_client&#39;, &#39;InstalledVersion&#39;: &#39;1.37.0-r31&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2025-60876&#39;, &#39;Description&#39;: &#39;BusyBox wget thru 1.3.7 accepted raw CR (0x0D)/LF (0x0A) and other C0 control bytes in the HTTP request-target (path/query), allowing the request line to be split and attacker-controlled headers to be injected. To preserve the HTTP/1.1 request-line shape METHOD SP request-target SP HTTP/1.1, a raw space (0x20) in the request-target must also be rejected (clients should use %20).&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-59848&#39;, &#39;PkgName&#39;: &#39;libssh2&#39;, &#39;InstalledVersion&#39;: &#39;1.11.1-r4&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-59848&#39;, &#39;Description&#39;: &#39;A flaw was found in libssh. A malicious SFTP server can send responses for unknown request IDs that libssh clients keep queued indefinitely, causing unbounded memory growth and client-side denial of service.&#39;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-59845&#39;, &#39;PkgName&#39;: &#39;libssh2&#39;, &#39;InstalledVersion&#39;: &#39;1.11.1-r4&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;MEDIUM&#39;, &#39;Title&#39;: &#39;CVE-2026-59845&#39;, &#39;Description&#39;: &#34;A flaw was found in libssh. When ProxyCommand is used, an unchecked fork() failure can be stored as process ID -1; during cleanup, signals may then be sent across the caller&#39;s accessible process tree, leading to local denial of service.&#34;}, {&#39;VulnerabilityID&#39;: &#39;CVE-2026-59846&#39;, &#39;PkgName&#39;: &#39;libssh2&#39;, &#39;InstalledVersion&#39;: &#39;1.11.1-r4&#39;, &#39;FixedVersion&#39;: &#39;&#39;, &#39;Severity&#39;: &#39;LOW&#39;, &#39;Title&#39;: &#39;CVE-2026-59846&#39;, &#39;Description&#39;: &#39;A flaw was found in libssh. A malicious username expanded through %r in ProxyCommand handling can inject shell metacharacters, exposing environment variables and causing unintended shell behavior.&#39;}]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>source</th><td><table>
+      <tbody>
+        
+        <tr><th>fetched_at</th><td>2026-11-09T14:09:21.426626+00:00</td></tr>
+        
+        <tr><th>built_at</th><td>2026-11-08T06:19:57Z</td></tr>
+        
+        <tr><th>version</th><td>v6.1.10</td></tr>
+        
+        <tr><th>checksum</th><td>sha256:dcca24722e16c2bcf4a542a3f7fdd2147baf9215c17b973f5a7d4243fbddacea</td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="versioning">
+      <summary>
+        <span>versioning</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>versioning</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>total_tags</th><td>2</td></tr>
+        
+        <tr><th>dominant_pattern</th><td>named</td></tr>
+        
+        <tr><th>semver_compliant_percentage</th><td>50.0</td></tr>
+        
+        <tr><th>patterns</th><td><table>
+    <thead><tr><th>pattern</th><th>count</th><th>percentage</th><th>examples</th></tr></thead>
+    <tbody>
+      
+      <tr><td>named</td><td>1</td><td>50.0</td><td>[&#39;sha256-560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565&#39;]</td></tr>
+      
+      <tr><td>semver</td><td>1</td><td>50.0</td><td>[&#39;8.23.0&#39;]</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>variants</th><td><em>none</em></td></tr>
+        
+        <tr><th>aliases</th><td><ul><li>8.23.0</li><li>sha256-560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</li></ul></td></tr>
+        
+        <tr><th>release_lines</th><td><ul><li>8.23.0</li></ul></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="size">
+      <summary>
+        <span>size</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>size</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>tag</th><td>sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</td></tr>
+        
+        <tr><th>multi_arch</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>total_compressed_bytes</th><td>11119175</td></tr>
+        
+        <tr><th>total_compressed_human</th><td>10.6 MB</td></tr>
+        
+        <tr><th>layer_count</th><td>3</td></tr>
+        
+        <tr><th>config_size_bytes</th><td>0</td></tr>
+        
+        <tr><th>layers</th><td><em>none</em></td></tr>
+        
+        <tr><th>platforms</th><td><table>
+    <thead><tr><th>platform</th><th>compressed_bytes</th><th>compressed_human</th><th>layer_count</th></tr></thead>
+    <tbody>
+      
+      <tr><td>linux/amd64</td><td>11119175</td><td>10.6 MB</td><td>3</td></tr>
+      
+      <tr><td>linux/arm64</td><td>11387911</td><td>10.9 MB</td><td>3</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="secrets">
+      <summary>
+        <span>secrets</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>secrets</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>tag</th><td>sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</td></tr>
+        
+        <tr><th>scanner_version</th><td>trufflehog 3.95.3</td></tr>
+        
+        <tr><th>secrets_count</th><td>0</td></tr>
+        
+        <tr><th>verified_count</th><td>0</td></tr>
+        
+        <tr><th>findings</th><td><em>none</em></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="provenance">
+      <summary>
+        <span>provenance</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>provenance</td></tr>
+        
+        <tr><th>repository</th><td>trivoallan/base-transit/oci/curl</td></tr>
+        
+        <tr><th>tag</th><td>sha256:560c8eb13acc7d6f9b51b26866dbde782da315e157de5882b88f9e77ff8b3565</td></tr>
+        
+        <tr><th>has_provenance</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>has_cosign_signature</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>signatures</th><td><table>
+    <thead><tr><th>format</th><th>location</th><th>verified</th><th>identity</th><th>issuer</th></tr></thead>
+    <tbody>
+      
+      <tr><td>sigstore-bundle</td><td>sha256:332854eaf81f34d545cd2d29bac3050b807ccee1b5c1e032b0cb9b7ee89a72bf</td><td><span class="badge badge-pass">yes</span></td><td>https://github.com/trivoallan/base-images/.github/workflows/screening.yml@refs/heads/main</td><td>https://token.actions.githubusercontent.com</td></tr>
+      
+      <tr><td>sigstore-bundle</td><td>sha256:478f97fe16ba72f6b0e81ed1f2ce138de351f172ffafc2c526c08d7fd45a1406</td><td><span class="badge badge-pass">yes</span></td><td>https://github.com/trivoallan/base-images/.github/workflows/screening.yml@refs/heads/main</td><td>https://token.actions.githubusercontent.com</td></tr>
+      
+      <tr><td>sigstore-bundle</td><td>sha256:79b7891841b3ddbfff687b8409a110af1e60bb86c87cd5d4423efda405a50112</td><td><span class="badge badge-pass">yes</span></td><td>https://github.com/trivoallan/base-images/.github/workflows/screening.yml@refs/heads/main</td><td>https://token.actions.githubusercontent.com</td></tr>
+      
+      <tr><td>sigstore-bundle</td><td>sha256:cca2a506589386d312ecb820eea62b44d95e476805b2c1cacd1d4eee794f2c6f</td><td><span class="badge badge-pass">yes</span></td><td>https://github.com/trivoallan/base-images/.github/workflows/screening.yml@refs/heads/main</td><td>https://token.actions.githubusercontent.com</td></tr>
+      
+      <tr><td>sigstore-bundle</td><td>sha256:e9604b951fe7385584d0f3015ebf2c04b52b4dbc5d595715bf4668aca980b90c</td><td><span class="badge badge-pass">yes</span></td><td>https://github.com/trivoallan/base-images/.github/workflows/screening.yml@refs/heads/main</td><td>https://token.actions.githubusercontent.com</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>verified_signers</th><td><table>
+    <thead><tr><th>identity</th><th>issuer</th></tr></thead>
+    <tbody>
+      
+      <tr><td>https://github.com/trivoallan/base-images/.github/workflows/screening.yml@refs/heads/main</td><td>https://token.actions.githubusercontent.com</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+        <tr><th>signatures_complete</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>signature_gaps</th><td><em>none</em></td></tr>
+        
+        <tr><th>source_tracked</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>indicators_count</th><td>6</td></tr>
+        
+        <tr><th>indicators</th><td><table>
+    <thead><tr><th>type</th><th>key</th><th>value</th></tr></thead>
+    <tbody>
+      
+      <tr><td>oci-annotation</td><td>org.opencontainers.image.source</td><td>https://github.com/curl/curl-container</td></tr>
+      
+      <tr><td>cosign-signature</td><td>sigstore-bundle</td><td>sha256:332854eaf81f34d545cd2d29bac3050b807ccee1b5c1e032b0cb9b7ee89a72bf</td></tr>
+      
+      <tr><td>cosign-signature</td><td>sigstore-bundle</td><td>sha256:478f97fe16ba72f6b0e81ed1f2ce138de351f172ffafc2c526c08d7fd45a1406</td></tr>
+      
+      <tr><td>cosign-signature</td><td>sigstore-bundle</td><td>sha256:79b7891841b3ddbfff687b8409a110af1e60bb86c87cd5d4423efda405a50112</td></tr>
+      
+      <tr><td>cosign-signature</td><td>sigstore-bundle</td><td>sha256:cca2a506589386d312ecb820eea62b44d95e476805b2c1cacd1d4eee794f2c6f</td></tr>
+      
+      <tr><td>cosign-signature</td><td>sigstore-bundle</td><td>sha256:e9604b951fe7385584d0f3015ebf2c04b52b4dbc5d595715bf4668aca980b90c</td></tr>
+      
+    </tbody>
+  </table></td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+    
+    <details class="an" id="metadata">
+      <summary>
+        <span>metadata</span>
+        <span class="st-pass">✓</span>
+      </summary>
+      <div class="an-body">
+        
+          <table>
+      <tbody>
+        
+        <tr><th>analyzer</th><td>metadata</td></tr>
+        
+        <tr><th>metadata</th><td><table>
+      <tbody>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>metadata_validation</th><td><table>
+      <tbody>
+        
+        <tr><th>ci.platform</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>ci.job.id</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>ci.job.url</th><td><table>
+      <tbody>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+      </tbody>
+    </table></td></tr>
+        
+        <tr><th>valid</th><td><span class="badge badge-pass">yes</span></td></tr>
+        
+        <tr><th>schema_sources</th><td><em>none</em></td></tr>
+        
+        <tr><th>enforcement</th><td>enforcing</td></tr>
+        
+      </tbody>
+    </table>
+        
+      </div>
+    </details>
+    
+    
+
+    <footer>Generated by regis 0.43.0 on 2026-11-09 14:09 UTC</footer>
+  </main>
+</div>
+</body>
+</html>
